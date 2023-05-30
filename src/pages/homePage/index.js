@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Container, TextField, Button, Typography } from '@mui/material';
 import WeatherCard from '../../components/weatherCard';
-import { fetchWeatherData } from '../../api/weatherAPI';
+import { fetchWeatherData, fetchGeoLocation } from '../../api/weatherAPI';
+import { weatherCodeTranslator } from '../../utils';
 
 function HomePage() {
   const [location, setLocation] = useState('');
@@ -10,8 +11,10 @@ function HomePage() {
 
   const fetchWeather = async () => {
     try {
-      const data = await fetchWeatherData(location);
-      setWeatherData(prevData => [...prevData, data]);
+      const coords = (await fetchGeoLocation(location)).results;  
+      const data = await fetchWeatherData(coords[0].latitude, coords[0].longitude);
+      const newData = { coords, data };
+      setWeatherData(prevData => [newData, ...prevData]);
       setError('');
     } catch (error) {
       setWeatherData([]);
@@ -47,10 +50,10 @@ function HomePage() {
       {weatherData && (
         weatherData.map((data) => (
         <WeatherCard
-          location={`${data.location.name}, ${data.location.country}`}
-          temperature={data.current.temp_c}
-          description={data.current.condition.text}
-          humidity={data.current.humidity}
+        location={`${data.coords[0].name}, ${data.coords[0].country}`}
+          temperature={data.data.hourly.temperature_2m[0]}
+          description={weatherCodeTranslator(data.data.hourly.weathercode[0])}
+          humidity={data.data.hourly.relativehumidity_2m[0]}
         />
         ))
       )}
