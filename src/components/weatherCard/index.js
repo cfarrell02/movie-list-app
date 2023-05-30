@@ -4,7 +4,7 @@ import ThermostatIcon from '@mui/icons-material/Thermostat';
 
 const WeatherCard = ({ location, temperature, description, humidity }) => {
   return (
-      <Card variant="outlined">
+      <Card variant="outlined" sx="margin:2%">
         <CardContent>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12}>
