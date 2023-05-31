@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Container, TextField, Button, Typography } from '@mui/material';
-import WeatherCard from '../../components/weatherCard';
-import { fetchWeatherData } from '../../api/weatherAPI';
+import LocationCard from '../../components/locationCard';
+import { fetchWeatherData, fetchGeoLocation } from '../../api/weatherAPI';
+import { weatherCodeTranslator } from '../../utils';
 
 function HomePage() {
   const [location, setLocation] = useState('');
@@ -10,8 +11,24 @@ function HomePage() {
 
   const fetchWeather = async () => {
     try {
-      const data = await fetchWeatherData(location);
-      setWeatherData(prevData => [...prevData, data]);
+      const coords = (await fetchGeoLocation(location)).results;  
+      const data = await fetchWeatherData(coords[0].latitude, coords[0].longitude);
+      let hourlyData = [];
+  
+      for (let i = 0; i < data.hourly.time.length; i++) {
+        let currentDate = (new Date()).getDay() === parseInt(data.hourly.time[i].substring(8, 10));
+        hourlyData.push({
+          time: data.hourly.time[i],
+          temperature: data.hourly.temperature_2m[i],
+          description: weatherCodeTranslator(data.hourly.weathercode[i]),
+          humidity: data.hourly.relativehumidity_2m[i],
+          isCurrent: currentDate
+        });
+      }
+      data.hourly = hourlyData;
+      console.log(data);
+      const newData = { coords: coords[0], data };
+      setWeatherData(prevData => [newData, ...prevData]);
       setError('');
     } catch (error) {
       setWeatherData([]);
@@ -24,7 +41,7 @@ function HomePage() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ marginTop: '2rem' }}>
+    <Container maxWidth="xl" sx={{ marginTop: '2rem' }}>
       <Typography variant="h4" component="h1" align="center" gutterBottom>
         Weather App
       </Typography>
@@ -45,14 +62,11 @@ function HomePage() {
         </Typography>
       )}
       {weatherData && (
-        weatherData.map((data) => (
-        <WeatherCard
-          location={`${data.location.name}, ${data.location.country}`}
-          temperature={data.current.temp_c}
-          description={data.current.condition.text}
-          humidity={data.current.humidity}
-        />
-        ))
+        <div style={{ marginTop: '1rem' }}>
+          {weatherData.map((data, index) => (
+            <LocationCard key={index} weatherObject={data} />
+          ))}
+        </div>
       )}
     </Container>
   );
