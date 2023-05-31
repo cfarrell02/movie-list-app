@@ -1,4 +1,3 @@
-
 export const weatherCodeTranslator = (code) => {
     const weatherInterpretationCodes = {
         0: "Clear sky",
