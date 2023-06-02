@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { Card, CardContent, Typography, Grid } from '@mui/material';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
+import { weatherCodeIcons, weatherCodeTranslator } from '../../utils';
+import SvgIcon from '@mui/material/SvgIcon';
 
 const WeatherCard = ({ temperature, description, humidity, time, focused }) => {
   const cardRef = useRef(null);
-
+  const iconPath = '../../images/' + weatherCodeIcons(description);
   useEffect(() => {
     if (focused) {
       cardRef.current.focus();
@@ -38,9 +40,8 @@ const WeatherCard = ({ temperature, description, humidity, time, focused }) => {
             </Typography>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="body1" color="text.secondary">
-              {description}
-            </Typography>
+          <img src={iconPath} alt= {weatherCodeTranslator(description)} /> // TODO: Fix this
+
           </Grid>
           <Grid item xs={6}>
             <Typography variant="body1" color="text.secondary">

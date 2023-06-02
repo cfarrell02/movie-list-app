@@ -13,20 +13,24 @@ const LocationSearch = ({ title }) => {
   const [error, setError] = useState('');
   const [open, setOpen] = React.useState(false);
   const [options, setOptions] = React.useState([]);
-    const loading = open && options.length === 0;
-    const maxHours = 48;
+  const [fetchingData, setFetchingData] = useState(false); // New state for fetching data
+  const maxHours = 48;
 
-    const fetchLocations = async (location) => {
-        try {
-            const data = (await (fetchGeoLocation(location))).results;
-            return data;
-        } catch (error) {
-            throw new Error('An error occurred while fetching geo location data.');
-        }
+  const fetchLocations = async (location) => {
+    try {
+      setFetchingData(true); // Start fetching data
+      const data = (await fetchGeoLocation(location)).results;
+      return data;
+    } catch (error) {
+      throw new Error('An error occurred while fetching geo location data.');
+    } finally { 
+        setFetchingData(false); // Stop fetching data
     }
+  };
 
   const fetchWeather = async (coords) => {
     try {
+      setFetchingData(true); // Start fetching data
       const data = await fetchWeatherData(coords.latitude, coords.longitude);
       setOptions([]);
       const currentTime = new Date();
@@ -38,7 +42,7 @@ const LocationSearch = ({ title }) => {
         hourlyData.push({
           time: data.hourly.time[i],
           temperature: data.hourly.temperature_2m[i],
-          description: weatherCodeTranslator(data.hourly.weathercode[i]),
+          description: data.hourly.weathercode[i],
           humidity: data.hourly.relativehumidity_2m[i],
           isCurrent: currentDate,
         });
@@ -50,6 +54,8 @@ const LocationSearch = ({ title }) => {
     } catch (error) {
       setWeatherData([]);
       setError(error.message);
+    } finally {
+      setFetchingData(false); // Stop fetching data
     }
   };
 
@@ -57,22 +63,24 @@ const LocationSearch = ({ title }) => {
     let data = await fetchLocations(event.target.value);
     if (data) {
       setOptions(data);
-    }else{
-        setOptions([]);
+    } else {
+      setOptions([]);
     }
-    };
-    const handleSearch = async (event) => {
-        if(event.target.value){
-            const searchObject = (await fetchLocations(event.target.value))[0];
-            fetchWeather(searchObject);
-        }
-    };
-    const handleAutocompleteChange = (event, value) => {
-        if(value){
-            setLocation(value);
-            fetchWeather(value);
-        }
+  };
+
+  const handleSearch = async (event) => {
+    if (event.target.value) {
+      const searchObject = (await fetchLocations(event.target.value))[0];
+      fetchWeather(searchObject);
     }
+  };
+
+  const handleAutocompleteChange = (event, value) => {
+    if (value) {
+      setLocation(value);
+      fetchWeather(value);
+    }
+  };
 
   return (
     <Card variant="outlined" sx={{ margin: '2%' }}>
@@ -80,47 +88,44 @@ const LocationSearch = ({ title }) => {
         <Typography variant="h4" component="h1" align="center" gutterBottom>
           {title}
         </Typography>
-        
-        <Autocomplete
-  onChange={handleAutocompleteChange}
-  sx={{ width: '100%' }} // Set the width to 100% of its container
-  open={open}
-  onOpen={() => {
-    setOpen(true);
-  }}
-  onClose={() => {
-    setOpen(false);
-  }}
-  isOptionEqualToValue={(option, value) => option.name === value.name}
-  getOptionLabel={(option) => option.name + ', ' + option.country}
-  options={options}
-  loading={loading}
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Search Location" // Change the label to "Search Location"
-      onChange={handleTextFieldChange}
-      onKeyPress={(event) => {
-        if (event.key === 'Enter') {
-          handleSearch(event);
-        }
-      }}
-      InputProps={{
-        ...params.InputProps,
-        endAdornment: (
-          <React.Fragment>
-            {loading ? <CircularProgress color="inherit" size={20} /> : null}
-            {params.InputProps.endAdornment}
-          </React.Fragment>
-        ),
-      }}
-      fullWidth // Take up the width of its container
-    />
-  )}
-/>
 
-          
-        
+        <Autocomplete
+          onChange={handleAutocompleteChange}
+          sx={{ width: '100%' }}
+          open={open}
+          onOpen={() => {
+            setOpen(true);
+          }}
+          onClose={() => {
+            setOpen(false);
+          }}
+          isOptionEqualToValue={(option, value) => option.name === value.name}
+          getOptionLabel={(option) => option.name + ', ' + option.country}
+          options={options}
+          loading={fetchingData} // Use the fetchingData state as the loading value
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Search Location"
+              onChange={handleTextFieldChange}
+              onKeyPress={(event) => {
+                if (event.key === 'Enter') {
+                  handleSearch(event);
+                }
+              }}
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <React.Fragment>
+                    {fetchingData ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </React.Fragment>
+                ),
+              }}
+              fullWidth
+            />
+          )}
+        />
       </CardContent>
       {error && (
         <Typography variant="body1" color="error" sx={{ marginTop: '1rem' }}>

@@ -33,3 +33,37 @@ export const weatherCodeTranslator = (code) => {
         return weatherInterpretationCodes[code];
     };
       
+    export const weatherCodeIcons = (code) => {
+      const weatherIcons = {
+        "0": "039-sun.png",
+        "1": "038-cloudy-3.png",
+        "2": "001-cloud.png",
+        "3": "011-cloudy.png",
+        "45": "017-foog.png",
+        "48": "017-foog.png",
+        "51": "003-rainy.png",
+        "53": "003-rainy.png",
+        "55": "004-rainy-1.png",
+        "56": "005-hail.png",
+        "57": "005-hail.png",
+        "61": "003-rainy.png",
+        "63": "004-rainy-1.png",
+        "65": "004-rainy-1.png",
+        "66": "035-snowy-2.png",
+        "67": "035-snowy-2.png",
+        "71": "006-snowy.png",
+        "73": "006-snowy.png",
+        "75": "031-snowflake.png",
+        "77": "031-snowflake.png",
+        "80": "009-storm-1.png",
+        "81": "009-storm-1.png",
+        "82": "013-storm-2.png",
+        "85": "006-snowy.png",
+        "86": "006-snowy.png",
+        "95": "045-thunder.png",
+        "96": "045-thunder.png",
+        "99": "045-thunder.png"
+      };
+      
+      return weatherIcons[code];
+    };
