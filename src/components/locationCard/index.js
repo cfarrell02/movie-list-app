@@ -5,7 +5,7 @@ import ThermostatIcon from '@mui/icons-material/Thermostat';
 
 const LocationCard = ({ weatherObject }) => {
   return (
-    <Card variant="outlined" sx={{ margin: '2%' }}>
+    <Card variant="outlined" sx={{ margin: '2%' }} >
       <CardContent>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12}>
@@ -13,7 +13,7 @@ const LocationCard = ({ weatherObject }) => {
               {weatherObject.coords.name + ', ' + weatherObject.coords.country}
             </Typography>
           </Grid>
-          <div style={{ width: '100%', overflowX: 'auto' }}>
+          <div style={{ width: '100%', marginLeft: "1em" , overflowX: 'auto' }}>
             <Grid container item spacing={2} wrap="nowrap">
               {weatherObject.data.hourly.map((hourlyData, index) => (
                 <Grid item xs={12} sm={6} md={4} key={index}>
@@ -22,6 +22,7 @@ const LocationCard = ({ weatherObject }) => {
                     description={hourlyData.description}
                     humidity={hourlyData.humidity}
                     time={hourlyData.time}
+                    focused={hourlyData.isCurrent}
                   />
                 </Grid>
               ))}
