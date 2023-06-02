@@ -8,9 +8,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const LocationSearch = ({ title }) => {
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState({});
   const [weatherData, setWeatherData] = useState([]);
   const [error, setError] = useState('');
+  const [open, setOpen] = React.useState(false);
+  const [options, setOptions] = React.useState([]);
+    const loading = open && options.length === 0;
     const maxHours = 48;
 
     const fetchLocations = async (location) => {
@@ -22,13 +25,10 @@ const LocationSearch = ({ title }) => {
         }
     }
 
-    
-
-
-  const fetchWeather = async () => {
+  const fetchWeather = async (coords) => {
     try {
-      const coords = (await fetchGeoLocation(location)).results[0];
       const data = await fetchWeatherData(coords.latitude, coords.longitude);
+      setOptions([]);
       const currentTime = new Date();
       let hourlyData = [];
       for (let i = 0; i < maxHours; i++) {
@@ -53,9 +53,26 @@ const LocationSearch = ({ title }) => {
     }
   };
 
-  const handleLocationChange = (event) => {
-    setLocation(event.target.value);
-  };
+  const handleTextFieldChange = async (event) => {
+    let data = await fetchLocations(event.target.value);
+    if (data) {
+      setOptions(data);
+    }else{
+        setOptions([]);
+    }
+    };
+    const handleSearch = async (event) => {
+        if(event.target.value){
+            const searchObject = (await fetchLocations(event.target.value))[0];
+            fetchWeather(searchObject);
+        }
+    };
+    const handleAutocompleteChange = (event, value) => {
+        if(value){
+            setLocation(value);
+            fetchWeather(value);
+        }
+    }
 
   return (
     <Card variant="outlined" sx={{ margin: '2%' }}>
@@ -64,18 +81,46 @@ const LocationSearch = ({ title }) => {
           {title}
         </Typography>
         
-            <TextField
-              label="Enter Location"
-              variant="outlined"
-              onChange={handleLocationChange}
-              fullWidth
-              sx={{ marginBottom: '1rem' }}
-            />
+        <Autocomplete
+  onChange={handleAutocompleteChange}
+  sx={{ width: '100%' }} // Set the width to 100% of its container
+  open={open}
+  onOpen={() => {
+    setOpen(true);
+  }}
+  onClose={() => {
+    setOpen(false);
+  }}
+  isOptionEqualToValue={(option, value) => option.name === value.name}
+  getOptionLabel={(option) => option.name + ', ' + option.country}
+  options={options}
+  loading={loading}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Search Location" // Change the label to "Search Location"
+      onChange={handleTextFieldChange}
+      onKeyPress={(event) => {
+        if (event.key === 'Enter') {
+          handleSearch(event);
+        }
+      }}
+      InputProps={{
+        ...params.InputProps,
+        endAdornment: (
+          <React.Fragment>
+            {loading ? <CircularProgress color="inherit" size={20} /> : null}
+            {params.InputProps.endAdornment}
+          </React.Fragment>
+        ),
+      }}
+      fullWidth // Take up the width of its container
+    />
+  )}
+/>
+
           
         
-        <Button variant="contained" onClick={fetchWeather} fullWidth>
-          Get Weather
-        </Button>
       </CardContent>
       {error && (
         <Typography variant="body1" color="error" sx={{ marginTop: '1rem' }}>

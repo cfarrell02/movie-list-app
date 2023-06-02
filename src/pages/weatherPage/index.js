@@ -3,7 +3,7 @@ import { Container} from '@mui/material';
 import LocationSearch from '../../components/locationSearch';
 
 
-function HomePage() {
+function WeatherPage() {
 
 
 
@@ -14,4 +14,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default WeatherPage;
