@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, Typography, Grid, CardMedia } from '@mui/material';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
+import UmbrellaIcon from '@mui/icons-material/Umbrella';
 import { weatherCodeIcons, weatherCodeTranslator, dayOfTheWeek } from '../../utils';
 
 
-const WeatherCard = ({ temperature, description, humidity, time, focused, sunset, sunrise}) => {
+const WeatherCard = ({ temperature, description, precipitationProbability, time, focused, sunset, sunrise}) => {
   const cardRef = useRef(null);
   const isDaytime = time.getHours() >= sunrise.getHours() && time.getHours() <= sunset.getHours();
   useEffect(() => {
@@ -22,7 +23,7 @@ const WeatherCard = ({ temperature, description, humidity, time, focused, sunset
       variant="outlined"
       sx={{
         margin: '5%',
-        height: '200px',
+        height: '220px',
         width: '200px',
         outline: focused ? '2px solid #3f51b5' : 'none',
       }}
@@ -31,6 +32,11 @@ const WeatherCard = ({ temperature, description, humidity, time, focused, sunset
     >
       <CardContent>
         <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12}>
+            <Typography variant="body1" component="div" sx={{ textAlign: 'center' }}>
+          {dayOfTheWeek(time.getDay()) + ' ' + time.getHours() + ':00'}
+            </Typography>
+          </Grid>
           <Grid item xs={2}/>
           <Grid item xs={8}>
           <CardMedia component="img" image={weatherCodeIcons(isDaytime ? description : (-parseInt(description) - 1))}
@@ -46,7 +52,8 @@ const WeatherCard = ({ temperature, description, humidity, time, focused, sunset
           </Grid>
           <Grid item xs={5}>
             <Typography variant="body1" color="text.secondary">
-              {dayOfTheWeek(time.getDay()) + ' ' + time.getHours() + ':00'}
+              <UmbrellaIcon />
+              {precipitationProbability}%
             </Typography>
           </Grid>
         </Grid>

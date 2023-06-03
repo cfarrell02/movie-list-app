@@ -45,7 +45,7 @@ const LocationSearch = ({ title }) => {
           time: new Date(data.hourly.time[i]),
           temperature: data.hourly.temperature_2m[i],
           description: data.hourly.weathercode[i],
-          humidity: data.hourly.relativehumidity_2m[i],
+          precipitationProbability: data.hourly.precipitation_probability[i],
           isCurrent: currentDate,
         });
       }
@@ -59,6 +59,7 @@ const LocationSearch = ({ title }) => {
                 description: data.daily.weathercode[i],
                 sunrise: new Date(data.daily.sunrise[i]),
                 sunset: new Date(data.daily.sunset[i]),
+                precipitationProbability: data.daily.precipitation_probability_max[i],
             });
         }
         data.daily = dailyData;

@@ -2,26 +2,29 @@ import React from 'react';
 import { Card, CardContent, Typography, Grid } from '@mui/material';
 import WeatherCard from '../weatherCard';
 import { formateName } from '../../utils';
+import weatherTable from '../weatherTable';
+import WeatherTable from '../weatherTable';
 
 const LocationCard = ({ weatherObject }) => {
   const currentWeather = weatherObject.data.hourly.filter((hourlyData) => hourlyData.isCurrent)[0];
-
   return (
   
     <Card variant="outlined" sx={{ margin: '2%' }} >
       <CardContent>
         <Grid container spacing={2} alignItems="center">
-                <Grid item xs={2}>
+                <Grid item xs={12}>
           <Typography variant="h6" component="div" sx={{ textAlign: 'center' }}>
             {formateName(weatherObject.coords)}
           </Typography>
           <Typography variant="h6" component="div" sx={{ textAlign: 'center' }}>
-            {currentWeather.temperature + '°C'}
+            {currentWeather.temperature + weatherObject.data.hourly_units.temperature_2m}
           </Typography>
         </Grid>
         
-          <Grid item xs={10}>
+          <Grid item xs={12}>
             <Card variant="outlined" sx={{ paddingLeft: '5%', paddingRight: "5%" }}>
+          <Typography variant="h6" component="div" sx={{ textAlign: 'center' }}>
+            Hourly Forecast </Typography>
           <div style={{ width: '100%' , overflowX: 'auto'}}>
             <Grid container item spacing={2} wrap="nowrap">
               {weatherObject.data.hourly.map((hourlyData, index) => (
@@ -29,7 +32,7 @@ const LocationCard = ({ weatherObject }) => {
                   <WeatherCard
                     temperature={hourlyData.temperature}
                     description={hourlyData.description}
-                    humidity={hourlyData.humidity}
+                    precipitationProbability={hourlyData.precipitationProbability}
                     time={hourlyData.time}
                     focused={hourlyData.isCurrent}
                     sunrise={weatherObject.data.daily.filter((dailyData) => dailyData.time.getDate() === hourlyData.time.getDate())[0].sunrise}
@@ -40,6 +43,8 @@ const LocationCard = ({ weatherObject }) => {
               ))}
             </Grid>
           </div>
+          <WeatherTable days={weatherObject.data.daily} />
+
         </Card>
           </Grid>
           
