@@ -1,12 +1,11 @@
 
-export const fetchWeatherData = async (latitude,longitude, timezone = "BST") => {
+export const fetchWeatherData = async (latitude,longitude, timezone = "Europe/London") => {
   try {
     const response = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&timezone=${timezone}&hourly=temperature_2m,relativehumidity_2m,apparent_temperature,precipitation_probability,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset`
     );
     const data = await response.json();
     if (response.ok) {
-      console.log(data);
       return data;
     } else {
       throw new Error(data.error.message);

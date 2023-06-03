@@ -1,3 +1,59 @@
+import cloudIcon from './images/001-cloud.svg';
+import cloud1Icon from './images/002-cloud-1.svg';
+import rainyIcon from './images/003-rainy.svg';
+import rainy1Icon from './images/004-rainy-1.svg';
+import hailIcon from './images/005-hail.svg';
+import snowyIcon from './images/006-snowy.svg';
+import nightIcon from './images/007-night.svg';
+import stormIcon from './images/008-storm.svg';
+import storm1Icon from './images/009-storm-1.svg';
+import windyIcon from './images/010-windy.svg';
+import cloudyIcon from './images/011-cloudy.svg';
+import snowy1Icon from './images/012-snowy-1.svg';
+import storm2Icon from './images/013-storm-2.svg';
+import compassIcon from './images/014-compass.svg';
+import dayIcon from './images/015-day.svg';
+import floodIcon from './images/016-flood.svg';
+import fogIcon from './images/017-foog.svg';
+import flood1Icon from './images/018-flood-1.svg';
+import night1Icon from './images/019-night-1.svg';
+import storm3Icon from './images/020-storm-3.svg';
+import night2Icon from './images/021-night-2.svg';
+import night3Icon from './images/022-night-3.svg';
+import windy1Icon from './images/023-windy-1.svg';
+import night4Icon from './images/024-night-4.svg';
+import humidityIcon from './images/025-humidity.svg';
+import rainbowIcon from './images/026-rainbow.svg';
+import rainbow1Icon from './images/027-rainbow-1.svg';
+import dropIcon from './images/028-drop.svg';
+import shootingStarIcon from './images/029-shooting-star.svg';
+import windIcon from './images/030-wind.svg';
+import snowflakeIcon from './images/031-snowflake.svg';
+import starIcon from './images/032-star.svg';
+import hurricaneIcon from './images/033-hurricane.svg';
+import cloudy1Icon from './images/034-cloudy-1.svg';
+import snowy2Icon from './images/035-snowy-2.svg';
+import storm4Icon from './images/036-storm-4.svg';
+import cloudy2Icon from './images/037-cloudy-2.svg';
+import cloudy3Icon from './images/038-cloudy-3.svg';
+import sunIcon from './images/039-sun.svg';
+import sunriseIcon from './images/040-sunrise.svg';
+import sunsetIcon from './images/041-sunset.svg';
+import coldIcon from './images/042-cold.svg';
+import warmIcon from './images/043-warm.svg';
+import warm1Icon from './images/044-warm-1.svg';
+import thunderIcon from './images/045-thunder.svg';
+import tornadoIcon from './images/046-tornado.svg';
+import tornado1Icon from './images/047-tornado-1.svg';
+import umbrellaIcon from './images/048-umbrella.svg';
+import windy2Icon from './images/049-windy-2.svg';
+import windy3Icon from './images/050-windy-3.svg';
+
+export const dayOfTheWeek = (index) => {
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return days[index];
+}
+
 export const weatherCodeTranslator = (code) => {
     const weatherInterpretationCodes = {
         0: "Clear sky",
@@ -35,35 +91,49 @@ export const weatherCodeTranslator = (code) => {
       
     export const weatherCodeIcons = (code) => {
       const weatherIcons = {
-        "0": "039-sun.png",
-        "1": "038-cloudy-3.png",
-        "2": "001-cloud.png",
-        "3": "011-cloudy.png",
-        "45": "017-foog.png",
-        "48": "017-foog.png",
-        "51": "003-rainy.png",
-        "53": "003-rainy.png",
-        "55": "004-rainy-1.png",
-        "56": "005-hail.png",
-        "57": "005-hail.png",
-        "61": "003-rainy.png",
-        "63": "004-rainy-1.png",
-        "65": "004-rainy-1.png",
-        "66": "035-snowy-2.png",
-        "67": "035-snowy-2.png",
-        "71": "006-snowy.png",
-        "73": "006-snowy.png",
-        "75": "031-snowflake.png",
-        "77": "031-snowflake.png",
-        "80": "009-storm-1.png",
-        "81": "009-storm-1.png",
-        "82": "013-storm-2.png",
-        "85": "006-snowy.png",
-        "86": "006-snowy.png",
-        "95": "045-thunder.png",
-        "96": "045-thunder.png",
-        "99": "045-thunder.png"
-      };
-      
-      return weatherIcons[code];
+        "0": sunIcon, "-1": night3Icon,
+        "1": cloudy3Icon, "-2": nightIcon,
+        "2": cloudIcon, 
+        "3": cloudyIcon, 
+        "45": fogIcon, 
+        "48": fogIcon,
+        "51": rainyIcon,
+        "53": rainyIcon,
+        "55": rainy1Icon,
+        "56": hailIcon,
+        "57": hailIcon,
+        "61": rainyIcon,
+        "63": rainy1Icon,
+        "65": rainy1Icon,
+        "66": snowy2Icon, '-67' : night1Icon,
+        "67": snowy2Icon, '-68' : night1Icon,
+        "71": snowyIcon,
+        "73": snowyIcon,
+        "75": snowflakeIcon,
+        "77": snowflakeIcon,
+        "80": storm1Icon, '-81': storm3Icon,
+        "81": storm1Icon, '-82': storm3Icon,
+        "82": storm2Icon,
+        "85": snowyIcon,
+        "86": snowyIcon,
+        "95": thunderIcon,
+        "96": thunderIcon,
+        "99": thunderIcon
+      };      
+      let icon = weatherIcons[code];
+      if (icon === undefined) {
+        const newIndex = (parseInt(code) + 1) * -1;
+        icon = weatherIcons[newIndex];
+      }
+      return icon;
     };
+
+    export const formateName = (option) => {
+ 
+        let newName = option.name;
+        if (option.admin2) newName += ', ' + option.admin2;
+        if (option.admin1) newName += ', ' + option.admin1;
+        if (option.country) newName += ', ' + option.country;
+        return newName ? newName : 'Error fetching name';
+        
+        }

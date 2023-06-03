@@ -1,17 +1,19 @@
 import React from 'react';
 import { Card, CardContent, Typography, Grid } from '@mui/material';
 import WeatherCard from '../weatherCard';
-import ThermostatIcon from '@mui/icons-material/Thermostat';
+import { formateName } from '../../utils';
 
 const LocationCard = ({ weatherObject }) => {
   const currentWeather = weatherObject.data.hourly.filter((hourlyData) => hourlyData.isCurrent)[0];
+
   return (
+  
     <Card variant="outlined" sx={{ margin: '2%' }} >
       <CardContent>
         <Grid container spacing={2} alignItems="center">
                 <Grid item xs={2}>
           <Typography variant="h6" component="div" sx={{ textAlign: 'center' }}>
-            {weatherObject.coords.name + ', ' + weatherObject.coords.country}
+            {formateName(weatherObject.coords)}
           </Typography>
           <Typography variant="h6" component="div" sx={{ textAlign: 'center' }}>
             {currentWeather.temperature + '°C'}
@@ -30,6 +32,9 @@ const LocationCard = ({ weatherObject }) => {
                     humidity={hourlyData.humidity}
                     time={hourlyData.time}
                     focused={hourlyData.isCurrent}
+                    sunrise={weatherObject.data.daily.filter((dailyData) => dailyData.time.getDate() === hourlyData.time.getDate())[0].sunrise}
+                    sunset={weatherObject.data.daily.filter((dailyData) => dailyData.time.getDate() === hourlyData.time.getDate())[0].sunset}
+                    
                   />
                 </Grid>
               ))}
