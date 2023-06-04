@@ -1,7 +1,6 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { dayOfTheWeek, weatherCodeIcons, weatherCodeTranslator } from '../../utils';
-import CardMedia from '@mui/material/CardMedia';
 
 const WeatherTable = ({ days }) => {
 
@@ -23,9 +22,9 @@ const WeatherTable = ({ days }) => {
               <TableCell component="th" scope="row">
                 {dayOfTheWeek(day.time.getDay())}
               </TableCell>
-              {/* Fix This Below*/ }
-              <TableCell align="right"><CardMedia component="img" image={weatherCodeIcons(day.description)} 
-               alt={weatherCodeTranslator(day.description)} /></TableCell>
+              <TableCell align="center">
+                <img height={"100px"} src={weatherCodeIcons(day.description)} alt={weatherCodeTranslator(day.description)} />
+              </TableCell>
               <TableCell align="right">{day.temperature_2m_max}</TableCell>
               <TableCell align="right">{day.temperature_2m_min}</TableCell>
               <TableCell align="right">{day.precipitationProbability}</TableCell>

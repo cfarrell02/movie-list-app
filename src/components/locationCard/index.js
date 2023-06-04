@@ -22,7 +22,7 @@ const LocationCard = ({ weatherObject }) => {
         </Grid>
         
           <Grid item xs={12}>
-            <Card variant="outlined" sx={{ paddingLeft: '5%', paddingRight: "5%" }}>
+            
           <Typography variant="h6" component="div" sx={{ textAlign: 'center' }}>
             Hourly Forecast </Typography>
           <div style={{ width: '100%' , overflowX: 'auto'}}>
@@ -43,9 +43,11 @@ const LocationCard = ({ weatherObject }) => {
               ))}
             </Grid>
           </div>
+          <Typography variant="h6" component="div" sx={{ textAlign: 'center' }}>
+            Daily Forecast </Typography>
           <WeatherTable days={weatherObject.data.daily} />
 
-        </Card>
+
           </Grid>
           
         </Grid>
