@@ -1,8 +1,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton} from '@mui/material';
 import MovieTableRow from '../movieTableRow';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { dayOfTheWeek, weatherCodeIcons,dateFormatter} from '../../../utils';
+
 
 const MovieTable = ({ movies, deleteMovie, editMovie}) => {
 

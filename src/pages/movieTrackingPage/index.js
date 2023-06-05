@@ -12,10 +12,19 @@ const MovieTrackingPage = () => {
     setMovieTitle(event.target.value);
   };
 
-  useEffect(async () => {
-    const movies = await getAllMovies();
-    setMovies(movies);
-    }, []);
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const movies = await getAllMovies();
+        setMovies(movies);
+      } catch (error) {
+        console.error('Error getting movies:', error);
+      }
+    };
+  
+    fetchMovies();
+  }, []);
+  
 
   const handleAddMovie = () => {
     if (movieTitle.trim() !== '') {
@@ -35,7 +44,6 @@ const MovieTrackingPage = () => {
       let newMovies = [...movies];
       newMovies[editedMovieIndex] = movie;
       setMovies(newMovies);
-      console.log(newMovies);
     }
   };
   
@@ -56,7 +64,6 @@ const MovieTrackingPage = () => {
         onKeyPress={(ev) => {
           if (ev.key === 'Enter') {
             handleAddMovie();
-            ev.preventDefault();
           }
         }}
         sx={{ mb: 2 }}
