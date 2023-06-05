@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { dayOfTheWeek, weatherCodeIcons, weatherCodeTranslator } from '../../utils';
+import { dayOfTheWeek, weatherCodeIcons, weatherCodeTranslator } from '../../../utils';
 
 const WeatherTable = ({ days }) => {
 

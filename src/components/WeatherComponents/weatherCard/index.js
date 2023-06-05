@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, Typography, Grid, CardMedia } from '@mui/material';
 import ThermostatIcon from '@mui/icons-material/Thermostat';
 import UmbrellaIcon from '@mui/icons-material/Umbrella';
-import { weatherCodeIcons, weatherCodeTranslator, dayOfTheWeek } from '../../utils';
+import { weatherCodeIcons, weatherCodeTranslator, dayOfTheWeek } from '../../../utils';
 
 
 const WeatherCard = ({ temperature, description, precipitationProbability, time, focused, sunset, sunrise}) => {

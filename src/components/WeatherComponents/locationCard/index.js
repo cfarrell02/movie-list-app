@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, Typography, Grid, Tab, Tabs, IconButton} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import WeatherCard from '../weatherCard';
-import { formateName } from '../../utils';
+import { formateName } from '../../../utils';
 import weatherTable from '../weatherTable';
 import WeatherTable from '../weatherTable';
 

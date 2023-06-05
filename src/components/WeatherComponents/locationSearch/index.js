@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext} from 'react';
 import PropTypes from 'prop-types';
 import { Card, CardContent, Typography, TextField, Button, Box, Tab, Tabs } from '@mui/material';
-import { fetchGeoLocation, fetchWeatherData } from '../../api/weatherAPI';
-import { formateName } from '../../utils';
+import { fetchGeoLocation, fetchWeatherData } from '../../../api/weatherAPI';
+import { formateName } from '../../../utils';
 import LocationCard from '../locationCard';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
-import { WeatherContext } from '../../contexts/weatherContext';
+import { WeatherContext } from '../../../contexts/weatherContext';
 
 const LocationSearch = ({ title }) => {
   const [location, setLocation] = useState({});

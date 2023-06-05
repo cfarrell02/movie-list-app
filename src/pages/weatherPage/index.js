@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container} from '@mui/material';
-import LocationSearch from '../../components/locationSearch';
+import LocationSearch from '../../components/WeatherComponents/locationSearch';
 
 
 function WeatherPage() {
