@@ -13,6 +13,7 @@ const Header = () => {
           Weather App
         </Typography>
         <Button color="inherit" onClick={() => navigate('/home')}>Home</Button>
+        <Button color="inherit" onClick={() => navigate('/movielist')}>Movie List</Button>
         <Button color="inherit" onClick={() => navigate('/weather')}>Weather</Button>
       </Toolbar>
     </AppBar>

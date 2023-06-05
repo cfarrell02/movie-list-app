@@ -54,6 +54,11 @@ export const dayOfTheWeek = (index) => {
     return days[index];
 }
 
+export const dateFormatter = (date) => {
+  const formattedDate = new Date(date).toLocaleDateString();
+  return formattedDate === "Invalid Date" ? "" : formattedDate;
+}
+
 export const weatherCodeTranslator = (code) => {
     const weatherInterpretationCodes = {
         0: "Clear sky",
