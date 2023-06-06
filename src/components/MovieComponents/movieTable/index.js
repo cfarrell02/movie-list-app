@@ -31,32 +31,33 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
         <TableHead>
           <TableRow align="left">
           <TableCell >
-              <Typography variant="subtitle1" component="div">
+              <Typography variant="subtitle2" component="div">
                 Poster
               </Typography>
             </TableCell>
             <TableCell onClick={() => handleSort('title')} style={{ cursor: 'pointer' }}>
-              <Typography variant="subtitle1" component="div">
+              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Title {getSortIcon('title')}
               </Typography>
             </TableCell>
             <TableCell align="center" onClick={() => handleSort('tagline')} style={{ cursor: 'pointer' }}>
-              <Typography variant="subtitle1" component="div">
+              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Tagline {getSortIcon('tagline')}
               </Typography>
             </TableCell>
             <TableCell align="right" onClick={() => handleSort('release_date')} style={{ cursor: 'pointer'}} >
-              <Typography variant="subtitle1" component="div">
-                Release Date {getSortIcon('release_date')}
-              </Typography>
+            <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
+            Release{"\u00A0"}Date {getSortIcon('release_date')}
+          </Typography>
+
             </TableCell>
             <TableCell align="right" onClick={() => handleSort('vote_average')} style={{ cursor: 'pointer' }}>
-              <Typography variant="subtitle1" component="div">
+              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Rating {getSortIcon('vote_average')}
               </Typography>
             </TableCell>
             <TableCell align="right" onClick={() => handleSort('runtime')} style={{ cursor: 'pointer' }}>
-              <Typography variant="subtitle1" component="div">
+              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Runtime {getSortIcon('runtime')}
               </Typography>
             </TableCell>
