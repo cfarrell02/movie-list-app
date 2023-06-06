@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Typography, TextField, Button, Paper, Grid, Autocomplete, CircularProgress} from '@mui/material';
 import { getMovie, getMovieSearchResults} from '../../api/TMDBAPI';
 import MovieTable from '../../components/MovieComponents/movieTable';
@@ -14,13 +14,15 @@ const MovieTrackingPage = () => {
   const [fetchingMovies, setFetchingMovies] = useState(false);
   const [options, setOptions] = useState([]);
 
-
+  const cachedMovies = useMemo(() => {
+    return getAllMovies();
+  },[]);
 
   useEffect(() => {
     const fetchMovies = async () => {
       try {
         setLoading(true);
-        const movies = await getAllMovies();
+        const movies = await cachedMovies;
         setMovies(movies);
       } catch (error) {
         console.error('Error getting movies:', error);
@@ -30,7 +32,7 @@ const MovieTrackingPage = () => {
     };
     
     fetchMovies();
-  }, []);
+  }, [cachedMovies]);
 
   
   const handleAutocompleteChange = async (event, value) => {
@@ -162,6 +164,7 @@ const MovieTrackingPage = () => {
       {...params}
       label="Movie Title"
       onChange={handleTextFieldChange}
+      style={{ marginBottom: '4em', marginTop: '2em' }}
       InputProps={{
         ...params.InputProps,
         endAdornment: (

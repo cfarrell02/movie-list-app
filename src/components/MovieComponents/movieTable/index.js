@@ -40,9 +40,9 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
                 Title {getSortIcon('title')}
               </Typography>
             </TableCell>
-            <TableCell align="center" onClick={() => handleSort('tagline')} style={{ cursor: 'pointer' }}>
+            <TableCell align="center" >
               <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
-                Tagline {getSortIcon('tagline')}
+                Tagline 
               </Typography>
             </TableCell>
             <TableCell align="right" onClick={() => handleSort('release_date')} style={{ cursor: 'pointer'}} >
