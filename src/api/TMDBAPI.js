@@ -82,10 +82,9 @@ export const getMovies = (args) => {
       throw error;
     })
   }
-  export const getMovie = (args) => {
+  export const getMovie = (id) => {
     // console.log(args)
-    const [, idPart] = args.queryKey;
-    const { id } = idPart;
+
     return fetch(
       `https://api.themoviedb.org/3/movie/${id}?api_key=${process.env.REACT_APP_TMDB_KEY}`
     ).then((response) => {
@@ -240,6 +239,16 @@ export const getMovies = (args) => {
         return json.results;
         
      })
+    };
+
+    export const getMovieSearchResults = (pageNum,searchTerm) => {
+      return fetch(
+        `https://api.themoviedb.org/3/search/movie?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&include_adult=false&query=${searchTerm}`
+      ).then((response) => {
+        return response.json()
+      }).then((json) => {
+        return json.results;
+      })
     };
   
     export const getMovieCredits = (id) => {

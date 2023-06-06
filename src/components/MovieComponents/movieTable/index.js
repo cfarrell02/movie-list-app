@@ -1,9 +1,10 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton} from '@mui/material';
 import MovieTableRow from '../movieTableRow';
+import CircularProgress from '@mui/material/CircularProgress';
 
 
-const MovieTable = ({ movies, deleteMovie, editMovie}) => {
+const MovieTable = ({ movies, deleteMovie, editMovie, loading}) => {
 
   return (
     <TableContainer component={Paper}>
@@ -19,12 +20,19 @@ const MovieTable = ({ movies, deleteMovie, editMovie}) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {movies.map((movie) => (
+          {loading ?    <TableRow>
+            <TableCell align="center" colSpan={6}>
+              <CircularProgress color="inherit" />
+            </TableCell>
+          </TableRow>
+          
+          :(
+          movies.map((movie) => (
             <MovieTableRow 
             handleDelete={deleteMovie}
             handleEdit={editMovie}
             key={movie.id} movie={movie} />
-          ))}
+          )))}
         </TableBody>
       </Table>
     </TableContainer>
