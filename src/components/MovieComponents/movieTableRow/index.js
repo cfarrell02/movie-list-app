@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton} from '@mui/material';
 import { dateFormatter } from '../../../utils';
 import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
 const MovieTableRow = ({movie, handleDelete, handleEdit}) => {
 
@@ -17,7 +19,10 @@ const MovieTableRow = ({movie, handleDelete, handleEdit}) => {
 
     return (
         <TableRow key={movie.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-              <TableCell component="th" scope="row">
+              <TableCell>
+                <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} style={{maxHeight:"100px" }}/>
+              </TableCell>
+              <TableCell component="th" scope="row" >
                 {movie.title}
               </TableCell>
               <TableCell align="center">
@@ -26,7 +31,11 @@ const MovieTableRow = ({movie, handleDelete, handleEdit}) => {
               <TableCell align="right">{dateFormatter(movie.release_date)} </TableCell>
               <TableCell align="right">{movie.vote_average}</TableCell>
               <TableCell align="right">{movie.runtime}</TableCell>
-              <TableCell align="right"><Checkbox checked={watched} onChange={handleCheckboxChange} title='Watched?' /> 
+              <TableCell align="right">
+              <Checkbox checked={watched} 
+              icon={<VisibilityOutlinedIcon />}
+              checkedIcon={<VisibilityIcon />}
+              onChange={handleCheckboxChange} title='Watched?' /> 
               <IconButton aria-label="delete" onClick={() => handleDelete(movie)} >
                 <DeleteIcon/>
                 </IconButton>
