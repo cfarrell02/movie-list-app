@@ -3,16 +3,13 @@ import { Container, Typography, TextField, Button, Paper, Grid, Autocomplete, Ci
 import { getMovie, getMovieSearchResults} from '../../api/TMDBAPI';
 import MovieTable from '../../components/MovieComponents/movieTable';
 import { getAllMovies, addMovie, updateMovie, deleteMovie} from '../../api/movieStorage';
+import MovieAdd from '../../components/MovieComponents/movieAdd';
 
 const MovieTrackingPage = () => {
-  const [movie, setMovie] = useState({});
   const [movies, setMovies] = useState([]);
   const [changesToBeMade, setChangesToBeMade] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [fetchingMovies, setFetchingMovies] = useState(false);
-  const [options, setOptions] = useState([]);
+
 
   const cachedMovies = useMemo(() => {
     return getAllMovies();
@@ -33,23 +30,6 @@ const MovieTrackingPage = () => {
     
     fetchMovies();
   }, [cachedMovies]);
-
-  
-  const handleAutocompleteChange = async (event, value) => {
-    if (value) {
-      try {
-        setFetchingMovies(true);
-        const newMovie = await getMovie(value.id);
-        setMovie(newMovie);
-        setOptions([]);
-        setOpen(false);
-      } catch (error) {
-        console.error('Error getting movie:', error);
-      } finally {
-        setFetchingMovies(false);
-      }
-    }
-  };
 
 
 
@@ -77,110 +57,19 @@ const MovieTrackingPage = () => {
     }
   };
 
-  const handleTextFieldChange = async (event) => {
-    try {
-      setFetchingMovies(true);
-      let data = await getMovieSearchResults(1,event.target.value);
-      if (data) {
-        setOptions(data);
-      } else {
-        setOptions([]);
-      }
-    } catch (error) {
-      console.error('Error getting movies:', error);
-    } finally {
-      setFetchingMovies(false);
-    }
-  };
 
-  const handleAddMovie = async () => {
-    try {
-      if(movie.id === undefined) throw new Error("No movie selected.");
-      movie.watched = false;
-      setChangesToBeMade([...changesToBeMade, {action: "add", movie}]);
-      setMovies([...movies, movie]);
-    } catch (error) {
-      console.error('Error adding movie:', error);
-    }
-  };
-  
-  
-
-  const onSubmit = async () => {
-    try {
-      setSubmitting(true);
-      changesToBeMade.forEach(async (change) => {
-        if(change.action === "add") {
-          await addMovie(change.movie);
-        }else if(change.action === "delete") {
-          await deleteMovie(change.movie.id);
-        }else if(change.action === "edit") {
-          await updateMovie(change.movie.id, change.movie);
-        }
-      });
-    } catch (error) {
-      console.error('Error submitting changes:', error);
-    } finally {
-      setSubmitting(false);
-      setChangesToBeMade([]);
-    }
-  };
-        
 
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 2, mb: 2 }} align="center">
-        <Grid container spacing={2} alignItems="center">
-      <Grid item xs={2}/>
-      <Grid item xs={8}>
-      <Typography variant="h4" component="h1" align="center" sx={{ mb: 2 }}>
-        Movie Tracking Page
-      </Typography>
-      </Grid>
-      <Grid item xs={2}>{submitting ? <CircularProgress color="inherit" size={20} /> : 
-      <Button variant="contained" size="medium" color="primary" onClick={onSubmit} disabled={changesToBeMade.length===0}>
-        Submit Changes
-      </Button>
-    }
-        </Grid>
-      </Grid>
-      <Autocomplete
-  onChange={handleAutocompleteChange}
-  sx={{ width: '100%' }}
-  open={open}
-  onOpen={() => {
-    setOpen(true);
-  }}
-  onClose={() => {
-    setOpen(false);
-  }}
-  isOptionEqualToValue={(option, value) => option.name === value.name}
-  getOptionLabel={(option) => option.title}
-  options={options}
-  loading={fetchingMovies}
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Movie Title"
-      onChange={handleTextFieldChange}
-      style={{ marginBottom: '4em', marginTop: '2em' }}
-      InputProps={{
-        ...params.InputProps,
-        endAdornment: (
-          <React.Fragment>
-            {fetchingMovies ? <CircularProgress color="inherit" size={20} /> : null}
-            {params.InputProps.endAdornment}
-            <Button variant="contained" onClick={handleAddMovie}>
-              Add
-            </Button>
-          </React.Fragment>
-        ),
-      }}
-      fullWidth
-    />
-  )}
-/>
+      <MovieAdd 
+      title="Movie Tracker" 
+      movies={movies} 
+      changesToBeMade={changesToBeMade}
+      setChangesToBeMade={setChangesToBeMade}
+      setMovies={setMovies}
+      />
       <MovieTable 
       movies={movies}
       deleteMovie={removeMovie}
