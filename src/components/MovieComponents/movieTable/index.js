@@ -22,6 +22,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchResults, setSearchResults] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -53,6 +54,8 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
 
   const handleSearch = (event) => {
     const term = event.target.value;
+    setSearchTerm(term);
+    console.log(searchTerm);
     if(term === '') {
       setSearchResults([]);
       return;
@@ -60,6 +63,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
     const filteredMovies = movies.filter((movie) => {
       return movie.title.toLowerCase().includes(term.toLowerCase());
     });
+
     setSearchResults(filteredMovies);
   }
     
@@ -172,15 +176,8 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
               </TableCell>
             </TableRow>
           ) : (
-            searchResults.length != 0 ?
-            searchResults.map((movie) => (
-              <MovieTableRow
-              handleDelete={deleteMovie}
-              handleEdit={editMovie}
-              key={movie.id}
-              movie={movie}
-            />
-            )) :
+            searchTerm.length===0 ?
+
             paginatedMovies.map((movie) => (
               <MovieTableRow
                 handleDelete={deleteMovie}
@@ -189,10 +186,27 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
                 movie={movie}
               />
             ))
+            : searchResults.length!==0 ? 
+            (
+            searchResults.map((movie) => (
+              <MovieTableRow
+              handleDelete={deleteMovie}
+              handleEdit={editMovie}
+              key={movie.id}
+              movie={movie}
+            />
+            )) 
+            ) : 
+            <TableCell align="center" colSpan={6}>
+            <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}> 
+            No results found
+          </Typography>
+          </TableCell>
+
           )}
         </TableBody>
       </Table>
-     {searchResults.length != 0 ? null : (
+     {searchTerm.length===0  ? (
       <TablePagination
         rowsPerPageOptions={[10, 25, 50]}
         component="div"
@@ -202,7 +216,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
-     )
+     ): null
      }
     </TableContainer>
   );
