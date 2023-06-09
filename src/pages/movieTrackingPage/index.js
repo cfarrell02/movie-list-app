@@ -71,6 +71,7 @@ const MovieTrackingPage = (props) => {
       <Paper elevation={3} sx={{ p: 2, mb: 2 }} align="center">
       <MovieAdd 
       title={listName} 
+      listId={listId}
       movies={movies} 
       changesToBeMade={changesToBeMade}
       setChangesToBeMade={setChangesToBeMade}

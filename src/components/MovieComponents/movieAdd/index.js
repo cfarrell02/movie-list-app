@@ -7,7 +7,7 @@ import { getMovies, addMovieToList, updateMovieInList, deleteMovieFromList} from
 import MovieTable from '../movieTable';
 import ErrorModal from '../../Modals/errorModal';
 
-const MovieAdd = ({ title, movies, setMovies, setChangesToBeMade, changesToBeMade}) => {
+const MovieAdd = ({ title, movies, listId, setMovies, setChangesToBeMade, changesToBeMade}) => {
   const [submitting, setSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
   const [fetchingMovies, setFetchingMovies] = useState(false);
@@ -57,7 +57,7 @@ const MovieAdd = ({ title, movies, setMovies, setChangesToBeMade, changesToBeMad
       movie.watched = false;
 
     //   const listID = await addMovie(ownerID, movie);
-    const listID = 1;
+
       const updatedMovieList = [...movies, { id: movie.id, ...movie }];
 
       setChangesToBeMade([...changesToBeMade, { action: 'add', movie }]);
@@ -75,11 +75,11 @@ const MovieAdd = ({ title, movies, setMovies, setChangesToBeMade, changesToBeMad
       setSubmitting(true);
       changesToBeMade.forEach(async (change) => {
         if (change.action === 'add') {
-          await addMovieToList(ownerID, change.movie);
+          await addMovieToList(listId, change.movie);
         } else if (change.action === 'delete') {
-          await deleteMovieFromList(ownerID, change.movie.id);
+          await deleteMovieFromList(listId, change.movie.id);
         } else if (change.action === 'edit') {
-          await updateMovieInList(ownerID, change.movie.id, change.movie);
+          await updateMovieInList(listId, change.movie.id, change.movie);
         }
       });
     } catch (error) {

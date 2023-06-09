@@ -1,6 +1,7 @@
 import { collection, addDoc, getDoc, setDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
+
 // Function to add a movie list
 export const addMovieList = async (movieList) => {
   try {
@@ -11,10 +12,10 @@ export const addMovieList = async (movieList) => {
   }
 };
 
-// Function to get all movie lists for a specific owner ID
-export const getAllMovieLists = async (ownerID) => {
+
+export const getAllMovieLists = async () => {
   try {
-    const movieListQuery = query(collection(db, 'movieLists'), where('ownerID', '==', ownerID));
+    const movieListQuery = query(collection(db, 'movieLists'));
     const querySnapshot = await getDocs(movieListQuery);
     const movieLists = [];
     querySnapshot.forEach((doc) => {
@@ -42,7 +43,7 @@ export const getMovieListById = async (listID) => {
 };
 export const getMovieListsByOwnerId = async (ownerId) => {
   try {
-    const movieListQuery = query(collection(db, 'movieLists'), where('ownerID', '==', ownerId));
+    const movieListQuery = query(collection(db, 'movieLists'), where('ownerId', '==', ownerId));
     const querySnapshot = await getDocs(movieListQuery);
     const movieLists = [];
     querySnapshot.forEach((doc) => {
