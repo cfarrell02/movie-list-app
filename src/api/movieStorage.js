@@ -43,6 +43,7 @@ export const getMovieListById = async (listID) => {
 };
 export const getMovieListsByOwnerId = async (ownerId) => {
   try {
+    console.log('Looking for movie lists with ownerId: ' + ownerId);
     const movieListQuery = query(collection(db, 'movieLists'), where('ownerId', '==', ownerId));
     const querySnapshot = await getDocs(movieListQuery);
     const movieLists = [];

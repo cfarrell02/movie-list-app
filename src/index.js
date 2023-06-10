@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import WeatherProvider from './contexts/weatherContext';
 import WeatherPage from './pages/weatherPage';
+import { createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './firebase-config';
 import MovieTrackingPage from './pages/movieTrackingPage';
 import MovieHomePage from './pages/movieHomePage';
 import HomePage from './pages/homePage';
@@ -10,43 +12,87 @@ import Header from './components/siteHeader';
 import LoginPage from './pages/loginPage';
 import './index.css';
 
-const PrivateRoute = ({children, isAuthenticated}) => {
-  return isAuthenticated === true ? (
+const PrivateRoute = ({ children, isAuthenticated }) => {
+  return isAuthenticated ? (
     children
   ) : (
-    <Navigate
-      to={{
-        pathname: "/login",
-        // state: { from: props.location },
-      }}
-    />
+    <Navigate to="/login" replace />
   );
 };
 
 const App = () => {
-  const [authenticated, setAuthenticated] = useState(true);
+  const [user, setUser] = useState(null);
 
-  const handleLogin = (username, password) => {
-    setAuthenticated(false);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const handleLogin = async (username, password) => {
+    try {
+      await signInWithEmailAndPassword(auth, username, password);
+    } catch (error) {
+      console.log(error);
+      throw new Error('Error signing in: ' + error.code);
+    }
   };
 
-  const handleRegister = (username, password) => {
-    console.log('registered '  + username);
+  const handleRegister = async (username, password) => {
+    try {
+      await createUserWithEmailAndPassword(auth, username, password);
+    } catch (error) {
+      console.log(error);
+      throw new Error('Error signing up: ' + error.code);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      
+      throw new Error('Error signing out: '+ error.code);
+    }
   };
 
   return (
     <div className="background-image">
       <Router>
-        <Header authenticated={authenticated} />
+        <WeatherProvider>
+        <Header authenticated={user !== null}  />
         <Routes>
-          <Route path="/login" element={<LoginPage handleLogin={handleLogin} handleRegister={handleRegister} />} />
-          <Route path="/weather" element={<PrivateRoute isAuthenticated={authenticated}><WeatherPage /></PrivateRoute>} />
-      <Route path="/home" element={<PrivateRoute isAuthenticated={authenticated}><HomePage /></PrivateRoute>} />
-      <Route path="/movielist/:listId" element={<PrivateRoute isAuthenticated={authenticated}><MovieTrackingPage /></PrivateRoute>} />
-      <Route path="/movielist" element={<PrivateRoute isAuthenticated={authenticated}><MovieHomePage /></PrivateRoute>} />
-      <Route path="*" element={<Navigate to="/home"/>} />
-
+          <Route
+            path="/login"
+            element={<LoginPage handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} isAuthenticated={user !==null} />}
+          />
+          <Route
+            path="/weather"
+            element={<PrivateRoute isAuthenticated={user !== null}><WeatherPage /></PrivateRoute>}
+          />
+          <Route
+            path="/home"
+            element={<PrivateRoute isAuthenticated={user !== null}><HomePage /></PrivateRoute>}
+          />
+          <Route
+            path="/movielist/:listId"
+            element={<PrivateRoute isAuthenticated={user !== null}><MovieTrackingPage /></PrivateRoute>}
+          />
+          <Route
+            path="/movielist"
+            element={<PrivateRoute isAuthenticated={user !== null}><MovieHomePage /></PrivateRoute>}
+          />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
+        </WeatherProvider>
       </Router>
     </div>
   );
