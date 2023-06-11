@@ -48,7 +48,7 @@ import tornado1Icon from './images/047-tornado-1.svg';
 import umbrellaIcon from './images/048-umbrella.svg';
 import windy2Icon from './images/049-windy-2.svg';
 import windy3Icon from './images/050-windy-3.svg';
-
+//utils.js
 export const dayOfTheWeek = (index) => {
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     return days[index];
