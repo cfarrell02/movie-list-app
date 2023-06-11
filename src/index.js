@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import WeatherProvider from './contexts/weatherContext';
 import WeatherPage from './pages/weatherPage';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
+import { addUser } from './api/userDataStorage';
 import { auth } from './firebase-config';
 import MovieTrackingPage from './pages/movieTrackingPage';
 import MovieHomePage from './pages/movieHomePage';
@@ -48,7 +49,15 @@ const App = () => {
 
   const handleRegister = async (username, password) => {
     try {
-      await createUserWithEmailAndPassword(auth, username, password);
+      const user = await createUserWithEmailAndPassword(auth, username, password);
+      const userObject = {
+        email: username,
+        dateOfBirth: '',
+        firstName: '',
+        lastName: '',
+        id: user.user.uid
+      };
+      await addUser(userObject);
     } catch (error) {
       console.log(error);
       throw new Error('Error signing up: ' + error.code);

@@ -41,10 +41,9 @@ export const getMovieListById = async (listID) => {
     throw new Error('Error getting movie list from Firestore: ' + error.message);
   }
 };
-export const getMovieListsByOwnerId = async (ownerId) => {
+export const getMovieListsByUserId = async (userId) => {
   try {
-    console.log('Looking for movie lists with ownerId: ' + ownerId);
-    const movieListQuery = query(collection(db, 'movieLists'), where('ownerId', '==', ownerId));
+    const movieListQuery = query(collection(db, 'movieLists'), where('userIds', 'array-contains', userId));
     const querySnapshot = await getDocs(movieListQuery);
     const movieLists = [];
     querySnapshot.forEach((doc) => {
@@ -52,7 +51,7 @@ export const getMovieListsByOwnerId = async (ownerId) => {
     });
     return movieLists;
   } catch (error) {
-    throw new Error('Error getting movie list by ownerId from Firestore: ' + error.message);
+    throw new Error('Error getting movie list by userId from Firestore: ' + error.message);
   }
 };
 

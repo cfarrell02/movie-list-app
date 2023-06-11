@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Container, Typography, Button, Card, Grid, CardMedia, CircularProgress } from '@mui/material';
-import { getMovieListsByOwnerId, addMovieList, deleteMovieList } from '../../api/movieStorage';
+import { getMovieListsByUserId, addMovieList, deleteMovieList } from '../../api/movieStorage';
 import AddIcon from '@mui/icons-material/Add';
 import MovieListCard from '../../components/MovieComponents/movieListCard';
 import NewMovieListModal from '../../components/Modals/newMovieListModal';
@@ -15,6 +15,7 @@ const MovieHomePage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [accessType, setAccessType] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -35,8 +36,8 @@ const MovieHomePage = () => {
       try {
         setLoading(true);
         if (user) {
-          const newMovieLists = await getMovieListsByOwnerId(user.uid); // Replace with the desired owner ID
-          setMovieLists(newMovieLists);
+          const newMovieLists = await getMovieListsByUserId(user.uid); // Replace with the desired owner ID
+          setMovieLists([...newMovieLists]);
         }
       } catch (error) {
         console.error('Error getting movie lists:', error);
@@ -47,9 +48,12 @@ const MovieHomePage = () => {
     fetchMovieLists();
   }, [user]);
 
+
+
   const handleNewMovieList = async (name) => {
     try {
-      const movieList = { title: name, ownerId: user.uid, id: uid(), movies: [] };
+      const movieList = { title: name, userIds: [user.uid], users: [{accessType: 3, email:user.email, uid:user.uid}]
+        , id: uid(), movies: [] };
       await addMovieList(movieList);
       setMovieLists((prevMovieLists) => [...prevMovieLists, movieList]);
       setModalOpen(false);

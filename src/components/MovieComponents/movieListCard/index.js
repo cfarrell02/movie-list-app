@@ -2,10 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Typography, Button, CardMedia, IconButton, Grid} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import {auth } from '../../../firebase-config';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const MovieListCard = ({ movieList, onDelete }) => {
   const navigate = useNavigate();
   const [imageSrcs, setImageSrcs] = useState([]);
+    const [user, setUser] = useState({});
+    const [userType, setUserType] = useState('');
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUser(user);
+            } else {
+                setUser(null);
+            }
+        });
+        return () => {
+            unsubscribe();
+        };
+ 
+    }, []);
+
+
 
   useEffect(() => {
     if (movieList.movies && movieList.movies.length >= 4) {
@@ -17,6 +37,8 @@ const MovieListCard = ({ movieList, onDelete }) => {
         const imagePaths = posterPaths.map((path) => `https://image.tmdb.org/t/p/w200${path}`);
         setImageSrcs(imagePaths);
     }
+    movieList.users.find((user) => user.uid === auth.currentUser.uid) ? setUserType(movieList.users.find((user) => user.uid === auth.currentUser.uid).accessType) : setUserType('User');
+
   }, [movieList.movies]);
 
   return (
@@ -69,6 +91,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
       >
         Open List
       </Button>
+      {userType === 'User' ? null : (
         <IconButton
         variant="outlined"
         size="large"
@@ -78,6 +101,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
         >
         <DeleteIcon fontSize="inherit" />
         </IconButton>
+        )}
     </Card>
   );
 };
