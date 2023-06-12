@@ -32,25 +32,32 @@ const MovieListSettings = ({ movieList }) => {
   const [users, setUsers] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [user, setUser] = useState({});
+  const [searchedUser, setSearchedUser] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', body: '' });
+  const [movieListTitle, setMovieListTitle] = useState(movieList.title);
   const navigate = useNavigate();
-  const [accessLevel, setAccessLevel] = useState(0);
+  const [accessType, setAccessType] = useState(0);
 
   useEffect(() => {
-    // Only update the state if the movieList.users is defined
     try{
-    
       setUsers(movieList.users);
-      const accessLevel = movieList.users.find((u) => u.id === user.id).accessType
-      console.log(accessLevel)
-        setAccessLevel(accessLevel);
-    
     } catch (error) {
         console.log('Error setting users:', error);
         }
         
   }, [movieList]);
+
+  useEffect(() => {
+    try{
+    if(user && movieList.users){
+      const userAccess = movieList.users.find((u) => u.uid === user.uid);
+      setAccessType(userAccess.accessType);
+    }
+  } catch (error) {
+    console.error('Error getting movie lists:', error);
+  }
+  }, [user, movieList.users]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -60,6 +67,20 @@ const MovieListSettings = ({ movieList }) => {
       unsubscribe();
     };
   }, []);
+
+  const handleUpdateListTitle = async (title) => {
+    try {
+      if (!title) {
+        throw new Error('Invalid title.');
+      }
+      const updatedMovieList = { ...movieList, title };
+      await updateMovieList(updatedMovieList.id, updatedMovieList);
+      setMessage({ type: 'success', body: 'Movie list title updated.' });
+    } catch (error) {
+      console.error('Error updating movie list title:', error);
+      setMessage({ type: 'error', body: 'Error updating movie list title:'+ error.message });
+    }
+  };
 
 
 
@@ -83,16 +104,23 @@ const MovieListSettings = ({ movieList }) => {
 
   const handleAddUserToMovieList = async (userID) => {
     try {
+      if (!userID) {
+        throw new Error('Invalid user ID.');
+      }
+  
       if (movieList.userIds.includes(userID)) {
         throw new Error('User already added to movie list.');
       }
+  
       const user = await getUserById(userID);
+  
       const updatedUsers = [
-        ...users,
+        ...movieList.users,
         { uid: userID, accessType: 0, email: user.email },
       ];
       const updatedUserIds = [...movieList.userIds, userID];
       const updatedMovieList = { ...movieList, users: updatedUsers, userIds: updatedUserIds };
+  
       setUsers(updatedUsers);
       await updateMovieList(updatedMovieList.id, updatedMovieList);
       setMessage({ type: 'success', body: `User ${user.email} added to movie list.` });
@@ -100,7 +128,7 @@ const MovieListSettings = ({ movieList }) => {
       setMessage({ type: 'error', body: error.message });
     }
   };
-
+  
   const handleUpdateUserAccessType = async (userID, accessType) => {
     try {
       if (accessType < 0 || accessType >= 3) {
@@ -115,8 +143,9 @@ const MovieListSettings = ({ movieList }) => {
         return user;
       });
       setUsers(updatedUsers);
+      const updatedMovieList = { ...movieList, users: updatedUsers };
       
-     await updateMovieList(movieList.id, movieList);
+     await updateMovieList(movieList.id, updatedMovieList);
       setMessage({ type: 'info', body: `User access type updated.` });
     } catch (error) {
       setMessage({ type: 'error', body: error.message });
@@ -126,7 +155,6 @@ const MovieListSettings = ({ movieList }) => {
   const handleRemoveUserFromMovieList = async (userID) => {
     try {
       const userIndex = movieList.userIds.indexOf(userID);
-      const id = movieList.users[userIndex].uid;
       const updatedUsers = [...users];
       updatedUsers.splice(userIndex, 1);
       const updatedUserIds = [...movieList.userIds];
@@ -134,8 +162,8 @@ const MovieListSettings = ({ movieList }) => {
       const updatedMovieList = { ...movieList, users: updatedUsers, userIds: updatedUserIds };
       setUsers(updatedUsers);
       await updateMovieList(updatedMovieList.id, updatedMovieList);
-      setMessage({ type: 'info', body: `User removed from movie list.` });
-      if (user.uid === id) navigate('/movielist');
+      setMessage({ type: 'info', body: `User ${userID} removed from movie list.` });
+      if (user.uid === userID) navigate('/movielist');
     } catch (error) {
       setMessage({ type: 'error', body: error.message });
     }
@@ -153,12 +181,28 @@ const MovieListSettings = ({ movieList }) => {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sx={{ margin: '1em', borderRadius: '5px' }}>
           <TextField
             id="outlined-basic"
-            label="Outlined"
+            label="New Movie List Title"
+            disabled={accessType === 0}
             variant="outlined"
-            // onChange={(event) => setTitle(event.target.value)}
+            onChange={(event) => setMovieListTitle(event.target.value)}
+            onSubmit={() => handleUpdateListTitle(movieListTitle)}
           />
+          </Grid>
+          <Grid item xs={12} sx={{ margin: '1em', borderRadius: '5px'}}>
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={accessType === 0}
+            onClick={() => handleUpdateListTitle(movieListTitle)}
+          >
+            Update Title
+          </Button>
+          </Grid>
+          </Grid>
         </AccordionDetails>
       </Accordion>
       <Accordion>
@@ -176,8 +220,8 @@ const MovieListSettings = ({ movieList }) => {
                     <ListItemText primary={user1.email} />
                     <ListItemText primary={getUserRoles(user1.accessType)} />
                     {user1.accessType === 3 ||
-                    user.accessType > 1 ||
-                    (user.accessType === 2 && user1.accessType === 2 && user.uid !== user1.id) ? null : (
+                    accessType < 2 ||
+                    (accessType === 2 && user1.accessType === 2 && user.uid !== user1.uid) ? null : (
                       <>
                         
                         <IconButton
@@ -196,6 +240,11 @@ const MovieListSettings = ({ movieList }) => {
                         >
                           <ArrowDropDownIcon />
                         </IconButton>
+                        </>
+                    )}
+                    {(user1.accessType === 3 ||
+                    accessType < 2 ||
+                    (accessType === 2 && user1.accessType === 2 && user.uid !== user1.uid)) && user1.uid !== user.uid  ? null : (
                         <IconButton
                           edge="end"
                           aria-label="delete"
@@ -203,8 +252,8 @@ const MovieListSettings = ({ movieList }) => {
                         >
                           <DeleteIcon />
                         </IconButton>
-                      </>
                     )}
+                 
                   </ListItem>
                 ))}
               </List>
@@ -227,7 +276,8 @@ const MovieListSettings = ({ movieList }) => {
                     options={searchResults}
                     getOptionLabel={(user) => user.email}
                     loading={isLoading}
-                    onChange={(event, value) => setUser(value)}
+                    onChange={(event, value) => setSearchedUser(value)}
+                    disabled={accessType < 2}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -241,9 +291,9 @@ const MovieListSettings = ({ movieList }) => {
                 <Grid item xs={12}>
                   <Button
                     variant="contained"
-                    onClick={() => handleAddUserToMovieList(user.uid)}
+                    onClick={() => handleAddUserToMovieList(searchedUser.id)}
                     sx={{ marginTop: '1em', marginBottom: '2em' }}
-                    disabled={accessLevel <= 1}
+                    disabled={accessType < 2}
                   >
                     Add User
                   </Button>

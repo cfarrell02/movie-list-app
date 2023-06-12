@@ -38,16 +38,19 @@ const Header = ({ handleLogout}) => {
           <ArrowForwardIcon />
         </IconButton>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Button color="inherit" onClick={() => navigate('/home')}>
           Weather App - {user ? user.email : null}
-        </Typography>
-        <Button color="inherit" onClick={() => navigate('/home')}>
-          Home
         </Button>
+        </Typography>
+
         <Button color="inherit" onClick={() => navigate('/movielist')}>
           Movie List
         </Button>
         <Button color="inherit" onClick={() => navigate('/weather')}>
           Weather
+        </Button>
+        <Button color="inherit" onClick={() => navigate('/login')}>
+          Logout
         </Button>
         </>
         ) : (

@@ -18,7 +18,7 @@ import {
 import { ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import { orderBy } from 'lodash';
 
-const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
+const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchResults, setSearchResults] = useState([]);
@@ -184,16 +184,23 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading }) => {
                 handleEdit={editMovie}
                 key={movie.id}
                 movie={movie}
+                accessType={accessType}
               />
             ))
             : searchResults.length!==0 ? 
             (
             searchResults.map((movie) => (
               <MovieTableRow
-              handleDelete={deleteMovie}
+              handleDelete={(movie) => {
+                deleteMovie(movie);
+                if(searchResults.includes(movie)) {
+                  setSearchResults(searchResults.filter((item) => item.id !== movie.id));
+                }
+              }}
               handleEdit={editMovie}
               key={movie.id}
               movie={movie}
+              accessType={accessType}
             />
             )) 
             ) : 

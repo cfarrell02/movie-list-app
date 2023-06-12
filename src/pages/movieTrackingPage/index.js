@@ -14,7 +14,7 @@ import {
 import MovieListSettings from '../../components/MovieComponents/movieListSettings';
 import { getMovie, getMovieSearchResults } from '../../api/TMDBAPI';
 import MovieTable from '../../components/MovieComponents/movieTable';
-import { getMovieListById, addMovieToList, addMovieList, updateMovie, deleteMovie } from '../../api/movieStorage';
+import { getMovieListById, addMovieToList, addMovieList, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import MovieAdd from '../../components/MovieComponents/movieAdd';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -23,12 +23,12 @@ import { onAuthStateChanged } from 'firebase/auth';
 const MovieTrackingPage = (props) => {
   const [movies, setMovies] = useState([]);
   const [movieList, setMovieList] = useState({});
-  const [changesToBeMade, setChangesToBeMade] = useState([]);
   const [loading, setLoading] = useState(false);
   const { listId } = useParams();
   const [selectedTab, setSelectedTab] = useState(0);
   const [user, setUser] = useState(null);
   const [accessType, setAccessType] = useState(0);
+  const [error, setError] = useState({ type: '', body: '' });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -55,39 +55,50 @@ const MovieTrackingPage = (props) => {
         const movies = await cachedMovies;
         setMovies(movies.movies);
         setMovieList(movies);
-        setAccessType(movies.users.find((u) => u.uid === user.uid).accessType);
-        
       } catch (error) {
         console.error('Error getting movies:', error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchMovies();
   }, [cachedMovies]);
 
-  const removeMovie = (movie) => {
-    const newMovies = movies.filter((m) => m.id !== movie.id);
-    if (changesToBeMade.find((m) => m.movie.id === movie.id)) {
-      setChangesToBeMade([...changesToBeMade.filter((m) => m.movie.id !== movie.id)]);
-    } else {
-      setChangesToBeMade([...changesToBeMade, { action: "delete", movie }]);
+  useEffect(() => {
+    try{
+    if( user && movieList.users){
+      setAccessType(movieList.users.find((u) => u.uid === user.uid).accessType);
     }
+    }catch(error){
+      console.error(error);
+    }
+  }, [user, movieList.users]);
+
+  const removeMovie = async (movie) => {
+    try{
+    const newMovies = movies.filter((m) => m.id !== movie.id);
+    await deleteMovieFromList(listId, movie.id);
     setMovies(newMovies);
+    setError({type: 'info', body: `${movie.title} removed`});
+    }catch(error){
+      console.error(error);
+      setError({type: 'error', body: 'Error removing movie'});
+    }
   };
 
-  const editMovie = (movie) => {
+  const editMovie = async (movie) => {
+    try{
     const editedMovieIndex = movies.findIndex((m) => m.id === movie.id);
     if (editedMovieIndex !== -1) {
       let newMovies = [...movies];
       newMovies[editedMovieIndex] = movie;
-      if (changesToBeMade.find((m) => m.movie.id === movie.id && m.action === "add")) {
-        setChangesToBeMade([...changesToBeMade.filter((m) => m.movie.id !== movie.id), { action: "add", movie }]);
-      } else {
-        setChangesToBeMade([...changesToBeMade, { action: "edit", movie }]);
-      }
+      await updateMovieInList(listId, movie.id, movie);
       setMovies(newMovies);
+      setError({type: 'success', body: `${movie.title} edited`});
+    }
+    }catch(error){
+      console.error(error);
+      setError({type: 'error', body: 'Error editing movie'});
     }
   };
 
@@ -98,7 +109,7 @@ const MovieTrackingPage = (props) => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 2, mb: 2 }} align="center">
-        <Tabs value={selectedTab} onChange={handleTabChange} centered>
+        <Tabs value={selectedTab} onChange={handleTabChange} centered sx={{marginBottom:'2em'}}>
           <Tab label="Movies" />
           <Tab label="Settings" />
         </Tabs>
@@ -108,10 +119,10 @@ const MovieTrackingPage = (props) => {
   title={movieList.title}
   listId={listId}
   movies={movies}
-  changesToBeMade={changesToBeMade}
-  setChangesToBeMade={setChangesToBeMade}
   setMovies={setMovies}
   disabled={accessType === 0} 
+  error = {error}
+  setError = {setError}
 />
 
           <MovieTable
@@ -119,6 +130,7 @@ const MovieTrackingPage = (props) => {
           deleteMovie={removeMovie}
           editMovie={editMovie}
           loading={loading}
+          accessType={accessType}
         />
         </>
         )}

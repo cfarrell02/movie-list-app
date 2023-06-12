@@ -9,19 +9,17 @@ const MovieListCard = ({ movieList, onDelete }) => {
   const navigate = useNavigate();
   const [imageSrcs, setImageSrcs] = useState([]);
     const [user, setUser] = useState({});
-    const [userType, setUserType] = useState('');
+    const [accessType, setAccessType] = useState(0)
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 setUser(user);
             } else {
                 setUser(null);
             }
         });
-        return () => {
-            unsubscribe();
-        };
+        
  
     }, []);
 
@@ -37,9 +35,20 @@ const MovieListCard = ({ movieList, onDelete }) => {
         const imagePaths = posterPaths.map((path) => `https://image.tmdb.org/t/p/w200${path}`);
         setImageSrcs(imagePaths);
     }
-    movieList.users.find((user) => user.uid === auth.currentUser.uid) ? setUserType(movieList.users.find((user) => user.uid === auth.currentUser.uid).accessType) : setUserType('User');
+    setAccessType(accessType);
 
   }, [movieList.movies]);
+
+  useEffect(() => {
+    try{
+    if (user.uid && movieList.users) {
+        const userObj = movieList.users.find((userObj) => userObj.uid === user.uid);
+        setAccessType(userObj.accessType);
+    }
+    } catch (error) {
+      console.error('Error getting movie lists:', error);
+    }
+  }, [user]);
 
   return (
     <Card sx={{ padding: '2em' }} align="center">
@@ -91,7 +100,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
       >
         Open List
       </Button>
-      {userType === 'User' ? null : (
+      {accessType < 2 ? null : (
         <IconButton
         variant="outlined"
         size="large"

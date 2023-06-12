@@ -60,7 +60,8 @@ export const getMovieListsByUserId = async (userId) => {
 export const updateMovieList = async (listID, updatedMovieList) => {
   try {
     const movieListRef = doc(db, 'movieLists', listID.toString());
-    await updateDoc(movieListRef, updatedMovieList);
+    const response = await updateDoc(movieListRef, updatedMovieList);
+    console.log(response);
   } catch (error) {
     throw new Error('Error updating movie list in Firestore: ' + error.message);
   }

@@ -1,21 +1,18 @@
 // MovieAdd.js
 
 import React, { useState, useRef } from 'react';
-import { Container, Typography, TextField, Button, Card, Grid, Autocomplete, CircularProgress } from '@mui/material';
+import { Container, Typography, TextField, Button, Card, Grid, Autocomplete, CircularProgress, Alert } from '@mui/material';
 import { getMovie, getMovieSearchResults } from '../../../api/TMDBAPI';
 import { getMovies, addMovieToList, updateMovieInList, deleteMovieFromList} from '../../../api/movieStorage';
-import MovieTable from '../movieTable';
-import ErrorModal from '../../Modals/errorModal';
 
-const MovieAdd = ({ title, movies, listId, setMovies, setChangesToBeMade, changesToBeMade}) => {
-  const [submitting, setSubmitting] = useState(false);
+
+const MovieAdd = ({ title, movies, listId, setMovies, disabled, error, setError}) => {
   const [open, setOpen] = useState(false);
   const [fetchingMovies, setFetchingMovies] = useState(false);
   const [options, setOptions] = useState([]);
-  const [error, setError] = useState({ header: '', body: '' });
+
   const movieTitleTextField = useRef(null);
 
-  const ownerID = '1'; // Replace with the desired owner ID
   const [movie, setMovie] = useState({});
 
   const handleAutocompleteChange = async (event, value) => {
@@ -26,7 +23,9 @@ const MovieAdd = ({ title, movies, listId, setMovies, setChangesToBeMade, change
         setOptions([]);
         setMovie(newMovie);
         setOpen(false);
+        setError({ type: '', body: '' });
       } catch (error) {
+        setError({ type:'error', body: error.message });
         console.error('Error getting movie:', error);
       } finally {
         setFetchingMovies(false);
@@ -44,6 +43,7 @@ const MovieAdd = ({ title, movies, listId, setMovies, setChangesToBeMade, change
         setOptions([]);
       }
     } catch (error) {
+      setError({ type:'error', body: error.message });
       console.error('Error getting movies:', error);
     } finally {
       setFetchingMovies(false);
@@ -60,40 +60,24 @@ const MovieAdd = ({ title, movies, listId, setMovies, setChangesToBeMade, change
 
       const updatedMovieList = [...movies, { id: movie.id, ...movie }];
 
-      setChangesToBeMade([...changesToBeMade, { action: 'add', movie }]);
+
+      
       setMovies(updatedMovieList);
-      setMovie({});
+      await addMovieToList(listId, movie);
+      
       movieTitleTextField.current.value = '';
+      setError({ type: 'success', body: `Added movie ${movie.title}` });
+      setMovie({});
     } catch (error) {
-      setError({ header: 'Error adding movie', body: error.message });
+      setError({ type:'error', body: error.message });
       console.error('Error adding movie:', error);
     }
   };
 
-  const onSubmit = async () => {
-    try {
-      setSubmitting(true);
-      changesToBeMade.forEach(async (change) => {
-        if (change.action === 'add') {
-          await addMovieToList(listId, change.movie);
-        } else if (change.action === 'delete') {
-          await deleteMovieFromList(listId, change.movie.id);
-        } else if (change.action === 'edit') {
-          await updateMovieInList(listId, change.movie.id, change.movie);
-        }
-      });
-    } catch (error) {
-      console.error('Error submitting changes:', error);
-    } finally {
-      setSubmitting(false);
-      setChangesToBeMade([]);
-    }
-  };
+ 
 
   return (
     <Card sx={{ marginBottom: '1em', marginTop: '1em' }}>
-      <ErrorModal header={error.header} body={error.body} open={error.header !== ''} onClose={() => setError({ header: '', body: '' })} />
-
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={12}>
           <Typography variant="h4" component="h1" align="center" sx={{ mb: 2 }}>
@@ -102,6 +86,7 @@ const MovieAdd = ({ title, movies, listId, setMovies, setChangesToBeMade, change
         </Grid>
       </Grid>
       <Autocomplete
+        disabled={disabled}
         onChange={handleAutocompleteChange}
         sx={{ width: '100%' }}
         open={open}
@@ -112,7 +97,7 @@ const MovieAdd = ({ title, movies, listId, setMovies, setChangesToBeMade, change
           setOpen(false);
         }}
         isOptionEqualToValue={(option, value) => option.name === value.name}
-        getOptionLabel={(option) => option.title}
+        getOptionLabel={(option) => option.title + ' (' + option.release_date.substring(0, 4) + ')'}
         options={options}
         loading={fetchingMovies}
         renderInput={(params) => (
@@ -128,7 +113,7 @@ const MovieAdd = ({ title, movies, listId, setMovies, setChangesToBeMade, change
                 <React.Fragment>
                   {fetchingMovies ? <CircularProgress color="inherit" size={20} /> : null}
                   {params.InputProps.endAdornment}
-                  <Button variant="contained" onClick={handleAddMovie}>
+                  <Button variant="contained" onClick={handleAddMovie} disabled={disabled}>
                     Add
                   </Button>
                 </React.Fragment>
@@ -139,15 +124,13 @@ const MovieAdd = ({ title, movies, listId, setMovies, setChangesToBeMade, change
         )}
       />
       <Grid container spacing={2} alignItems="center">
-        <Grid item xs={12} sx={{ padding: '2em' }}>
-          {submitting ? (
-            <CircularProgress color="inherit" size={20} />
-          ) : (
-            <Button variant="contained" size="medium" color="primary" onClick={onSubmit} disabled={changesToBeMade.length === 0}>
-              Submit Changes
-            </Button>
-          )}
+        <Grid item xs={2}/>
+        <Grid item xs={8} sx={{marginBottom:'2em'}}>
+          {error.type !== '' ? (
+        <Alert severity={error.type}>{error.body}</Alert>
+      ) : null}
         </Grid>
+        <Grid item xs={2}/>
       </Grid>
     </Card>
   );

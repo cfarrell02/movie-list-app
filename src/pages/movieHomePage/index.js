@@ -15,7 +15,6 @@ const MovieHomePage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [accessType, setAccessType] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -38,6 +37,7 @@ const MovieHomePage = () => {
         if (user) {
           const newMovieLists = await getMovieListsByUserId(user.uid); // Replace with the desired owner ID
           setMovieLists([...newMovieLists]);
+          
         }
       } catch (error) {
         console.error('Error getting movie lists:', error);
@@ -91,13 +91,25 @@ const MovieHomePage = () => {
             </Grid>
           ))}
 
-          <Grid item xs={4}>
-            <Link onClick={() => setModalOpen(true)}>
-              <Card sx={{ height: '300px', backgroundColor: 'lightgray', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AddIcon sx={{ fontSize: 100, color: 'white' }} />
-              </Card>
-            </Link>
-          </Grid>
+        <Grid item xs={4} alignContent="center" alignItems="center" justifyContent="center">
+          <Link onClick={() => setModalOpen(true)}>
+            <Card
+              sx={{
+                aspectRatio: '1/1', // Set the aspect ratio to 1:1
+                backgroundColor: 'primary.light',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background-color 0.3s', // Add transition for smooth color change
+                '&:hover': {
+                  backgroundColor: 'primary.dark', // Change to the desired hover color
+                },
+              }}
+            >
+              <AddIcon sx={{ fontSize: 100, color: 'white' }} />
+            </Card>
+          </Link>
+        </Grid>
         </Grid>
       )}
     </Container>
