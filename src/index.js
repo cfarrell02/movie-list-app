@@ -14,12 +14,27 @@ import LoginPage from './pages/loginPage';
 import './index.css';
 
 const PrivateRoute = ({ children, isAuthenticated }) => {
-  return isAuthenticated ? (
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+
+  useEffect(() => {
+    let timeoutId;
+    
+    if (!isAuthenticated) {
+      timeoutId = setTimeout(() => {
+        setShouldRedirect(true);
+      }, 3000); // 3000 milliseconds = 3 seconds delay on redirect
+    }
+
+    return () => clearTimeout(timeoutId);
+  }, [isAuthenticated]);
+
+  return isAuthenticated || !shouldRedirect ? (
     children
   ) : (
     <Navigate to="/login" replace />
   );
 };
+
 
 const App = () => {
   const [user, setUser] = useState(null);

@@ -138,6 +138,7 @@ const MovieTrackingPage = (props) => {
           // Content for the second tab
           <MovieListSettings
             movieList={movieList}
+            setMovieList={setMovieList}
           />
         )}
 

@@ -1,18 +1,18 @@
 import { collection, addDoc, getDoc, setDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
-
 // Function to add a movie list
 export const addMovieList = async (movieList) => {
   try {
-    await setDoc(doc(db, 'movieLists', movieList.id), movieList);
+    const docRef = doc(db, 'movieLists', movieList.id);
+    await setDoc(docRef, movieList);
     return movieList.id;
   } catch (error) {
     throw new Error('Error adding movie list to Firestore: ' + error.message);
   }
 };
 
-
+// Function to get all movie lists
 export const getAllMovieLists = async () => {
   try {
     const movieListQuery = query(collection(db, 'movieLists'));
@@ -30,7 +30,7 @@ export const getAllMovieLists = async () => {
 // Function to get a movie list by its ID
 export const getMovieListById = async (listID) => {
   try {
-    const docRef = doc(db, 'movieLists', listID.toString());
+    const docRef = doc(db, 'movieLists', listID);
     const docSnapshot = await getDoc(docRef);
     if (docSnapshot.exists()) {
       return { id: docSnapshot.id, ...docSnapshot.data() };
@@ -41,6 +41,8 @@ export const getMovieListById = async (listID) => {
     throw new Error('Error getting movie list from Firestore: ' + error.message);
   }
 };
+
+// Function to get movie lists by user ID
 export const getMovieListsByUserId = async (userId) => {
   try {
     const movieListQuery = query(collection(db, 'movieLists'), where('userIds', 'array-contains', userId));
@@ -51,17 +53,16 @@ export const getMovieListsByUserId = async (userId) => {
     });
     return movieLists;
   } catch (error) {
-    throw new Error('Error getting movie list by userId from Firestore: ' + error.message);
+    throw new Error('Error getting movie lists by userId from Firestore: ' + error.message);
   }
 };
-
 
 // Function to update a movie list
 export const updateMovieList = async (listID, updatedMovieList) => {
   try {
-    const movieListRef = doc(db, 'movieLists', listID.toString());
-    const response = await updateDoc(movieListRef, updatedMovieList);
-    console.log(response);
+    const movieListRef = doc(db, 'movieLists', listID);
+    await updateDoc(movieListRef, updatedMovieList);
+    console.log('Movie list updated successfully');
   } catch (error) {
     throw new Error('Error updating movie list in Firestore: ' + error.message);
   }
@@ -70,7 +71,7 @@ export const updateMovieList = async (listID, updatedMovieList) => {
 // Function to add a movie to a movie list
 export const addMovieToList = async (listID, movie) => {
   try {
-    const movieListRef = doc(db, 'movieLists', listID.toString());
+    const movieListRef = doc(db, 'movieLists', listID);
     const movieListSnapshot = await getDoc(movieListRef);
 
     if (movieListSnapshot.exists()) {
@@ -79,6 +80,7 @@ export const addMovieToList = async (listID, movie) => {
       };
 
       await updateDoc(movieListRef, updatedMovieList);
+      console.log('Movie added to list successfully');
     } else {
       throw new Error('Movie list not found.');
     }
@@ -90,12 +92,12 @@ export const addMovieToList = async (listID, movie) => {
 // Function to update a movie in a movie list
 export const updateMovieInList = async (listID, movieID, updatedMovie) => {
   try {
-    const movieListRef = doc(db, 'movieLists', listID.toString());
+    const movieListRef = doc(db, 'movieLists', listID);
     const movieListSnapshot = await getDoc(movieListRef);
 
     if (movieListSnapshot.exists()) {
       const movies = movieListSnapshot.data().movies;
-      const updatedMovies = movies.map(movie => {
+      const updatedMovies = movies.map((movie) => {
         if (movie.id === movieID) {
           return { ...movie, ...updatedMovie };
         }
@@ -107,6 +109,7 @@ export const updateMovieInList = async (listID, movieID, updatedMovie) => {
       };
 
       await updateDoc(movieListRef, updatedMovieList);
+      console.log('Movie updated in list successfully');
     } else {
       throw new Error('Movie list not found.');
     }
@@ -114,21 +117,23 @@ export const updateMovieInList = async (listID, movieID, updatedMovie) => {
     throw new Error('Error updating movie in list in Firestore: ' + error.message);
   }
 };
+
 // Function to delete a movie from a movie list
 export const deleteMovieFromList = async (listID, movieID) => {
   try {
-    const movieListRef = doc(db, 'movieLists', listID.toString());
+    const movieListRef = doc(db, 'movieLists', listID);
     const movieListSnapshot = await getDoc(movieListRef);
 
     if (movieListSnapshot.exists()) {
       const movies = movieListSnapshot.data().movies;
-      const updatedMovies = movies.filter(movie => movie.id !== movieID);
+      const updatedMovies = movies.filter((movie) => movie.id !== movieID);
 
       const updatedMovieList = {
         movies: updatedMovies
       };
 
       await updateDoc(movieListRef, updatedMovieList);
+      console.log('Movie deleted from list successfully');
     } else {
       throw new Error('Movie list not found.');
     }
@@ -137,12 +142,12 @@ export const deleteMovieFromList = async (listID, movieID) => {
   }
 };
 
-
 // Function to delete a movie list
 export const deleteMovieList = async (listID) => {
   try {
-    const movieListRef = doc(db, 'movieLists', listID.toString());
+    const movieListRef = doc(db, 'movieLists', listID);
     await deleteDoc(movieListRef);
+    console.log('Movie list deleted successfully');
   } catch (error) {
     throw new Error('Error deleting movie list from Firestore: ' + error.message);
   }

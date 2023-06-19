@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState , useEffect} from 'react';
 import MovieTableRow from '../movieTableRow';
 import {
   TableContainer,
@@ -7,15 +7,23 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  Button,
   Typography,
   Paper,
   CircularProgress,
   TablePagination,
   TextField,
+  Rating,
+  Slider,
+  Chip,
+  Stack,
   Select,
-  Grid
+  Switch,
+  Grid,
+  Alert,
+  InputAdornment
 } from '@mui/material';
-import { ArrowUpward, ArrowDownward } from '@mui/icons-material';
+import { ArrowUpward, ArrowDownward, Filter, Label } from '@mui/icons-material';
 import { orderBy } from 'lodash';
 
 const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
@@ -23,6 +31,12 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [field, setField] = useState('release_date');
+  const [operator, setOperator] = useState('=');
+  const [value, setValue] = useState('');
+  const [filteredMovies, setFilteredMovies] = useState([]);
+  const [filters, setFilters] = useState([]);
+  const [alertInfo, setAlertInfo] = useState({ type: '', body: '' });
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -52,6 +66,28 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
     setPage(0);
   };
 
+  useEffect(() => {
+    if (filters && filters.length > 0) {
+      let filteredMovies = [...sortedMovies];
+      filters.forEach((filter) => {
+        filteredMovies = filteredMovies.filter((movie) => {
+          let value = filter.field === 'release_date' ? movie[filter.field].substring(0,4) :  movie[filter.field];
+          if (filter.operator === '=') {
+            return  value == filter.value;
+          } else if (filter.operator === '<') {
+            return value < filter.value;
+          } else if (filter.operator === '>') {
+            return value > filter.value;
+          }
+          return true;
+        });
+      });
+      setFilteredMovies(filteredMovies);
+    } else {
+      setFilteredMovies([]);
+    }
+  }, [filters]);
+
   const handleSearch = (event) => {
     const term = event.target.value;
     setSearchTerm(term);
@@ -72,65 +108,149 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const endRowIndex = startRowIndex + rowsPerPage;
   const paginatedMovies = sortedMovies.slice(startRowIndex, endRowIndex);
 
+  useEffect(() => {
+    if(field === 'watched'){
+    setOperator('=');
+    }
+  }, [field]);
+
+  const renderOperatorOptions = () => {
+    if (field === 'watched') {
+      return (
+        <>
+          <option value="=">=</option>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <option value="=">=</option>
+          <option value="<">&lt;</option>
+          <option value=">">&gt;</option>
+        </>
+      );
+    }
+  };
+
+  const renderFilterValueInput = () => {
+    console.log(field);
+    if (field === 'watched') {
+        return (
+          <Switch onChange={(e) => setValue(e.target.checked)}
+          size='large'/>
+        );
+        }else if(field === 'release_date'){
+          return (
+            <TextField onChange={(e) => setValue(e.target.value)}
+            label='Year'
+            />
+          );
+        }else if(field === 'runtime'){
+      
+          return (
+            <div style={{ marginTop: '16px' }}>
+              <Slider
+                onChange={(e, newValue) => setValue(newValue)}
+                min={1}
+                max={240}
+                valueLabelDisplay="on"
+              />
+            </div>
+          );
+        }else {
+          return (
+            <TextField onChange={(e) => setValue(e.target.value)}
+            label='Rating'
+            InputProps={{
+              endAdornment: <InputAdornment position="start">/10</InputAdornment>,
+            }}
+            />
+          );
+        }
+  };
+        
+  
+  
+  
+  const handleFilter = () => {
+    if(filters.length >=6){
+      setAlertInfo({ type: 'error', body: 'You can only have 6 filters at a time' });
+      return;
+    }
+      const newFilter = {field: field, operator: operator, value: value, label: `${field} ${operator} ${value}`};
+      
+      setFilters([...filters, newFilter]);
+  };
+
+  const handleDelete = (index) => {
+    setAlertInfo({ type: '', body: '' });
+    const newFilters = [...filters];
+    newFilters.splice(index, 1);
+    setFilters(newFilters);
+  }
+  
+  
+
   return (
     <TableContainer component={Paper}>
-      <Grid container spacing={2} sx={{ p: 2 }}>
-        <Grid item xs={6} align="left">
-      <TextField
-        variant="outlined"
-        margin="normal"
-        label="Search Title"
-        fullWidth
-        onChange={handleSearch}
+    <Grid container spacing={2} sx={{ p: 2 }} alignItems="center">
+      <Grid item xs={6} align="left">
+        <TextField
+          variant="outlined"
+          margin="normal"
+          label="Search Title"
+          fullWidth
+          onChange={handleSearch}
         />
-        </Grid>
-        <Grid item xs={6} align="center" alignItems="flex-end">
-<Grid container justifyContent="center" alignItems="flex-end" spacing={2}>
-  <Grid item xs={4}  sx={{marginBottom:"8px"}}>
-    <Select
-      disabled
-      native
-      label="Field"
-      fullWidth
-      inputProps={{
-        name: "field",
-        id: "field-select",
-      }}
-    >
-      <option value="title">Title</option>
-      <option value="releaseDate">Release Date</option>
-      <option value="rating">Rating</option>
-      <option value="runtime">Runtime</option>
-      <option value="watched">Watched</option>
-    </Select>
-  </Grid>
-  <Grid item xs={2} sx={{marginBottom:"8px"}}>
-    <Select
-      disabled
-      native
-      label="Operator"
-      fullWidth
-      inputProps={{
-        name: "operator",
-        id: "operator-select",
-      }}
-    >
-      <option value="=">=</option>
-      <option value=">"></option>
-      <option value="<">&lt;</option>
-    </Select>
-  </Grid>
-  <Grid item xs={4}>
-    <TextField disabled variant="outlined" margin="normal" label="Value" fullWidth />
-  </Grid>
-</Grid>
-
-
-
-
-
-        </Grid>
       </Grid>
+      <Grid item xs={2}>
+        <Select
+          native
+          label="Field"
+          sx={{ marginTop: '8px' }}
+          onChange={(e) => setField(e.target.value)}
+          fullWidth
+          inputProps={{
+            name: 'field',
+            id: 'field-select',
+          }}
+        >
+          <option value="release_date">Release Date</option>
+          <option value="vote_average">Rating</option>
+          <option value="runtime">Runtime</option>
+          <option value="watched">Watched</option>
+        </Select>
+      </Grid>
+      <Grid item xs={1}>
+        <Select
+          native
+          sx={{ marginTop: '8px' }}
+          label="Operator"
+          onChange={(e) => setOperator(e.target.value)}
+          fullWidth
+        >
+          {renderOperatorOptions()}
+        </Select>
+      </Grid>
+      <Grid item xs={2} sx={{ marginTop: '8px' }}>
+        {renderFilterValueInput()}
+      </Grid>
+      <Grid item xs={1}>
+        <Button variant="contained" color="primary" onClick={handleFilter}>
+          Filter
+        </Button>
+      </Grid>
+    </Grid>
+      <Stack direction="row" spacing={1} justifyContent="center">
+        {filters.map((filter, index) => (
+          <Chip label={filter.label} variant="outlined" onDelete={() => handleDelete(index)} key={index}/>
+        ))}
+    </Stack>
+    {alertInfo.body !== '' ?
+    <Alert severity={alertInfo.type} sx={{ margin: '4px', }}>
+      {alertInfo.body}
+    </Alert>
+    : null}
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
       <TableHead>
           <TableRow align="left">
@@ -176,12 +296,24 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
               </TableCell>
             </TableRow>
           ) : (
+            filters.length!== 0 && filteredMovies ?
+            filteredMovies.map((movie) => (
+              <MovieTableRow
+                handleDelete={deleteMovie}
+                handleEdit={editMovie}        //Filtered Movies
+                key={movie.id}
+                movie={movie}
+                accessType={accessType}
+              />
+            ))
+            
+            :(
             searchTerm.length===0 ?
 
             paginatedMovies.map((movie) => (
               <MovieTableRow
                 handleDelete={deleteMovie}
-                handleEdit={editMovie}
+                handleEdit={editMovie}   // Non Filtered Movies
                 key={movie.id}
                 movie={movie}
                 accessType={accessType}
@@ -191,7 +323,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
             (
             searchResults.map((movie) => (
               <MovieTableRow
-              handleDelete={(movie) => {
+              handleDelete={(movie) => {      // Search Results
                 deleteMovie(movie);
                 if(searchResults.includes(movie)) {
                   setSearchResults(searchResults.filter((item) => item.id !== movie.id));
@@ -202,6 +334,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
               movie={movie}
               accessType={accessType}
             />
+            
             )) 
             ) : 
             <TableCell align="center" colSpan={6}>
@@ -209,11 +342,12 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
             No results found
           </Typography>
           </TableCell>
+            )
 
           )}
         </TableBody>
       </Table>
-     {searchTerm.length===0  ? (
+     {searchTerm.length===0 && filters.length === 0 ? (
       <TablePagination
         rowsPerPageOptions={[10, 25, 50]}
         component="div"

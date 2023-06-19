@@ -28,7 +28,7 @@ import { getUserRoles } from '../../../utils';
 import { auth } from '../../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const MovieListSettings = ({ movieList }) => {
+const MovieListSettings = ({ movieList, setMovieList }) => {
   const [users, setUsers] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [user, setUser] = useState({});
@@ -52,7 +52,9 @@ const MovieListSettings = ({ movieList }) => {
     try{
     if(user && movieList.users){
       const userAccess = movieList.users.find((u) => u.uid === user.uid);
+      if(userAccess){
       setAccessType(userAccess.accessType);
+      }
     }
   } catch (error) {
     console.error('Error getting movie lists:', error);
@@ -75,6 +77,7 @@ const MovieListSettings = ({ movieList }) => {
       }
       const updatedMovieList = { ...movieList, title };
       await updateMovieList(updatedMovieList.id, updatedMovieList);
+      setMovieList(updatedMovieList);
       setMessage({ type: 'success', body: 'Movie list title updated.' });
     } catch (error) {
       console.error('Error updating movie list title:', error);
@@ -123,18 +126,20 @@ const MovieListSettings = ({ movieList }) => {
   
       setUsers(updatedUsers);
       await updateMovieList(updatedMovieList.id, updatedMovieList);
+      setMovieList(updatedMovieList);
       setMessage({ type: 'success', body: `User ${user.email} added to movie list.` });
     } catch (error) {
       setMessage({ type: 'error', body: error.message });
     }
   };
   
+  
   const handleUpdateUserAccessType = async (userID, accessType) => {
     try {
       if (accessType < 0 || accessType >= 3) {
         throw new Error('Invalid access type.');
       }
-      console.log(accessType)
+      const user = users.find((u) => u.uid === userID);
       const userIndex = movieList.userIds.indexOf(userID);
       const updatedUsers = users.map((user, index) => {
         if (index === userIndex) {
@@ -143,31 +148,35 @@ const MovieListSettings = ({ movieList }) => {
         return user;
       });
       setUsers(updatedUsers);
-      const updatedMovieList = { ...movieList, users: updatedUsers };
-      
-     await updateMovieList(movieList.id, updatedMovieList);
-      setMessage({ type: 'info', body: `User access type updated.` });
+      const updatedMovieList = { ...movieList, users: updatedUsers, userIds: movieList.userIds };
+      setMovieList(updatedMovieList);
+        
+      await updateMovieList(movieList.id, updatedMovieList);
+      setMessage({ type: 'info', body: `User ${user.email} access type updated to ${getUserRoles(accessType)}.` });
     } catch (error) {
       setMessage({ type: 'error', body: error.message });
     }
   };
+  
 
   const handleRemoveUserFromMovieList = async (userID) => {
     try {
+      const user = users.find((u) => u.uid === userID);
       const userIndex = movieList.userIds.indexOf(userID);
       const updatedUsers = [...users];
       updatedUsers.splice(userIndex, 1);
-      const updatedUserIds = [...movieList.userIds];
-      updatedUserIds.splice(userIndex, 1);
+      const updatedUserIds = movieList.userIds.filter((id) => id != userID);
       const updatedMovieList = { ...movieList, users: updatedUsers, userIds: updatedUserIds };
       setUsers(updatedUsers);
       await updateMovieList(updatedMovieList.id, updatedMovieList);
-      setMessage({ type: 'info', body: `User ${userID} removed from movie list.` });
-      if (user.uid === userID) navigate('/movielist');
+      setMovieList(updatedMovieList);
+      setMessage({ type: 'info', body: `User ${user.email} removed from movie list.` });
+      // Update the logic for navigating to '/movielist' based on your requirements
     } catch (error) {
       setMessage({ type: 'error', body: error.message });
     }
   };
+  
 
   return (
     <Container>
@@ -219,7 +228,7 @@ const MovieListSettings = ({ movieList }) => {
                   <ListItem key={user1.uid}>
                     <ListItemText primary={user1.email} />
                     <ListItemText primary={getUserRoles(user1.accessType)} />
-                    {user1.accessType === 3 ||
+                    {user1.accessType === 3||
                     accessType < 2 ||
                     (accessType === 2 && user1.accessType === 2 && user.uid !== user1.uid) ? null : (
                       <>
@@ -244,11 +253,11 @@ const MovieListSettings = ({ movieList }) => {
                     )}
                     {(user1.accessType === 3 ||
                     accessType < 2 ||
-                    (accessType === 2 && user1.accessType === 2 && user.uid !== user1.uid)) && user1.uid !== user.uid  ? null : (
+                    (accessType === 2 && user1.accessType === 2 && user.uid !== user1.uid)) && user1.uid === user.uid  ? null : (
                         <IconButton
                           edge="end"
                           aria-label="delete"
-                          onClick={() => handleRemoveUserFromMovieList(user1.id)}
+                          onClick={() => handleRemoveUserFromMovieList(user1.uid)}
                         >
                           <DeleteIcon />
                         </IconButton>
