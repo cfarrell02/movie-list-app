@@ -2,10 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Typography, Button, CardMedia, IconButton, Grid} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import {auth } from '../../../firebase-config';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const MovieListCard = ({ movieList, onDelete }) => {
   const navigate = useNavigate();
   const [imageSrcs, setImageSrcs] = useState([]);
+    const [user, setUser] = useState({});
+    const [accessType, setAccessType] = useState(0)
+
+    useEffect(() => {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUser(user);
+            } else {
+                setUser(null);
+            }
+        });
+        
+ 
+    }, []);
+
+
 
   useEffect(() => {
     if (movieList.movies && movieList.movies.length >= 4) {
@@ -17,7 +35,20 @@ const MovieListCard = ({ movieList, onDelete }) => {
         const imagePaths = posterPaths.map((path) => `https://image.tmdb.org/t/p/w200${path}`);
         setImageSrcs(imagePaths);
     }
+    setAccessType(accessType);
+
   }, [movieList.movies]);
+
+  useEffect(() => {
+    try{
+    if (user.uid && movieList.users) {
+        const userObj = movieList.users.find((userObj) => userObj.uid === user.uid);
+        setAccessType(userObj.accessType);
+    }
+    } catch (error) {
+      console.error('Error getting movie lists:', error);
+    }
+  }, [user]);
 
   return (
     <Card sx={{ padding: '2em' }} align="center">
@@ -69,6 +100,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
       >
         Open List
       </Button>
+      {accessType < 2 ? null : (
         <IconButton
         variant="outlined"
         size="large"
@@ -78,6 +110,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
         >
         <DeleteIcon fontSize="inherit" />
         </IconButton>
+        )}
     </Card>
   );
 };

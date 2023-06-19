@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import WeatherProvider from './contexts/weatherContext';
 import WeatherPage from './pages/weatherPage';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
+import { addUser } from './api/userDataStorage';
 import { auth } from './firebase-config';
 import MovieTrackingPage from './pages/movieTrackingPage';
 import MovieHomePage from './pages/movieHomePage';
@@ -13,12 +14,27 @@ import LoginPage from './pages/loginPage';
 import './index.css';
 
 const PrivateRoute = ({ children, isAuthenticated }) => {
-  return isAuthenticated ? (
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+
+  useEffect(() => {
+    let timeoutId;
+    
+    if (!isAuthenticated) {
+      timeoutId = setTimeout(() => {
+        setShouldRedirect(true);
+      }, 3000); // 3000 milliseconds = 3 seconds delay on redirect
+    }
+
+    return () => clearTimeout(timeoutId);
+  }, [isAuthenticated]);
+
+  return isAuthenticated || !shouldRedirect ? (
     children
   ) : (
     <Navigate to="/login" replace />
   );
 };
+
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -48,7 +64,15 @@ const App = () => {
 
   const handleRegister = async (username, password) => {
     try {
-      await createUserWithEmailAndPassword(auth, username, password);
+      const user = await createUserWithEmailAndPassword(auth, username, password);
+      const userObject = {
+        email: username,
+        dateOfBirth: '',
+        firstName: '',
+        lastName: '',
+        id: user.user.uid
+      };
+      await addUser(userObject);
     } catch (error) {
       console.log(error);
       throw new Error('Error signing up: ' + error.code);

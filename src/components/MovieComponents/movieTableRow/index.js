@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
-const MovieTableRow = ({movie, handleDelete, handleEdit}) => {
+const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
 
     const [watched, setWatched] = useState(movie.watched);
 
@@ -32,6 +32,8 @@ const MovieTableRow = ({movie, handleDelete, handleEdit}) => {
               <TableCell align="right">{movie.vote_average}</TableCell>
               <TableCell align="right">{movie.runtime}</TableCell>
               <TableCell align="right">
+                {accessType === 0 ? null : (
+                  <>
               <Checkbox checked={watched} 
               icon={<VisibilityOutlinedIcon />}
               checkedIcon={<VisibilityIcon />}
@@ -39,6 +41,8 @@ const MovieTableRow = ({movie, handleDelete, handleEdit}) => {
               <IconButton aria-label="delete" onClick={() => handleDelete(movie)} >
                 <DeleteIcon/>
                 </IconButton>
+                </>
+                )}
               </TableCell>
             </TableRow>
     )

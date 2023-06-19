@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import { Modal, Card, Typography, Button, TextField} from "@mui/material";
+import { Modal, Card, Typography, Button, TextField, Grid} from "@mui/material";
 
 const style = {
     position: 'absolute',
@@ -17,17 +17,26 @@ const NewMovieListModal = ({ header, body, open, onClose }) => {
   return (
     <Modal open={open} onClose={onClose} aria-labelledby={header}>
       <Card sx={style} align="center">
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12}>
         <Typography id="modal-modal-title" variant="h6" component="h2">
           {header}
         </Typography>
+          </Grid>
+          <Grid item xs={12}>
         <Typography id="modal-modal-description" sx={{ mt: 2 }}>
           {body}
         </Typography>
-        <TextField id="outlined-basic" label="Outlined" variant="outlined" onChange={(event) => setTitle(event.target.value)} />
+          </Grid>
+          <Grid item xs={12}>
+        <TextField id="outlined-basic" label="Title" variant="outlined" onChange={(event) => setTitle(event.target.value)} />
+          </Grid>
+        <Grid item xs={12}>
         <Button variant="contained" size="large" color="primary" sx={{marginTop:"2em"}} onClick={() => onClose(title)}>
-  Submit
-</Button>
-
+          Submit
+        </Button>
+        </Grid>
+        </Grid>
       </Card>
     </Modal>
   );

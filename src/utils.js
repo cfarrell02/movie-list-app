@@ -49,6 +49,11 @@ import umbrellaIcon from './images/048-umbrella.svg';
 import windy2Icon from './images/049-windy-2.svg';
 import windy3Icon from './images/050-windy-3.svg';
 //utils.js
+
+export const getUserRoles = (index) => {
+    const userRoles = ['Viewer', 'User', 'Admin','Owner']
+    return userRoles[index];
+}
 export const dayOfTheWeek = (index) => {
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     return days[index];
