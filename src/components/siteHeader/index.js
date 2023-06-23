@@ -5,6 +5,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import {auth } from '../../firebase-config';
 import { onAuthStateChanged } from "firebase/auth";
+import { getUserById } from '../../api/userDataStorage';
 
 
 const Header = ({ handleLogout}) => {
@@ -13,7 +14,9 @@ const Header = ({ handleLogout}) => {
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-        setUser(user);
+        getUserById(user.uid).then((userData) => {
+            setUser(userData);
+        });
     } else {
         setUser(null);
     }
@@ -39,7 +42,7 @@ const Header = ({ handleLogout}) => {
         </IconButton>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           <Button color="inherit" onClick={() => navigate('/home')}>
-          Weather App - {user ? user.email : null}
+          Weather App - {user.firstName} {user.lastName}
         </Button>
         </Typography>
 

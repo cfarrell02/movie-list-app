@@ -64,6 +64,33 @@ export const dateFormatter = (date) => {
   return formattedDate === "Invalid Date" ? "" : formattedDate;
 }
 
+export const convertArrayOfObjectsToCSV = (array, keys) => {
+    let result;
+    const columnDelimiter = ',';
+    const lineDelimiter = '\n';
+    array.forEach((item) => {
+      keys.forEach((key, index) => {
+        if (item[key] && typeof item[key] === 'string') {
+          item[key] = item[key].replace(/,/g, '');
+        }
+      });
+    });
+    result = '';
+    result += keys.join(columnDelimiter);
+    result += lineDelimiter;
+    array.forEach((item) => {
+      let ctr = 0;
+      keys.forEach((key, index) => {
+        if (ctr > 0) result += columnDelimiter;
+        result += item[key];
+        ctr++;
+      });
+      result += lineDelimiter;
+    });
+    return result;
+  };
+  
+
 export const weatherCodeTranslator = (code) => {
     const weatherInterpretationCodes = {
         0: "Clear sky",

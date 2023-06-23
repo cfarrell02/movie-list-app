@@ -15,9 +15,10 @@ import {
   AccordionDetails,
   List,
   ListItem,
-  Select,
+  CircularProgress,
   ListItemText,
   IconButton,
+  ButtonGroup,
 } from '@mui/material';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -27,6 +28,7 @@ import { updateMovieList } from '../../../api/movieStorage';
 import { getUserRoles } from '../../../utils';
 import { auth } from '../../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
+import {convertArrayOfObjectsToCSV} from '../../../utils';
 
 const MovieListSettings = ({ movieList, setMovieList }) => {
   const [users, setUsers] = useState([]);
@@ -177,12 +179,50 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
     }
   };
   
+  const handleExportMovieList = async () => {
+    try {
+      const keys = ["poster_path", "title", "tagline", "release_date", "vote_average", "runtime", "watched"]
+      const movieListCSV = convertArrayOfObjectsToCSV(movieList.movies, keys);
+      const blob = new Blob([movieListCSV], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${movieList.title}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error exporting movie list:', error);
+    }
+  };
+  
 
   return (
     <Container>
       <Typography variant="h4" component="h2" gutterBottom>
         Movie List Settings
       </Typography>
+      <Accordion>
+        <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
+          <Typography variant="h5" component="h3" gutterBottom>
+            Export/Import Movie List
+            </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+    <ButtonGroup variant="contained" color="primary" aria-label="contained primary button group">
+              <Button variant="contained" color="primary" onClick={() => handleExportMovieList(movieList)}>
+                Export Movie List
+              </Button>
+
+              <Button variant="contained" color="primary" disabled>
+                Import Movie List
+              </Button>
+            </ButtonGroup>
+ 
+            </AccordionDetails>
+              
+      </Accordion>
       <Accordion>
         <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
           <Typography variant="h5" component="h3" gutterBottom>
@@ -195,6 +235,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
           <TextField
             id="outlined-basic"
             label="New Movie List Title"
+            value={movieListTitle}
             disabled={accessType === 0}
             variant="outlined"
             onChange={(event) => setMovieListTitle(event.target.value)}
@@ -224,7 +265,8 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
           <Grid container spacing={2}>
             <Grid item xs={6} sx={{ margin: '1em', borderRadius: '5px', border: '1px solid lightgrey' }}>
               <List>
-                {users.map((user1) => (
+                {!users ? <CircularProgress />  : 
+                users.map((user1) => (
                   <ListItem key={user1.uid}>
                     <ListItemText primary={user1.email} />
                     <ListItemText primary={getUserRoles(user1.accessType)} />
@@ -291,7 +333,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                       <TextField
                         {...params}
                         onChange={(event) => handleSearchUsers(event.target.value)}
-                        label="Search Results"
+                        label="Search Users"
                         variant="outlined"
                       />
                     )}
