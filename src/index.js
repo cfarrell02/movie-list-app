@@ -46,9 +46,17 @@ const App = () => {
     }
   };
 
-  const handleRegister = async (username, password) => {
+  const handleRegister = async (username, password, firstName, lastName, dateOfBirth) => {
     try {
-      await createUserWithEmailAndPassword(auth, username, password);
+      const user = await createUserWithEmailAndPassword(auth, username, password);
+      const userObject = {
+        email: username,
+        dateOfBirth: dateOfBirth,
+        firstName: firstName,
+        lastName: lastName,
+        id: user.user.uid
+      };
+      await addUser(userObject);
     } catch (error) {
       console.log(error);
       throw new Error('Error signing up: ' + error.code);

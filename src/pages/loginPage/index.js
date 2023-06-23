@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, TextField, Button, Box, Card, Alert} from '@mui/material';
+import { Container, Typography, TextField, Button, Box, Card, Alert, Input} from '@mui/material';
 import {auth} from '../../firebase-config';
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -8,8 +8,12 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [secondPassword, setSecondPassword] = useState('');
   const [user , setUser] = useState(null);
   const [error, setError] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
 
   
   useEffect(() => {
@@ -26,6 +30,13 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
     setIsLogin(!isLogin);
   };
 
+  useEffect(() => {
+    if(password !== secondPassword && !isLogin){
+        setError('Passwords do not match');
+    }else{
+        setError('');
+    }
+  }, [password, secondPassword]);
  
 
   const handleSubmit = async (event) => {
@@ -34,7 +45,8 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
       if (isLogin) {
         await handleLogin(username, password);
       } else {
-        await handleRegister(username, password);
+        if(password !== secondPassword || !firstName || !lastName || !dateOfBirth) throw new Error('Please fill out all fields')
+        await handleRegister(username, password, firstName, lastName, dateOfBirth);
       }
       setError('');
     } catch (error) {
@@ -66,8 +78,8 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          height: '35vh',
-          width: '30vh',
+          height: isLogin ? '40vh' : '60vh',
+          width: isLogin ? '30vh' : '50vh',
           padding: '2rem',
         }}
       >
@@ -81,7 +93,7 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
           sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
         >
           <TextField
-            label="Username"
+            label="Email"
             variant="outlined"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
@@ -93,6 +105,49 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
+          {isLogin ? null :
+          (
+            <>
+          <TextField
+            label="Confirm Password"
+            variant="outlined"
+            type="password"
+            value={secondPassword}
+            onChange={(event) => setSecondPassword(event.target.value)}
+          />
+          <TextField
+           label = 'First Name'
+            variant = 'outlined'
+            type = 'text'
+            value = {firstName}
+            onChange = {(event) => setFirstName(event.target.value)}
+          />
+          <TextField
+            label = 'Last Name'
+            variant = 'outlined'
+            type = 'text'
+            value = {lastName}
+            onChange = {(event) => setLastName(event.target.value)}
+          />
+            <Input
+              type='date'
+              value={dateOfBirth}
+              onChange={(event) => {
+                const selectedDate = new Date(event.target.value);
+                const currentDate = new Date();
+                currentDate.setFullYear(currentDate.getFullYear() - 10);
+
+                if (selectedDate <= currentDate) {
+                  setDateOfBirth(event.target.value);
+                } else {
+                  // Handle invalid date error or provide feedback to the user
+                  setError('You must be at least 10 years old to register');
+                }
+              }}
+            />
+
+          </>
+          )}
           <Button variant="contained" type="submit" color="primary">
             {isLogin ? 'Login' : 'Register'}
           </Button>
