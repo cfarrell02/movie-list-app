@@ -126,7 +126,7 @@ const MovieTrackingPage = (props) => {
 />
 
           <MovieTable
-          movies={movies}
+          movies={movies.reverse()}
           deleteMovie={removeMovie}
           editMovie={editMovie}
           loading={loading}
