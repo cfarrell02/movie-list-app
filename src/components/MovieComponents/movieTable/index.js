@@ -42,6 +42,12 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
     setPage(newPage);
   };
 
+  useEffect(() => {
+    sortConfig.direction = 'asc';
+    sortConfig.key = 'addedDate';
+    handleSort('addedDate');
+  }, []);
+
   const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
   
     const handleSort = (key) => {
@@ -91,7 +97,6 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const handleSearch = (event) => {
     const term = event.target.value;
     setSearchTerm(term);
-    console.log(searchTerm);
     if(term === '') {
       setSearchResults([]);
       return;
