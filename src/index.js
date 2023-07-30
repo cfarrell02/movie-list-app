@@ -22,7 +22,7 @@ const PrivateRoute = ({ children, isAuthenticated }) => {
     if (!isAuthenticated) {
       timeoutId = setTimeout(() => {
         setShouldRedirect(true);
-      }, 3000); // 3000 milliseconds = 3 seconds delay on redirect
+      }, 1000); // 1000 milliseconds = 1 seconds delay on redirect
     }
 
     return () => clearTimeout(timeoutId);

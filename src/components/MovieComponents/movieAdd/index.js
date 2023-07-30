@@ -6,7 +6,7 @@ import { getMovie, getMovieSearchResults } from '../../../api/TMDBAPI';
 import { getMovies, addMovieToList, updateMovieInList, deleteMovieFromList} from '../../../api/movieStorage';
 
 
-const MovieAdd = ({ title, movies, listId, setMovies, disabled, error, setError}) => {
+const MovieAdd = ({title, movies, listId, setMovies, disabled, error, setError, currentUserID}) => {
   const [open, setOpen] = useState(false);
   const [fetchingMovies, setFetchingMovies] = useState(false);
   const [options, setOptions] = useState([]);
@@ -57,6 +57,8 @@ const MovieAdd = ({ title, movies, listId, setMovies, disabled, error, setError}
       movie.watched = false;
 
     //   const listID = await addMovie(ownerID, movie);
+      movie.addedDate = new Date().toISOString();
+      movie.addedBy = currentUserID;
 
       const updatedMovieList = [...movies, { id: movie.id, ...movie }];
 

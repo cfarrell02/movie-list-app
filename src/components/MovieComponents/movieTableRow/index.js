@@ -1,14 +1,28 @@
 import React from 'react';
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton} from '@mui/material';
-import { dateFormatter } from '../../../utils';
+import { dateFormatter, timeFormatter} from '../../../utils';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import { getUserById } from '../../../api/userDataStorage';
 
 const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
 
     const [watched, setWatched] = useState(movie.watched);
+    const [addedByUser, setAddedByUser] = useState({});
+
+    useState(() => {
+      const fetchUser = async () => {
+        try {
+          const user = await getUserById(movie.addedBy);
+          setAddedByUser(user);
+        } catch (error) {
+          console.error('Error getting user:', error);
+        }
+      };
+      fetchUser();
+    }, []);
 
     const handleCheckboxChange = (event) => {
       setWatched(event.target.checked); 
@@ -29,8 +43,11 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
                 {movie.tagline}
               </TableCell>
               <TableCell align="right">{dateFormatter(movie.release_date)} </TableCell>
+              <TableCell align="center">{dateFormatter(movie.addedDate) + " " +timeFormatter(movie.addedDate)}</TableCell>
               <TableCell align="right">{movie.vote_average}</TableCell>
               <TableCell align="right">{movie.runtime}</TableCell>
+              <TableCell align="right">{addedByUser.firstName}</TableCell>
+              
               <TableCell align="right">
                 {accessType === 0 ? null : (
                   <>

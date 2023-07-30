@@ -123,10 +123,11 @@ const MovieTrackingPage = (props) => {
   disabled={accessType === 0} 
   error = {error}
   setError = {setError}
+  currentUserID = {user ? user.uid : null}
 />
 
           <MovieTable
-          movies={movies.reverse()}
+          movies={movies}
           deleteMovie={removeMovie}
           editMovie={editMovie}
           loading={loading}

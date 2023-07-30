@@ -64,6 +64,12 @@ export const dateFormatter = (date) => {
   return formattedDate === "Invalid Date" ? "" : formattedDate;
 }
 
+export const timeFormatter = (date) => {
+  // Time as Hours:Minutes 
+  const formattedTime = new Date(date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  return formattedTime === "Invalid Date" ? "" : formattedTime;
+}
+
 export const convertArrayOfObjectsToCSV = (array, keys) => {
     let result;
     const columnDelimiter = ',';

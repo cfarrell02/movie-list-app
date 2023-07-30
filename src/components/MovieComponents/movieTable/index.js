@@ -273,8 +273,14 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
             <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
             Release{"\u00A0"}Date {getSortIcon('release_date')}
           </Typography>
-
+          </TableCell>
+          <TableCell align="right" onClick={() => handleSort('addedDate')} style={{ cursor: 'pointer' }}>
+              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
+                Added{"\u00A0"}Date {getSortIcon('addedDate')}
+              </Typography>
             </TableCell>
+
+
             <TableCell align="right" onClick={() => handleSort('vote_average')} style={{ cursor: 'pointer' }}>
               <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Rating {getSortIcon('vote_average')}
@@ -283,6 +289,11 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
             <TableCell align="right" onClick={() => handleSort('runtime')} style={{ cursor: 'pointer' }}>
               <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Runtime {getSortIcon('runtime')}
+              </Typography>
+            </TableCell>
+            <TableCell align="right" onClick={() => handleSort('addedBy')} style={{ cursor: 'pointer' }}>
+              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
+                Added By {getSortIcon('addedBy')}
               </Typography>
             </TableCell>
             <TableCell align="right"></TableCell>
