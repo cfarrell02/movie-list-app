@@ -1,7 +1,7 @@
 // MovieAdd.js
 
 import React, { useState, useRef } from 'react';
-import { Container, Typography, TextField, Button, Card, Grid, Autocomplete, CircularProgress, Alert } from '@mui/material';
+import { Container, Typography, TextField, Button, Card, Grid, Autocomplete, CircularProgress, Alert, Box } from '@mui/material';
 import { getMovie, getMovieSearchResults } from '../../../api/TMDBAPI';
 import { getMovies, addMovieToList, updateMovieInList, deleteMovieFromList} from '../../../api/movieStorage';
 
@@ -99,7 +99,19 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, error, setError, 
           setOpen(false);
         }}
         isOptionEqualToValue={(option, value) => option.name === value.name}
-        getOptionLabel={(option) => option.title + ' (' + option.release_date.substring(0, 4) + ')'}
+        getOptionLabel={(option) => option.title + ' (' + new Date(option.release_date).getFullYear()+ ')'}
+        renderOption={(props, option) => (
+          <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
+            <img
+              loading="lazy"
+              width="40"
+              src={`https://image.tmdb.org/t/p/w200${option.poster_path}`}
+              srcSet={`https://image.tmdb.org/t/p/w200${option.poster_path} 2x`}
+              alt=""
+            />
+            {option.title} ({new Date(option.release_date).getFullYear()})
+          </Box>
+        )}
         options={options}
         loading={fetchingMovies}
         renderInput={(params) => (
