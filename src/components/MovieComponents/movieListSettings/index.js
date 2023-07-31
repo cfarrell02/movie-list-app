@@ -181,7 +181,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
   
   const handleExportMovieList = async () => {
     try {
-      const keys = ["poster_path", "title", "tagline", "release_date", "vote_average", "runtime", "watched"]
+      const keys = ["poster_path", "title", "tagline", "release_date", "vote_average", "runtime", "watched", "addedDate", "addedBy", 'id']
       const movieListCSV = convertArrayOfObjectsToCSV(movieList.movies, keys);
       const blob = new Blob([movieListCSV], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);

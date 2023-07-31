@@ -26,15 +26,11 @@ const MovieListCard = ({ movieList, onDelete }) => {
 
 
   useEffect(() => {
-    if (movieList.movies && movieList.movies.length >= 4) {
-      const posterPaths = movieList.movies.slice(0, 4).map((movie) => movie.poster_path);
+
+      const posterPaths = movieList.movies.map((movie) => movie.poster_path);
       const imagePaths = posterPaths.map((path) => `https://image.tmdb.org/t/p/w200${path}`);
       setImageSrcs(imagePaths);
-    } else if (movieList.movies && movieList.movies.length > 0) {
-        const posterPaths = movieList.movies.map((movie) => movie.poster_path);
-        const imagePaths = posterPaths.map((path) => `https://image.tmdb.org/t/p/w200${path}`);
-        setImageSrcs(imagePaths);
-    }
+    
     setAccessType(accessType);
 
   }, [movieList.movies]);
@@ -56,7 +52,9 @@ const MovieListCard = ({ movieList, onDelete }) => {
         {movieList.title}
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>
-        {imageSrcs.length >= 4 ? imageSrcs.map((src, index) => (
+        {imageSrcs.length >= 3 ? imageSrcs.map(value => ({ value, sort: Math.random() }))
+                        .sort((a, b) => a.sort - b.sort)
+                        .map(({ value }) => value).splice(0,4).map((src, index) => (
             <Grid item xs={6}>
           <CardMedia
             key={index}
@@ -71,13 +69,13 @@ const MovieListCard = ({ movieList, onDelete }) => {
             }}
           />
             </Grid>
-        )) : imageSrcs.map((src, index) => (
+        )) : 
             <Grid item xs={12}>
             <CardMedia
-                key={index}
+                key={1}
                 component="img"
-                src={src}
-                alt={`Poster ${index + 1}`}
+                src={imageSrcs[0]}
+                alt={`Poster 1`}
                 style={{
                 width: '100%',
                 height: 'auto',
@@ -86,7 +84,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
                 }}
             />
             </Grid>
-        ))
+      
     
     }
         </Grid>
