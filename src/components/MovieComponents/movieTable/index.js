@@ -62,7 +62,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   
     const getSortIcon = (key) => {
       if (sortConfig.key === key) {
-        return sortConfig.direction === 'asc' ? <ArrowUpward /> : <ArrowDownward />;
+        return sortConfig.direction === 'asc' ? <ArrowUpward style={{ fontSize: 'inherit' }}/> : <ArrowDownward style={{ fontSize: 'inherit' }}/>;
       }
       return null;
     };
@@ -77,7 +77,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
       let filteredMovies = [...sortedMovies];
       filters.forEach((filter) => {
         filteredMovies = filteredMovies.filter((movie) => {
-          let value = filter.field === 'release_date' ? movie[filter.field].substring(0,4) :  movie[filter.field];
+          let value = filter.field === 'release_date' || field === 'addedDate' ? movie[filter.field].substring(0,4) :  movie[filter.field];
           if (filter.operator === '=') {
             return  value == filter.value;
           } else if (filter.operator === '<') {
@@ -144,7 +144,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
           <Switch onChange={(e) => setValue(e.target.checked)}
           size='large'/>
         );
-        }else if(field === 'release_date'){
+        }else if(field === 'release_date' || field === 'addedDate'){
           return (
             <TextField onChange={(e) => setValue(e.target.value)}
             label='Year'
@@ -224,6 +224,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
           <option value="vote_average">Rating</option>
           <option value="runtime">Runtime</option>
           <option value="watched">Watched</option>
+          <option value="addedDate">Added Date</option>
         </Select>
       </Grid>
       <Grid item xs={1}>
@@ -260,11 +261,11 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
       <TableHead>
           <TableRow align="left">
           <TableCell >
-              <Typography variant="subtitle2" component="div">
+              <Typography align="center" variant="subtitle2" component="div">
                 Poster
               </Typography>
             </TableCell>
-            <TableCell onClick={() => handleSort('title')} style={{ cursor: 'pointer' }}>
+            <TableCell align="center" onClick={() => handleSort('title')} style={{ cursor: 'pointer' }}>
               <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Title {getSortIcon('title')}
               </Typography>
@@ -274,34 +275,27 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
                 Tagline 
               </Typography>
             </TableCell>
-            <TableCell align="right" onClick={() => handleSort('release_date')} style={{ cursor: 'pointer'}} >
+            <TableCell align="center" onClick={() => handleSort('release_date')} style={{ cursor: 'pointer'}} >
             <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
-            Release{"\u00A0"}Date {getSortIcon('release_date')}
+            Released {getSortIcon('release_date')}
           </Typography>
           </TableCell>
-          <TableCell align="right" onClick={() => handleSort('addedDate')} style={{ cursor: 'pointer' }}>
-              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
-                Added{"\u00A0"}Date {getSortIcon('addedDate')}
-              </Typography>
-            </TableCell>
-
-
-            <TableCell align="right" onClick={() => handleSort('vote_average')} style={{ cursor: 'pointer' }}>
+            <TableCell align="center" onClick={() => handleSort('vote_average')} style={{ cursor: 'pointer' }}>
               <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Rating {getSortIcon('vote_average')}
               </Typography>
             </TableCell>
-            <TableCell align="right" onClick={() => handleSort('runtime')} style={{ cursor: 'pointer' }}>
+            <TableCell align="center" onClick={() => handleSort('runtime')} style={{ cursor: 'pointer' }}>
               <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Runtime {getSortIcon('runtime')}
               </Typography>
             </TableCell>
-            <TableCell align="right" onClick={() => handleSort('addedBy')} style={{ cursor: 'pointer' }}>
+            <TableCell align="center" onClick={() => handleSort('addedDate')} style={{ cursor: 'pointer' }}>
               <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
-                Added By {getSortIcon('addedBy')}
+                Added {getSortIcon('addedDate')}
               </Typography>
             </TableCell>
-            <TableCell align="right"></TableCell>
+            <TableCell align="center"></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

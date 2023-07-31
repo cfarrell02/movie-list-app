@@ -59,6 +59,12 @@ export const dayOfTheWeek = (index) => {
     return days[index];
 }
 
+export const monthsOfTheYear = (index) => {
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+        "October", "November", "December"];
+    return months[index];
+}
+
 export const dateFormatter = (date) => {
   const formattedDate = new Date(date).toLocaleDateString();
   return formattedDate === "Invalid Date" ? "" : formattedDate;
@@ -69,6 +75,29 @@ export const timeFormatter = (date) => {
   const formattedTime = new Date(date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   return formattedTime === "Invalid Date" ? "" : formattedTime;
 }
+
+
+
+//Method to convert date to x days ago
+export const dateReadableFormatter = (date) => {
+    const today = new Date();
+    const targetDate = new Date(date);
+    if(today.getDate() === targetDate.getDate()){
+       const seconds = Math.floor((today - targetDate) / 1000);
+        if(seconds < 60){
+            return `${seconds}s ago`;
+        }else if(seconds < 3600){
+            return `${Math.floor(seconds/60)}m ago`;
+        }else if(seconds < 86400){
+            return `${Math.floor(seconds/3600)}h ago`;
+        }
+    }else if(today.getFullYear() === targetDate.getFullYear()){
+        return `${targetDate.getDate()} ${monthsOfTheYear(targetDate.getMonth()).substring(0,3)}`;
+    }else{
+        return `${targetDate.getDate()} ${monthsOfTheYear(targetDate.getMonth()).substring(0,3)}, ${targetDate.getFullYear()}`;
+    }
+  }
+
 
 export const convertArrayOfObjectsToCSV = (array, keys) => {
     let result;
