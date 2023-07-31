@@ -8,6 +8,7 @@ import { addUser } from './api/userDataStorage';
 import { auth } from './firebase-config';
 import MovieTrackingPage from './pages/movieTrackingPage';
 import MovieHomePage from './pages/movieHomePage';
+import MovieDetailsPage from './pages/movieDetailsPage';
 import HomePage from './pages/homePage';
 import Header from './components/siteHeader';
 import LoginPage from './pages/loginPage';
@@ -109,6 +110,10 @@ const App = () => {
           <Route
             path="/movielist/:listId"
             element={<PrivateRoute isAuthenticated={user !== null}><MovieTrackingPage /></PrivateRoute>}
+          />
+          <Route
+            path="/movie/:id"
+            element={<PrivateRoute isAuthenticated={user !== null}><MovieDetailsPage /></PrivateRoute>}
           />
           <Route
             path="/movielist"
