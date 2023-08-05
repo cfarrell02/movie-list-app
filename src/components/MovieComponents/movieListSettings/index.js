@@ -293,9 +293,9 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                         </IconButton>
                         </>
                     )}
-                    {(user1.accessType === 3 ||
+                    {user1.accessType === 3 ||
                     accessType < 2 ||
-                    (accessType === 2 && user1.accessType === 2 && user.uid !== user1.uid)) && user1.uid === user.uid  ? null : (
+                    (accessType === 2 && user1.accessType === 2 && user.uid !== user1.uid)  ? null : (
                         <IconButton
                           edge="end"
                           aria-label="delete"

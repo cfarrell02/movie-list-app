@@ -37,7 +37,7 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
     return (
         <TableRow key={movie.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
               <TableCell>
-                <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} style={{maxHeight:"100px" }}/>
+                <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} style={{maxHeight:"120px" }}/>
               </TableCell>
               <TableCell component="th" scope="row" >
                 <a href={`https://www.imdb.com/title/${movie.imdb_id}`} target="_blank" rel="noreferrer" style={{textDecoration:"none", color:"black"}}>{movie.title}</a><br/>

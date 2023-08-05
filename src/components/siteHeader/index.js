@@ -31,15 +31,15 @@ const Header = ({ handleLogout}) => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ margin: 0, padding: 0 }}>
       <Toolbar>
         {user!==null ? ( <>
-        <IconButton color="inherit" onClick={handleBack} sx={{marginRight:"1em"}}>
+        {/* <IconButton color="inherit" onClick={handleBack} sx={{marginRight:"1em"}}>
           <ArrowBackIcon />
         </IconButton>
         <IconButton color="inherit" onClick={handleForward} sx={{marginRight:"1em"}}>
           <ArrowForwardIcon />
-        </IconButton>
+        </IconButton> */}
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           <Button color="inherit" onClick={() => navigate('/home')}>
           Weather App - {user.firstName} {user.lastName}

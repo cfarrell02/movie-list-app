@@ -9,24 +9,43 @@ import {
   Autocomplete,
   CircularProgress,
   Tab,
-  Tabs
+  Tabs,
+  Card,
+  Divider
 } from '@mui/material';
-import MovieListSettings from '../../components/MovieComponents/movieListSettings';
 import { getMovie, getMovieSearchResults } from '../../api/TMDBAPI';
-import MovieTable from '../../components/MovieComponents/movieTable';
 import { getMovieListById, addMovieToList, addMovieList, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
-import MovieAdd from '../../components/MovieComponents/movieAdd';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
+import MovieDetailCard from '../../components/MovieDetailComponents/movieDetailCard';
 
 const MovieDetailsPage = (props) => {
   const {id} = useParams();
+  const [movie, setMovie] = useState({});
+
+  useEffect(async () => {
+    try{
+    const fetchedMovie = await getMovie(id);
+    setMovie(fetchedMovie);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
 
   return (
-    <Container>
-      <Typography variant="h2">Movie Details for {id}</Typography>
-    </Container>
+    <Card sx={{ display: 'flex', flexDirection: 'column', height: '100vh', marginLeft:'10%', marginRight:'10%', marginTop:'2%', padding: '2%'}}>
+      <Typography variant="h4" sx={{marginTop: '1em', marginBottom: '.2em'}}>{movie.title}</Typography>
+      <Divider sx={{marginBottom: '1em'}}/>
+      <Grid container spacing={2}>
+        <Grid item xs={9}>
+          <p> placeholder for description</p>
+          </Grid>
+          <Grid item xs={3}>
+            <MovieDetailCard movie={movie}/>
+          </Grid>
+          </Grid>
+    </Card>
   );
 };
 
