@@ -13,7 +13,7 @@ import {
   Card,
   Divider
 } from '@mui/material';
-import { getMovie, getMovieSearchResults } from '../../api/TMDBAPI';
+import { getMovie,getMovieCredits , getMovieSearchResults } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, addMovieList, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -27,19 +27,25 @@ const MovieDetailsPage = (props) => {
   useEffect(async () => {
     try{
     const fetchedMovie = await getMovie(id);
-    setMovie(fetchedMovie);
+    const fetchedCredits = await getMovieCredits(id);
+    setMovie({...fetchedMovie, credits: fetchedCredits});
     } catch (error) {
       console.error(error);
     }
   }, []);
 
+  const handleButton = () => {
+    console.log(movie);
+  }
+
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', height: '100vh', marginLeft:'10%', marginRight:'10%', marginTop:'2%', padding: '2%'}}>
+    <Card sx={{ display: 'flex', flexDirection: 'column', marginLeft:'10%', marginRight:'10%', marginTop:'2%', padding: '2%'}}>
       <Typography variant="h4" sx={{marginTop: '1em', marginBottom: '.2em'}}>{movie.title}</Typography>
       <Divider sx={{marginBottom: '1em'}}/>
       <Grid container spacing={2}>
         <Grid item xs={9}>
           <p> placeholder for description</p>
+          <button onClick={handleButton}>Click me</button>
           </Grid>
           <Grid item xs={3}>
             <MovieDetailCard movie={movie}/>
