@@ -257,7 +257,7 @@ export const getMovies = (args) => {
       )
         .then((res) => res.json())
         .then((json) => {
-          return json.cast;
+          return json;
         });
     };
   

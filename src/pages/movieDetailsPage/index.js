@@ -19,6 +19,7 @@ import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 import MovieDetailCard from '../../components/MovieDetailComponents/movieDetailCard';
+import MovieDetailSection from '../../components/MovieDetailComponents/movieDetailSection';
 
 const MovieDetailsPage = (props) => {
   const {id} = useParams();
@@ -44,8 +45,7 @@ const MovieDetailsPage = (props) => {
       <Divider sx={{marginBottom: '1em'}}/>
       <Grid container spacing={2}>
         <Grid item xs={9}>
-          <p> placeholder for description</p>
-          <button onClick={handleButton}>Click me</button>
+          <MovieDetailSection/>
           </Grid>
           <Grid item xs={3}>
             <MovieDetailCard movie={movie}/>
