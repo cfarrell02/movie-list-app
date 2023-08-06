@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 import { ArrowUpward, ArrowDownward, Filter, Label } from '@mui/icons-material';
 import { orderBy } from 'lodash';
+import { AlertContext } from '../../../contexts/alertContext';
 
 const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const [page, setPage] = useState(0);
@@ -36,7 +37,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const [value, setValue] = useState('');
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [filters, setFilters] = useState([]);
-  const [alertInfo, setAlertInfo] = useState({ type: '', body: '' });
+  const {addAlert} = React.useContext(AlertContext);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -179,7 +180,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   
   const handleFilter = () => {
     if(filters.length >=6){
-      setAlertInfo({ type: 'error', body: 'You can only have 6 filters at a time' });
+      addAlert('error', 'You can only have 6 filters at a time.');
       return;
     }
       const newFilter = {field: field, operator: operator, value: value, label: `${field} ${operator} ${value}`};
@@ -188,7 +189,6 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   };
 
   const handleDelete = (index) => {
-    setAlertInfo({ type: '', body: '' });
     const newFilters = [...filters];
     newFilters.splice(index, 1);
     setFilters(newFilters);
@@ -252,11 +252,6 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
           <Chip label={filter.label} variant="outlined" onDelete={() => handleDelete(index)} key={index}/>
         ))}
     </Stack>
-    {alertInfo.body !== '' ?
-    <Alert severity={alertInfo.type} sx={{ margin: '4px', }}>
-      {alertInfo.body}
-    </Alert>
-    : null}
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
       <TableHead>
           <TableRow align="left">
@@ -295,7 +290,6 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
                 Added {getSortIcon('addedDate')}
               </Typography>
             </TableCell>
-            <TableCell align="center"></TableCell>
             <TableCell align="center"></TableCell>
           </TableRow>
         </TableHead>

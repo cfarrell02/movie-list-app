@@ -1,15 +1,17 @@
 // MovieAdd.js
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
+import {AlertContext} from '../../../contexts/alertContext';
 import { Container, Typography, TextField, Button, Card, Grid, Autocomplete, CircularProgress, Alert, Box } from '@mui/material';
 import { getMovie, getMovieSearchResults } from '../../../api/TMDBAPI';
 import { getMovies, addMovieToList, updateMovieInList, deleteMovieFromList} from '../../../api/movieStorage';
 
 
-const MovieAdd = ({title, movies, listId, setMovies, disabled, error, setError, currentUserID}) => {
+const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID}) => {
   const [open, setOpen] = useState(false);
   const [fetchingMovies, setFetchingMovies] = useState(false);
   const [options, setOptions] = useState([]);
+  const { addAlert } = useContext(AlertContext);
 
   const movieTitleTextField = useRef(null);
 
@@ -23,9 +25,8 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, error, setError, 
         setOptions([]);
         setMovie(newMovie);
         setOpen(false);
-        setError({ type: '', body: '' });
       } catch (error) {
-        setError({ type:'error', body: error.message });
+        addAlert('error', error.message);
         console.error('Error getting movie:', error);
       } finally {
         setFetchingMovies(false);
@@ -43,7 +44,7 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, error, setError, 
         setOptions([]);
       }
     } catch (error) {
-      setError({ type:'error', body: error.message });
+      addAlert('error', error.message);
       console.error('Error getting movies:', error);
     } finally {
       setFetchingMovies(false);
@@ -68,10 +69,10 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, error, setError, 
       await addMovieToList(listId, movie);
       
       movieTitleTextField.current.value = '';
-      setError({ type: 'success', body: `Added movie ${movie.title}` });
       setMovie({});
+      addAlert('success', `${movie.title} added to list.`);
     } catch (error) {
-      setError({ type:'error', body: error.message });
+      addAlert('error', error.message);
       console.error('Error adding movie:', error);
     }
   };
@@ -137,15 +138,6 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, error, setError, 
           />
         )}
       />
-      <Grid container spacing={2} alignItems="center">
-        <Grid item xs={2}/>
-        <Grid item xs={8} sx={{marginBottom:'2em'}}>
-          {error.type !== '' ? (
-        <Alert severity={error.type}>{error.body}</Alert>
-      ) : null}
-        </Grid>
-        <Grid item xs={2}/>
-      </Grid>
     </Card>
   );
 };

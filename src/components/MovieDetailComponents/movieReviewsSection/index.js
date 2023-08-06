@@ -1,0 +1,48 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Container, Typography, TextField, Button, Box, Card, Alert, Grid, Divider, Avatar} from '@mui/material';
+import { getMovieReviews } from '../../../api/TMDBAPI';
+import { dateReadableFormatter } from '../../../utils';
+
+
+const MovieReviewSection = ({ movieId }) => {
+  const [reviewPage, setReviewPage] = useState(1);
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    if (!movieId) return;
+    getMovieReviews(movieId, reviewPage).then((reviews) => {
+      setReviews(reviews);
+    });
+  }, [movieId, reviewPage]);
+
+  return (
+    <Container>
+      {reviews.map((review) => (
+        <div key={review.id}>
+          <Grid container spacing={2} sx={{marginTop:'.5em', marginBottom:'.5em'}}>
+
+                    <Grid item xs={9} sx={{ display: 'flex', alignItems: 'center' }}>
+            <Avatar alt={review.author} src={`https://image.tmdb.org/t/p/original${review.avatar_path}`} sx={{marginRight:'1em'}}/>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                {review.author}
+            </Typography>
+            </Grid>
+
+            <Grid item xs={3} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+              <Typography variant="subtitle2" color="text.secondary" component="div">
+                {dateReadableFormatter(review.created_at)}
+              </Typography>
+            </Grid>
+          </Grid>
+          <Typography variant="body1" component="div" sx={{ flexGrow: 1 }}>
+            {review.content}
+          </Typography>
+          <Divider sx={{marginTop:'1em'}}/>
+        </div>
+      ))}
+    </Container>
+  );
+};
+
+export default MovieReviewSection;

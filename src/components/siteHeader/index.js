@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -11,16 +11,20 @@ import { getUserById } from '../../api/userDataStorage';
 const Header = ({ handleLogout}) => {
   const navigate = useNavigate();
   const [user , setUser] = useState(null);
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
         getUserById(user.uid).then((userData) => {
-            setUser(userData);
+          setUser(userData);
         });
-    } else {
+      } else {
         setUser(null);
-    }
-});
+      }
+    });
+
+    // Cleanup function to unsubscribe from the listener when the component unmounts
+    return () => unsubscribe();
+  }, []);
 
   const handleBack = () => {
     navigate(-1); // Go back to the previous page
@@ -31,15 +35,15 @@ const Header = ({ handleLogout}) => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ margin: 0, padding: 0 }}>
       <Toolbar>
         {user!==null ? ( <>
-        <IconButton color="inherit" onClick={handleBack} sx={{marginRight:"1em"}}>
+        {/* <IconButton color="inherit" onClick={handleBack} sx={{marginRight:"1em"}}>
           <ArrowBackIcon />
         </IconButton>
         <IconButton color="inherit" onClick={handleForward} sx={{marginRight:"1em"}}>
           <ArrowForwardIcon />
-        </IconButton>
+        </IconButton> */}
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           <Button color="inherit" onClick={() => navigate('/home')}>
           Weather App - {user.firstName} {user.lastName}
