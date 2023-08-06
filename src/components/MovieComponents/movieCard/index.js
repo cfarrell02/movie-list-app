@@ -34,7 +34,10 @@ export default function MovieCard({ movie }) {
 
         if(user){
         const fetchedMovieLists = await getMovieListsByUserId(user.uid);
-        setMovieLists(fetchedMovieLists);
+
+        setMovieLists(fetchedMovieLists.filter(list => {
+          return list.users.find(userObj => userObj.uid === user.uid).accessType > 0
+        }));
         }
        
       } catch (error) {

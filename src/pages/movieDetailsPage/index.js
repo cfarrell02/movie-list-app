@@ -61,7 +61,9 @@ const MovieDetailsPage = (props) => {
         const fetchedCredits = await getMovieCredits(id);
         if(user){
         const fetchedMovieLists = await getMovieListsByUserId(user.uid);
-        setMovieLists(fetchedMovieLists);
+        setMovieLists(fetchedMovieLists.filter(list => {
+          return list.users.find(userObj => userObj.uid === user.uid).accessType > 0
+        }));
         }
         setStremioLinkEnding(
           fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
