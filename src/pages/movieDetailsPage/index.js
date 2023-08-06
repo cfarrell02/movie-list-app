@@ -38,6 +38,7 @@ const MovieDetailsPage = (props) => {
   const [movieLists, setMovieLists] = useState([]);
   const {addAlert} = React.useContext(AlertContext);  
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -55,6 +56,7 @@ const MovieDetailsPage = (props) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const fetchedMovie = await getMovie(id);
         const fetchedCredits = await getMovieCredits(id);
         if(user){
@@ -71,6 +73,10 @@ const MovieDetailsPage = (props) => {
         console.error(error);
         // Handle the error, show an error message, or take appropriate action.
       }
+      finally{
+        setLoading(false);
+      }
+
     };
   
     fetchData();
@@ -95,6 +101,7 @@ const MovieDetailsPage = (props) => {
 
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', marginLeft:'10%', marginRight:'10%', marginTop:'2%', padding: '2%'}}>
+      {loading ? <CircularProgress align='center'/> : <>
       <Grid container spacing={2}>
         <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-end'}}>
       <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{movie.title} ({new Date(movie.release_date).getFullYear()})</Typography>
@@ -140,6 +147,7 @@ const MovieDetailsPage = (props) => {
             <MovieReviewSection movieId={movie.id} />
             </Grid>
           </Grid>
+        </>}
     </Card>
   );
 };

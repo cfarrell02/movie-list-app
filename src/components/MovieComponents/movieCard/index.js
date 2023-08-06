@@ -5,7 +5,6 @@ import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import CardHeader from "@mui/material/CardHeader";
 import Button from "@mui/material/Button";
-import { FormControl} from "@mui/base";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import InputLabel from "@mui/material/InputLabel";
@@ -22,6 +21,7 @@ import { getUserById } from "../../../api/userDataStorage";
 import { auth } from "../../../firebase-config";
 import { onAuthStateChanged } from "firebase/auth";
 import Stack from '@mui/material/Stack';
+import { NativeSelect, FormControl } from "@mui/material";
 
 
 export default function MovieCard({ movie }) {
@@ -79,15 +79,16 @@ export default function MovieCard({ movie }) {
    return (
     <Card >
        <CardHeader
+       sx={{height: '5vh'}}
         title={
           <Typography variant="h6" component="p">
-            {movie.title}{" "}
+            {movie.title}
           </Typography>
         }
       />
 
       <CardMedia
-        sx={{ height: 500 }}
+        sx={{ height: '50vh',}}
         image={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
       />
       <CardContent>
@@ -108,15 +109,15 @@ export default function MovieCard({ movie }) {
       </CardContent>
       <CardActions>
       <Link to={`/movie/${movie.id}`}>
-        <Button variant="outlined" size="medium" color="primary">
+        <Button variant="outlined" size="medium" color="primary" sx={{minWidth:'20ch'}}>
           More Info ...
         </Button>
       </Link>
-      {/* <FormControl sx={{ m: 1, minWidth: 80 }} size='small'>
+      <FormControl sx={{ m: 1, minWidth: 80 }} size='small' fullWidth>
         <InputLabel> Add to list</InputLabel>
         <Select
-        autoWidth
-        sx={{marginRight:'1em'}}
+        fullWidth
+        sx={{height: '2.25em'}}
         onChange={handleChange}
         label="Add to list"
         title= 'Select a list to add this movie to'
@@ -125,7 +126,8 @@ export default function MovieCard({ movie }) {
           <MenuItem value={list.id}>{list.title}</MenuItem>
           ))}
         </Select>
-        </FormControl> */}
+        </FormControl>
+
       </CardActions>
     </Card>
   );

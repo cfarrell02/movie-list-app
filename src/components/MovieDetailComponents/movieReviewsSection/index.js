@@ -16,7 +16,16 @@ const MovieReviewSection = ({ movieId }) => {
     });
   }, [movieId, reviewPage]);
 
+  if(reviews.length === 0) return (
+    <Container>
+      <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        No Reviews
+      </Typography>
+    </Container>
+  );
+
   return (
+
     <Container>
       {reviews.map((review) => (
         <div key={review.id}>
