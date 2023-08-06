@@ -10,30 +10,57 @@ import {
   CircularProgress,
   Tab,
   Tabs,
+  Select,
+  MenuItem,
   Card,
+  FormControl,
   Divider,
-  ButtonGroup
+  ButtonGroup,
+  InputLabel,
+  Stack
 } from '@mui/material';
 import { getMovie,getMovieCredits , getMovieSearchResults } from '../../api/TMDBAPI';
-import { getMovieListById, addMovieToList, addMovieList, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
+import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 import MovieDetailCard from '../../components/MovieDetailComponents/movieDetailCard';
 import MovieDetailSection from '../../components/MovieDetailComponents/movieDetailSection';
 import MovieReviewSection from '../../components/MovieDetailComponents/movieReviewsSection';
+import { AlertContext } from '../../contexts/alertContext';
+import { getUserById } from '../../api/userDataStorage';
 
 
 const MovieDetailsPage = (props) => {
   const {id} = useParams();
   const [movie, setMovie] = useState({});
   const [stremioLinkEnding, setStremioLinkEnding] = useState('');
+  const [movieLists, setMovieLists] = useState([]);
+  const {addAlert} = React.useContext(AlertContext);  
+  const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {
         const fetchedMovie = await getMovie(id);
         const fetchedCredits = await getMovieCredits(id);
+        if(user){
+        const fetchedMovieLists = await getMovieListsByUserId(user.uid);
+        setMovieLists(fetchedMovieLists);
+        }
         setStremioLinkEnding(
           fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
             '-' +
@@ -47,22 +74,53 @@ const MovieDetailsPage = (props) => {
     };
   
     fetchData();
-  }, []);
+  }, [user]);
+
+  const handleChange = async (event) => {
+    const userData = await getUserById(user.uid);
+    try{
+      movie.addedDate = new Date().toISOString();
+      movie.addedBy = user.uid;
+      const movieList = await getMovieListById(event.target.value);
+      if(movieList.movies.find(m => m.id === movie.id)) throw new Error('Movie already in list');
+      addMovieToList(event.target.value, movie);
+      addAlert('success', `${movie.title} added to ${movieList.title}`);
+    }
+    catch(error){
+      addAlert('error', error.message);
+    }
+  };
   
 
 
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', marginLeft:'10%', marginRight:'10%', marginTop:'2%', padding: '2%'}}>
       <Grid container spacing={2}>
-        <Grid item xs={9}>
-      <Typography variant="h4" sx={{marginTop: '1em', marginBottom: '.2em'}}>{movie.title} ({new Date(movie.release_date).getFullYear()})</Typography>
+        <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-end'}}>
+      <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{movie.title} ({new Date(movie.release_date).getFullYear()})</Typography>
       </Grid>
-      <Grid item xs={3} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+      <Grid item xs={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+        <Stack> 
+        <FormControl sx={{ m: 1, minWidth: 80 }} size='small'>
+        <InputLabel> Add to list</InputLabel>
+        <Select
+        autoWidth
+        sx={{marginRight:'1em'}}
+        onChange={handleChange}
+        label="Add to list"
+        title= 'Select a list to add this movie to'
+        >
+          {movieLists.map((list) => (
+          <MenuItem value={list.id}>{list.title}</MenuItem>
+          ))}
+        </Select>
+        </FormControl>
         <ButtonGroup sx={{marginBottom: '.5em', marginRight:'1em'}}>
           <Button variant="contained" target="_blank" href={`https://www.imdb.com/title/${movie.imdb_id}`} title='IMDB'>IMDB</Button>
           <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/movie/${movie.id}`} title='TMDB'>TMDB</Button>
           <Button variant="contained" target="_blank" href={`https://www.strem.io/s/movie/${stremioLinkEnding}`} title='Stremio'>Stremio</Button>
         </ButtonGroup>
+        </Stack>
       </Grid>
       </Grid>
       <Divider/>

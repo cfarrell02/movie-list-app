@@ -265,11 +265,6 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
                 Title {getSortIcon('title')}
               </Typography>
             </TableCell>
-            <TableCell align="center" >
-              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
-                Tagline 
-              </Typography>
-            </TableCell>
             <TableCell align="center" onClick={() => handleSort('release_date')} style={{ cursor: 'pointer'}} >
             <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
             Released {getSortIcon('release_date')}
