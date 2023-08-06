@@ -82,8 +82,8 @@ export const timeFormatter = (date) => {
 export const dateReadableFormatter = (date) => {
     const today = new Date();
     const targetDate = new Date(date);
-    if(today.getDate() === targetDate.getDate()){
-       const seconds = Math.floor((today - targetDate) / 1000);
+    const seconds = Math.floor((today - targetDate) / 1000);
+    if(seconds < 86400){
         if(seconds < 60){
             return `${seconds}s ago`;
         }else if(seconds < 3600){

@@ -12,7 +12,7 @@ import {
   Tabs
 } from '@mui/material';
 import MovieListSettings from '../../components/MovieComponents/movieListSettings';
-import { getMovie, getMovieSearchResults } from '../../api/TMDBAPI';
+import { AlertContext } from '../../contexts/alertContext';
 import MovieTable from '../../components/MovieComponents/movieTable';
 import { getMovieListById, addMovieToList, addMovieList, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import MovieAdd from '../../components/MovieComponents/movieAdd';
@@ -28,7 +28,7 @@ const MovieTrackingPage = (props) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [user, setUser] = useState(null);
   const [accessType, setAccessType] = useState(0);
-  const [error, setError] = useState({ type: '', body: '' });
+  const {addAlert} = React.useContext(AlertContext);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -79,10 +79,10 @@ const MovieTrackingPage = (props) => {
     const newMovies = movies.filter((m) => m.id !== movie.id);
     await deleteMovieFromList(listId, movie.id);
     setMovies(newMovies);
-    setError({type: 'info', body: `${movie.title} removed`});
+    addAlert('info', `${movie.title} removed successfully`)
     }catch(error){
       console.error(error);
-      setError({type: 'error', body: 'Error removing movie'});
+      addAlert('error', 'Error removing movie');
     }
   };
 
@@ -94,11 +94,11 @@ const MovieTrackingPage = (props) => {
       newMovies[editedMovieIndex] = movie;
       await updateMovieInList(listId, movie.id, movie);
       setMovies(newMovies);
-      setError({type: 'success', body: `${movie.title} edited`});
+      addAlert('success', `${movie.title} edited successfully`)
     }
     }catch(error){
       console.error(error);
-      setError({type: 'error', body: 'Error editing movie'});
+      addAlert('error', 'Error editing movie');
     }
   };
 
@@ -121,8 +121,6 @@ const MovieTrackingPage = (props) => {
   movies={movies}
   setMovies={setMovies}
   disabled={accessType === 0} 
-  error = {error}
-  setError = {setError}
   currentUserID = {user ? user.uid : null}
 />
 

@@ -29,6 +29,7 @@ import { getUserRoles } from '../../../utils';
 import { auth } from '../../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 import {convertArrayOfObjectsToCSV} from '../../../utils';
+import { AlertContext } from '../../../contexts/alertContext';
 
 const MovieListSettings = ({ movieList, setMovieList }) => {
   const [users, setUsers] = useState([]);
@@ -36,10 +37,9 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
   const [user, setUser] = useState({});
   const [searchedUser, setSearchedUser] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', body: '' });
   const [movieListTitle, setMovieListTitle] = useState(movieList.title);
-  const navigate = useNavigate();
   const [accessType, setAccessType] = useState(0);
+  const { addAlert } = React.useContext(AlertContext);
 
   useEffect(() => {
     try{
@@ -80,10 +80,10 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       const updatedMovieList = { ...movieList, title };
       await updateMovieList(updatedMovieList.id, updatedMovieList);
       setMovieList(updatedMovieList);
-      setMessage({ type: 'success', body: 'Movie list title updated.' });
+      addAlert('success', 'Movie list title updated.');
     } catch (error) {
       console.error('Error updating movie list title:', error);
-      setMessage({ type: 'error', body: 'Error updating movie list title:'+ error.message });
+      addAlert('error', 'Error updating movie list title.');
     }
   };
 
@@ -91,7 +91,6 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
 
   const handleSearchUsers = async (searchedName) => {
     try {
-      setMessage({ type: '', body: '' });
       setIsLoading(true);
       const users = await getAllUsers();
       const results = users.filter(
@@ -129,9 +128,9 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       setUsers(updatedUsers);
       await updateMovieList(updatedMovieList.id, updatedMovieList);
       setMovieList(updatedMovieList);
-      setMessage({ type: 'success', body: `User ${user.email} added to movie list.` });
+      addAlert('success', `User ${user.email} added to movie list.`);
     } catch (error) {
-      setMessage({ type: 'error', body: error.message });
+      addAlert('error', error.message);
     }
   };
   
@@ -154,9 +153,9 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       setMovieList(updatedMovieList);
         
       await updateMovieList(movieList.id, updatedMovieList);
-      setMessage({ type: 'info', body: `User ${user.email} access type updated to ${getUserRoles(accessType)}.` });
+      addAlert('success', `User ${user.email} access type updated to ${getUserRoles(accessType)}.`);
     } catch (error) {
-      setMessage({ type: 'error', body: error.message });
+      addAlert('error', error.message);
     }
   };
   
@@ -172,10 +171,10 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       setUsers(updatedUsers);
       await updateMovieList(updatedMovieList.id, updatedMovieList);
       setMovieList(updatedMovieList);
-      setMessage({ type: 'info', body: `User ${user.email} removed from movie list.` });
+      addAlert('info', `User ${user.email} removed from movie list.`);
       // Update the logic for navigating to '/movielist' based on your requirements
     } catch (error) {
-      setMessage({ type: 'error', body: error.message });
+      addAlert('error', error.message);
     }
   };
   
@@ -352,11 +351,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
               </Grid>
             </Grid>
 
-            {message.type !== '' ? (
-              <Grid item xs={12}>
-                <Alert severity={message.type}>{message.body}</Alert>
-              </Grid>
-            ) : null}
+          
           </Grid>
         </AccordionDetails>
       </Accordion>

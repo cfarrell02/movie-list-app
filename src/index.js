@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import WeatherProvider from './contexts/weatherContext';
+import { AlertProvider } from './contexts/alertContext';
 import WeatherPage from './pages/weatherPage';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
 import { addUser } from './api/userDataStorage';
@@ -11,6 +12,7 @@ import MovieHomePage from './pages/movieHomePage';
 import MovieDetailsPage from './pages/movieDetailsPage';
 import HomePage from './pages/homePage';
 import Header from './components/siteHeader';
+import AlertNotice from './components/alertNotice';
 import LoginPage from './pages/loginPage';
 import './index.css';
 
@@ -93,6 +95,7 @@ const App = () => {
     <div className="background-image">
       <Router>
         <WeatherProvider>
+        <AlertProvider>
         <Header authenticated={user !== null}  />
         <Routes>
           <Route
@@ -121,6 +124,8 @@ const App = () => {
           />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
+        <AlertNotice/>
+        </AlertProvider>
         </WeatherProvider>
       </Router>
     </div>
