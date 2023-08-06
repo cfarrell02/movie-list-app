@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Rating, Tooltip, Button, ButtonGroup} from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Rating, Tooltip, Button, ButtonGroup, Link} from '@mui/material';
 import { dateFormatter, timeFormatter, dateReadableFormatter} from '../../../utils';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -13,7 +13,6 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
 
     const [watched, setWatched] = useState(movie.watched);
     const [addedByUser, setAddedByUser] = useState({});
-    const stremioLinkEnding = movie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase()+'-'+movie.imdb_id.substring(2);
 
     useState(() => {
       const fetchUser = async () => {
@@ -40,7 +39,7 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
                 <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} style={{maxHeight:"120px" }}/>
               </TableCell>
               <TableCell component="th" scope="row" >
-                <a href={`https://www.imdb.com/title/${movie.imdb_id}`} target="_blank" rel="noreferrer" style={{textDecoration:"none", color:"black"}}>{movie.title}</a><br/>
+                <a href={`/movie/${movie.id}`} style={{textDecoration:"none", color:"black"}}>{movie.title}</a><br/>
               </TableCell>
               <TableCell align="center">
                 {movie.tagline}
@@ -51,13 +50,6 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
                 {movie.runtime} <AccessTimeIcon style={{ fontSize: 'inherit' }} />
               </TableCell>
               <TableCell align="center">{addedByUser.firstName}<br/>{dateReadableFormatter(movie.addedDate)}</TableCell>
-              <TableCell align="center">
-                <ButtonGroup orientation='vertical'>
-                  <Button variant="contained" size="small" target="_blank" href={`https://www.imdb.com/title/${movie.imdb_id}`} title='IMDB'>IMDB</Button>
-                  <Button variant="contained" size="small" target="_blank" href={`https://www.themoviedb.org/movie/${movie.id}`} title='TMDB'>TMDB</Button>
-                  <Button variant="contained" size="small" target="_blank" href={`https://www.strem.io/s/movie/${stremioLinkEnding}`} title='Stremio'>Stremio</Button>
-                </ButtonGroup>
-                </TableCell>
               <TableCell align="right">
                 {accessType === 0 ? null : (
                   <>

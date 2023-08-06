@@ -291,7 +291,6 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
               </Typography>
             </TableCell>
             <TableCell align="center"></TableCell>
-            <TableCell align="center"></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

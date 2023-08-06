@@ -7,6 +7,7 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
   const [writers, setWriters] = useState([]);
   const [producers, setProducers] = useState([]);
   const [starring, setStarring] = useState([]);
+  const [productionCompanies, setProductionCompanies] = useState([]);
 
   useEffect(() => {
     // You might want to check if 'movie' exists before accessing its properties
@@ -16,15 +17,13 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
       setWriters(movie.credits.crew.filter((credit) => credit.job === 'Screenplay' || credit.job === 'Writer'));
       setProducers(movie.credits.crew.filter((credit) => credit.job === 'Producer'));
       setStarring(movie.credits.cast.filter((credit) => credit.order <= 5));
+      setProductionCompanies(movie.production_companies);
 
     }
   }, [movie]);
 
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-         <Typography variant="h3" gutterBottom>
-          {movie.title}
-        </Typography>
       <CardMedia component="img"  src={`https://image.tmdb.org/t/p/original${movie.poster_path}`} alt={movie.title} />
       <CardContent>
 
@@ -74,6 +73,18 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
             <List>
               {starring.map((star) => (
                 <ListItem key={star.id}><ListItemText primary={star.name}/></ListItem>
+              ))}
+            </List>
+          </Grid>
+          <Grid item xs={6}>
+            <Typography variant="h6"  sx={{marginTop:'.7em'}}>
+              {productionCompanies.length > 1 ? 'Production Companies:' : 'Production Company:'}
+            </Typography>
+            </Grid>
+            <Grid item xs={6}>
+            <List>
+              {productionCompanies.map((company) => (
+                <ListItem key={company.id}><ListItemText primary={company.name}/></ListItem>
               ))}
             </List>
           </Grid>
