@@ -17,16 +17,14 @@ import LoginPage from './pages/loginPage';
 import './index.css';
 import PersonPage from './pages/personPage';
 
-const PrivateRoute = ({ children, isAuthenticated }) => {
+const PrivateRoute = ({ children, isAuthenticated, loadedUser}) => {
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
     let timeoutId;
     
-    if (!isAuthenticated) {
-      timeoutId = setTimeout(() => {
+    if (!isAuthenticated && loadedUser) {
         setShouldRedirect(true);
-      }, 1000); // 1000 milliseconds = 1 seconds delay on redirect
     }
 
     return () => clearTimeout(timeoutId);
@@ -42,6 +40,7 @@ const PrivateRoute = ({ children, isAuthenticated }) => {
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [loadedUser, setLoadedUser] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -54,7 +53,9 @@ const App = () => {
 
     return () => {
       unsubscribe();
+      setLoadedUser(true);
     };
+
   }, []);
 
   const handleLogin = async (username, password) => {
@@ -105,23 +106,23 @@ const App = () => {
           />
           <Route
             path="/weather"
-            element={<PrivateRoute isAuthenticated={user !== null}><WeatherPage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><WeatherPage /></PrivateRoute>}
           />
           <Route
             path="/home"
-            element={<PrivateRoute isAuthenticated={user !== null}><HomePage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><HomePage /></PrivateRoute>}
           />
           <Route
             path="/movielist/:listId"
-            element={<PrivateRoute isAuthenticated={user !== null}><MovieTrackingPage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><MovieTrackingPage /></PrivateRoute>}
           />
           <Route
             path="/movie/:id"
-            element={<PrivateRoute isAuthenticated={user !== null}><MovieDetailsPage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><MovieDetailsPage /></PrivateRoute>}
           />
           <Route
             path="/movielist"
-            element={<PrivateRoute isAuthenticated={user !== null}><MovieHomePage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><MovieHomePage /></PrivateRoute>}
           />
           <Route
             path="/person/:id"

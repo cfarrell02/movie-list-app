@@ -59,12 +59,6 @@ const MovieDetailsPage = (props) => {
         setLoading(true);
         const fetchedMovie = await getMovie(id);
         const fetchedCredits = await getMovieCredits(id);
-        if(user){
-        const fetchedMovieLists = await getMovieListsByUserId(user.uid);
-        setMovieLists(fetchedMovieLists.filter(list => {
-          return list.users.find(userObj => userObj.uid === user.uid).accessType > 0
-        }));
-        }
         setStremioLinkEnding(
           fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
             '-' +
@@ -83,6 +77,18 @@ const MovieDetailsPage = (props) => {
   
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+    if(user){
+      const fetchedMovieLists = await getMovieListsByUserId(user.uid);
+      setMovieLists(fetchedMovieLists.filter(list => {
+        return list.users.find(userObj => userObj.uid === user.uid).accessType > 0
+      }));
+      }
+    };
+    fetchData();
+  }, [user]);
 
   const handleChange = async (event) => {
     const userData = await getUserById(user.uid);
