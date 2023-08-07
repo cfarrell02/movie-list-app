@@ -1,6 +1,7 @@
 // MovieAdd.js
 
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -40,6 +41,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
   const [movieListTitle, setMovieListTitle] = useState(movieList.title);
   const [accessType, setAccessType] = useState(0);
   const { addAlert } = React.useContext(AlertContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     try{
@@ -162,7 +164,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
 
   const handleRemoveUserFromMovieList = async (userID) => {
     try {
-      const user = users.find((u) => u.uid === userID);
+      // const user = users.find((u) => u.uid === userID);
       const userIndex = movieList.userIds.indexOf(userID);
       const updatedUsers = [...users];
       updatedUsers.splice(userIndex, 1);
@@ -172,6 +174,9 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       await updateMovieList(updatedMovieList.id, updatedMovieList);
       setMovieList(updatedMovieList);
       addAlert('info', `User ${user.email} removed from movie list.`);
+      if(user.uid === userID){
+        navigate('/movielist');
+      }
       // Update the logic for navigating to '/movielist' based on your requirements
     } catch (error) {
       addAlert('error', error.message);

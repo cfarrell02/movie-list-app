@@ -16,7 +16,7 @@ import { AlertContext } from '../../contexts/alertContext';
 import MovieTable from '../../components/MovieComponents/movieTable';
 import { getMovieListById, addMovieToList, addMovieList, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import MovieAdd from '../../components/MovieComponents/movieAdd';
-import { useParams } from 'react-router-dom';
+import { useParams , useNavigate} from 'react-router-dom';
 import {auth} from '../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -29,6 +29,7 @@ const MovieTrackingPage = (props) => {
   const [user, setUser] = useState(null);
   const [accessType, setAccessType] = useState(0);
   const {addAlert} = React.useContext(AlertContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -67,7 +68,11 @@ const MovieTrackingPage = (props) => {
   useEffect(() => {
     try{
     if( user && movieList.users){
-      setAccessType(movieList.users.find((u) => u.uid === user.uid).accessType);
+      const userObj = movieList.users.find((userObj) => userObj.uid === user.uid);
+      if(userObj){ setAccessType(userObj.accessType);
+      }else{
+        navigate('/home');
+      }
     }
     }catch(error){
       console.error(error);
