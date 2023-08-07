@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';  // Grouped import statements
-import { Card, CardContent, CardMedia, Typography, Grid, List, ListItem, ListItemText } from '@mui/material';
+import { Card, CardContent, CardMedia, Typography, Grid, List, ListItem, ListItemText, Link } from '@mui/material';
 
 
 const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
@@ -11,9 +11,8 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
 
   useEffect(() => {
     // You might want to check if 'movie' exists before accessing its properties
-    console.log(movie)
     if (movie && movie.credits) {
-      setDirector(movie.credits.crew.find((credit) => credit.job === 'Director'));
+      setDirector(movie.credits.crew.find((credit) => credit.job == 'Director'));
       setWriters(movie.credits.crew.filter((credit) => credit.job === 'Screenplay' || credit.job === 'Writer'));
       setProducers(movie.credits.crew.filter((credit) => credit.job === 'Producer'));
       setStarring(movie.credits.cast.filter((credit) => credit.order <= 5));
@@ -21,13 +20,14 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
 
     }
   }, [movie]);
-
+try{
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <CardMedia component="img"  src={`https://image.tmdb.org/t/p/original${movie.poster_path}`} alt={movie.title} />
       <CardContent>
 
         <Grid container spacing={2}>
+          {director ? ( <>
           <Grid item xs={6} sx={{marginTop:'.9em'}}>
             <Typography variant="h6">
               Directed By:
@@ -36,10 +36,14 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
             <Grid item xs={6}>
             <List>
               <ListItem>
+              <Link href={`/person/${director.id}`}>
               <ListItemText primary={director.name} />
+                </Link>
                 </ListItem>
             </List>
           </Grid>
+          </> ) : null}
+
           <Grid item xs={6}>
             <Typography variant="h6"  sx={{marginTop:'.7em'}}>
               Written By:
@@ -48,7 +52,9 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
             <Grid item xs={6}>
             <List>
               {writers.map((writer) => (
+                <Link href={`/person/${writer.id}`}>
                 <ListItem key={writer.id}><ListItemText primary={writer.name}/></ListItem>
+                </Link>
               ))}
             </List>
           </Grid>
@@ -60,7 +66,9 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
             <Grid item xs={6}>
             <List>
               {producers.map((producer) => (
+                <Link href={`/person/${producer.id}`}>
                 <ListItem key={producer.id}><ListItemText primary={producer.name}/></ListItem>
+                </Link>
               ))}
             </List>
           </Grid>
@@ -72,7 +80,9 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
             <Grid item xs={6}>
             <List>
               {starring.map((star) => (
+                <Link href={`/person/${star.id}`} key={star.id}>
                 <ListItem key={star.id}><ListItemText primary={star.name}/></ListItem>
+                </Link>
               ))}
             </List>
           </Grid>
@@ -102,6 +112,15 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
       </CardContent>
     </Card>
   );
+}catch(err){
+  return (
+    <Card sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Typography variant="h6">
+        Error loading movie details
+      </Typography>
+    </Card>
+  );
+}
 };
 
 export default MovieDetailCard;

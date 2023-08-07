@@ -62,7 +62,6 @@ export const updateMovieList = async (listID, updatedMovieList) => {
   try {
     const movieListRef = doc(db, 'movieLists', listID);
     await updateDoc(movieListRef, updatedMovieList);
-    console.log('Movie list updated successfully');
   } catch (error) {
     throw new Error('Error updating movie list in Firestore: ' + error.message);
   }
@@ -80,7 +79,6 @@ export const addMovieToList = async (listID, movie) => {
       };
 
       await updateDoc(movieListRef, updatedMovieList);
-      console.log('Movie added to list successfully');
     } else {
       throw new Error('Movie list not found.');
     }
@@ -109,7 +107,6 @@ export const updateMovieInList = async (listID, movieID, updatedMovie) => {
       };
 
       await updateDoc(movieListRef, updatedMovieList);
-      console.log('Movie updated in list successfully');
     } else {
       throw new Error('Movie list not found.');
     }
@@ -133,7 +130,6 @@ export const deleteMovieFromList = async (listID, movieID) => {
       };
 
       await updateDoc(movieListRef, updatedMovieList);
-      console.log('Movie deleted from list successfully');
     } else {
       throw new Error('Movie list not found.');
     }
@@ -147,7 +143,6 @@ export const deleteMovieList = async (listID) => {
   try {
     const movieListRef = doc(db, 'movieLists', listID);
     await deleteDoc(movieListRef);
-    console.log('Movie list deleted successfully');
   } catch (error) {
     throw new Error('Error deleting movie list from Firestore: ' + error.message);
   }

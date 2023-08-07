@@ -1,17 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Grid, Stack, Chip, Divider, List, ListItem, ListItemText, Paper, Rating} from '@mui/material';
+import { Container, Typography, Grid, Stack, Chip, Divider, List, ListItem, ListItemText, Paper, Rating, ListItemButton, Avatar, ListItemAvatar} from '@mui/material';
 
 const MovieDetailSection = ({ movie }) => {
     const [genres, setGenres] = useState([]);
     const [cast, setCast] = useState([]);
+    const [crew, setCrew] = useState([]);
 
     useEffect(() => {
         if(!movie || !movie.genres ) return;
         setGenres(movie.genres);
         setCast(movie.credits.cast);
+        const newCrew = []
+        movie.credits.crew.forEach(element => {
+            const corresondingCrew = newCrew.find((crew) => crew.id === element.id);
+            const clonedElement = JSON.parse(JSON.stringify(element)); // Deep copy
+            if(!corresondingCrew){ newCrew.push(clonedElement);}
+            else{
+                newCrew[newCrew.indexOf(corresondingCrew)].job += ", " + element.job;
+            }
+        });
+        setCrew(newCrew);
+
     }, [movie]);
 
-    console.log(movie);
+
     return (
         <Container>
             <Stack direction="row" spacing={2} sx={{ marginTop: '1em', marginBottom: '2em' }} justifyContent="center">
@@ -75,14 +87,41 @@ const MovieDetailSection = ({ movie }) => {
                 Cast
             </Typography>
             <Divider sx={{ marginBottom: '1em' }} />
-            <Paper elevation={3} sx={{ width: '100%', bgcolor: 'background.paper', maxHeight: '65em', overflowY: 'scroll' }}>
+            <Paper elevation={1} sx={{ width: '100%', bgcolor: 'background.paper', maxHeight: '30em', overflowY: 'scroll' }}>
             <List sx={{ width: '100%', overflowY: 'scroll' }}>
             <Grid container spacing={2}>
                 {cast.map((castMember) => (
                     <Grid item xs={6} md={4} key={castMember.id}>
+                    <ListItemButton to={"/person/" + castMember.id} component="a">
                     <ListItem key={castMember.id}>
+                        <ListItemAvatar>
+                            <Avatar alt={castMember.name} src={"https://image.tmdb.org/t/p/w200" + castMember.profile_path} />
+                        </ListItemAvatar>
                         <ListItemText primary={castMember.name} secondary={castMember.character} />
                     </ListItem>
+                    </ListItemButton>
+                    </Grid>	
+                ))}
+            </Grid>
+            </List>
+            </Paper>
+            <Typography variant="h4" sx={{ marginTop: '1em' }}>
+                Crew
+            </Typography>
+            <Divider sx={{ marginBottom: '1em' }} />
+            <Paper elevation={1} sx={{ width: '100%', bgcolor: 'background.paper', maxHeight: '30em', overflowY: 'scroll' }}>
+            <List sx={{ width: '100%', overflowY: 'scroll' }}>
+            <Grid container spacing={2}>
+                {crew.map((castMember) => (
+                    <Grid item xs={6} md={4} key={castMember.id}>
+                    <ListItemButton to={"/person/" + castMember.id} component="a">
+                    <ListItem key={castMember.id}>
+                        <ListItemAvatar>
+                            <Avatar alt={castMember.name} src={"https://image.tmdb.org/t/p/w200" + castMember.profile_path} />
+                        </ListItemAvatar>
+                        <ListItemText primary={castMember.name} secondary={castMember.job} />
+                    </ListItem>
+                    </ListItemButton>
                     </Grid>	
                 ))}
             </Grid>

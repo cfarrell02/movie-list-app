@@ -20,7 +20,6 @@ const WeatherProvider = ({ children }) => {
   const updateWeatherDetails = (newDetails) => {
     setWeatherDetails(newDetails);
     // Store updated weather details in sessionStorage
-    console.log(newDetails)
     sessionStorage.setItem('weatherDetails', JSON.stringify(newDetails));
   };
 

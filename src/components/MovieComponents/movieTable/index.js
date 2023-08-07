@@ -199,7 +199,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   return (
     <TableContainer component={Paper}>
     <Grid container spacing={2} sx={{ p: 2 }} alignItems="center">
-      <Grid item xs={6} align="left">
+      <Grid item xs={12} align="left">
         <TextField
           variant="outlined"
           margin="normal"
@@ -208,7 +208,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
           onChange={handleSearch}
         />
       </Grid>
-      <Grid item xs={2}>
+      {/* <Grid item xs={2}>
         <Select
           native
           label="Field"
@@ -245,7 +245,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
         <Button variant="contained" color="primary" onClick={handleFilter}>
           Filter
         </Button>
-      </Grid>
+      </Grid> */}
     </Grid>
       <Stack direction="row" spacing={1} justifyContent="center">
         {filters.map((filter, index) => (
@@ -349,7 +349,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
       </Table>
      {searchTerm.length===0 && filters.length === 0 ? (
       <TablePagination
-        rowsPerPageOptions={[10, 25, 50]}
+        rowsPerPageOptions={[10, 25, 50, movies.length]}
         component="div"
         count={movies.length}
         rowsPerPage={rowsPerPage}

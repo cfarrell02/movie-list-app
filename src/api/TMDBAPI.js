@@ -42,9 +42,7 @@ export const getMovies = (pageNum) => {
       throw error;
     })
   }
-  export const getPerson= (args) => {
-    const [, idPart] = args.queryKey;
-    const {id} = idPart;
+  export const getPerson= (id) => {
     return fetch(
       `https://api.themoviedb.org/3/person/${id}?api_key=${process.env.REACT_APP_TMDB_KEY}`
     ).then((response) => {

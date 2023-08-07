@@ -39,7 +39,7 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
                 <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={movie.title} style={{maxHeight:"120px" }}/>
               </TableCell>
               <TableCell align='center' component="th" scope="row" >
-                <a href={`/movie/${movie.id}`} >{movie.title}</a><br/>
+                <Link href={`/movie/${movie.id}`} >{movie.title}</Link><br/>
               </TableCell>
               <TableCell align="right">{new Date(movie.release_date).getFullYear()} </TableCell>
               <Tooltip title={movie.vote_average+'/10'} placement="top"><TableCell align="right"><Rating precision={0.25} name="read-only" value={movie.vote_average/2} readOnly /></TableCell></Tooltip>

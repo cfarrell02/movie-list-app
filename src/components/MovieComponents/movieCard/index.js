@@ -81,36 +81,37 @@ export default function MovieCard({ movie }) {
  
    return (
     <Card >
-       <CardHeader
+       {/* <CardHeader
        sx={{height: '5vh'}}
         title={
           <Typography variant="h6" component="p">
             {movie.title}
           </Typography>
         }
-      />
-
+      /> */}
+    <Link to = {`/movie/${movie.id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
       <CardMedia
-        sx={{ height: '50vh',}}
+        sx={{ height: 'auto', paddingTop: '150%', position: 'relative'}}
+        title={movie.title}
         image={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
-      />
-      <CardContent>
-        <Grid container>
-          <Grid item xs={6}>
-            <Typography variant="h6" component="p">
-              <CalendarIcon fontSize="small" />
-              {new Date(movie.release_date).toLocaleDateString()}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sx={{display:"flex",  alignItems: 'flex-end', justifyContent:'flex-end'}}>
-            <Typography variant="h6" component="p">
-              <StarRateIcon fontSize="small" />
-              {"  "}{movie.vote_average}{" "}
-            </Typography>
-          </Grid>
+      >
+        <Grid container sx={{ background: 'linear-gradient(to bottom, transparent, rgba(0, 0, 0, 1))', color:'white', paddingTop:'2em'}}>
+              <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center' }}>
+          <CalendarIcon fontSize="small" sx={{ marginRight: '4px' }} />
+          <Typography variant="h6" component="p">
+            {new Date(movie.release_date).toLocaleDateString()}
+          </Typography>
         </Grid>
-      </CardContent>
-      <CardActions>
+        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+          <Typography variant="h6" component="p">
+            <StarRateIcon fontSize="small" sx={{ marginRight: '4px' }} />
+            {movie.vote_average}
+          </Typography>
+        </Grid>
+        </Grid>
+      </CardMedia>
+      </Link>
+      {/* <CardActions>
       <Link to={`/movie/${movie.id}`}>
         <Button variant="outlined" size="medium" color="primary" sx={{minWidth:'20ch'}}>
           More Info ...
@@ -131,7 +132,7 @@ export default function MovieCard({ movie }) {
         </Select>
         </FormControl>
 
-      </CardActions>
+      </CardActions> */}
     </Card>
   );
 }

@@ -46,23 +46,23 @@ const Header = ({ handleLogout}) => {
         </IconButton> */}
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           <Button color="inherit" onClick={() => navigate('/home')}>
-          Weather App - {user.firstName} {user.lastName}
+          Movie App - {user.firstName} {user.lastName}
         </Button>
         </Typography>
 
         <Button color="inherit" onClick={() => navigate('/movielist')}>
-          Movie List
+          Movie Lists
         </Button>
-        <Button color="inherit" onClick={() => navigate('/weather')}>
+        {/* <Button color="inherit" onClick={() => navigate('/weather')}>
           Weather
-        </Button>
+        </Button> */}
         <Button color="inherit" onClick={() => navigate('/login')}>
           Logout
         </Button>
         </>
         ) : (
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Weather App
+          Movie App
         </Typography>
         )}
       </Toolbar>

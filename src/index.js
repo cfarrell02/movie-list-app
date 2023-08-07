@@ -15,6 +15,7 @@ import Header from './components/siteHeader';
 import AlertNotice from './components/alertNotice';
 import LoginPage from './pages/loginPage';
 import './index.css';
+import PersonPage from './pages/personPage';
 
 const PrivateRoute = ({ children, isAuthenticated }) => {
   const [shouldRedirect, setShouldRedirect] = useState(false);
@@ -121,6 +122,10 @@ const App = () => {
           <Route
             path="/movielist"
             element={<PrivateRoute isAuthenticated={user !== null}><MovieHomePage /></PrivateRoute>}
+          />
+          <Route
+            path="/person/:id"
+            element={<PrivateRoute isAuthenticated={user !== null}><PersonPage /></PrivateRoute>}
           />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

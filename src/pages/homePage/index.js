@@ -12,7 +12,7 @@ const Homepage = () => {
       try {
           setLoading(true);
           const fetchedMovies = await getMovies(1);
-          setMovies(fetchedMovies.results);
+          setMovies(fetchedMovies.results.slice(0, 18));
       } catch (error) {
           console.error('Error getting movies:', error);
       } finally {
@@ -29,7 +29,7 @@ const Homepage = () => {
             setLoading(true);
             const fetchedMovies = await getMovieSearchResults(1, value);
             console.log(fetchedMovies);
-            setMovies(fetchedMovies);
+            setMovies(fetchedMovies.slice(0, 18));
         } catch (error) {
             console.error('Error getting movies:', error);
         } finally {
@@ -40,8 +40,8 @@ const Homepage = () => {
 
 
   return (
-    <Box  sx={{padding: '5%' }}>
-      <Card spacing={2} sx={{padding:'5%', marginBottom:'5%', display:'flex', justifyContent:'center', marginLeft:'20%', marginRight:'20%'}}>
+    <Box  sx={{paddingLeft: '10%', paddingRight:'10%' }}>
+      <Card spacing={2} sx={{padding:'5%', marginBottom:'5%', display:'flex', justifyContent:'center', marginLeft:'20%', marginRight:'20%', marginTop:'2%'}}>
         <Stack spacing={2}>
       <Typography variant="h2" component="h1" align="center" sx={{ mb: 4 }}>
         Browse Movies
@@ -54,7 +54,7 @@ const Homepage = () => {
       ) : (
         <Grid container spacing={2}>
         {!movies ? null : movies.map((movie) => (
-        <Grid item xs={3}>
+        <Grid item xs={2}>
         <MovieCard  movie={movie} />
         </Grid>
       ))}</Grid>

@@ -82,7 +82,7 @@ const MovieDetailsPage = (props) => {
     };
   
     fetchData();
-  }, [user]);
+  }, []);
 
   const handleChange = async (event) => {
     const userData = await getUserById(user.uid);

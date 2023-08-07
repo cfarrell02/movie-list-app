@@ -76,6 +76,17 @@ export const timeFormatter = (date) => {
   return formattedTime === "Invalid Date" ? "" : formattedTime;
 }
 
+export const ageFormatter = (date) => {
+  const today = new Date();
+  const targetDate = new Date(date);
+  const age = today.getFullYear() - targetDate.getFullYear();
+  const month = today.getMonth() - targetDate.getMonth();
+  if (month < 0 || (month === 0 && today.getDate() < targetDate.getDate())) {
+    return age - 1;
+  }
+  return age;
+}
+
 
 
 //Method to convert date to x days ago

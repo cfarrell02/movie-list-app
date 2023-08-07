@@ -95,6 +95,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
         sx={{ marginTop: '1em', marginRight: '1em' }}
         color="primary"
         onClick={() => navigate('/movielist/' + movieList.id)}
+        title="Open List"
       >
         Open List
       </Button>
@@ -105,8 +106,9 @@ const MovieListCard = ({ movieList, onDelete }) => {
         sx={{ marginTop: '.5em' }}
         color="primary"
         onClick={() => onDelete(movieList.id)}
+        title = "Delete List"
         >
-        <DeleteIcon fontSize="inherit" />
+        <DeleteIcon fontSize="inherit"/>
         </IconButton>
         )}
     </Card>
