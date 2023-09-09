@@ -44,6 +44,7 @@ const MovieDetailsPage = (props) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
+        
       } else {
         setUser(null);
       }

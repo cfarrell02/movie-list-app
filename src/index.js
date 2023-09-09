@@ -17,18 +17,16 @@ import LoginPage from './pages/loginPage';
 import './index.css';
 import PersonPage from './pages/personPage';
 
-const PrivateRoute = ({ children, isAuthenticated, loadedUser}) => {
+const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
-    let timeoutId;
-    
-    if (!isAuthenticated && loadedUser) {
-        setShouldRedirect(true);
-    }
 
-    return () => clearTimeout(timeoutId);
-  }, [isAuthenticated]);
+    // Check if isAuthenticated is false and loadedUser is true
+    if (!isAuthenticated && loadedUser) {
+      setShouldRedirect(true);
+    }
+  }, [isAuthenticated, loadedUser]); // Include both dependencies in the array
 
   return isAuthenticated || !shouldRedirect ? (
     children
@@ -36,6 +34,7 @@ const PrivateRoute = ({ children, isAuthenticated, loadedUser}) => {
     <Navigate to="/login" replace />
   );
 };
+
 
 
 const App = () => {

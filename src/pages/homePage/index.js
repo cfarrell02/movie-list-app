@@ -54,7 +54,7 @@ const Homepage = () => {
       ) : (
         <Grid container spacing={2}>
         {!movies ? null : movies.map((movie) => (
-        <Grid item xs={2}>
+        <Grid item xs={6} md={2}>
         <MovieCard  movie={movie} />
         </Grid>
       ))}</Grid>
