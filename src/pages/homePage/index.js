@@ -13,6 +13,7 @@ const Homepage = () => {
           setLoading(true);
           const fetchedMovies = await getMovies(1);
           setMovies(fetchedMovies.results.slice(0, 18));
+          console.log(fetchedMovies)
       } catch (error) {
           console.error('Error getting movies:', error);
       } finally {

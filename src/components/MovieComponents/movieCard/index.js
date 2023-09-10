@@ -48,7 +48,6 @@ export default function MovieCard({ movie }) {
   
     fetchData();
   }, [user]);
-
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -81,22 +80,14 @@ export default function MovieCard({ movie }) {
  
    return (
     <Card >
-       {/* <CardHeader
-       sx={{height: '5vh'}}
-        title={
-          <Typography variant="h6" component="p">
-            {movie.title}
-          </Typography>
-        }
-      /> */}
-    <Link to = {`/movie/${movie.id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
+    <Link to = {`/movie/${movie.id}`} sx={{ textDecoration: 'none', color: 'inherit' }} style={{ color: 'inherit', textDecoration: 'inherit'}}>
       <CardMedia
         sx={{ height: 'auto', paddingTop: '150%', position: 'relative'}}
         title={movie.title}
         image={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
       >
         <Grid container sx={{ background: 'linear-gradient(to bottom, transparent, rgba(0, 0, 0, 1))', color:'white', paddingTop:'2em'}}>
-              <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center' }}>
+        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center' }}>
           <CalendarIcon fontSize="small" sx={{ marginRight: '4px' }} />
           <Typography variant="h6" component="p">
             {new Date(movie.release_date).toLocaleDateString()}
@@ -111,28 +102,6 @@ export default function MovieCard({ movie }) {
         </Grid>
       </CardMedia>
       </Link>
-      {/* <CardActions>
-      <Link to={`/movie/${movie.id}`}>
-        <Button variant="outlined" size="medium" color="primary" sx={{minWidth:'20ch'}}>
-          More Info ...
-        </Button>
-      </Link>
-      <FormControl sx={{ m: 1, minWidth: 80 }} size='small' fullWidth>
-        <InputLabel> Add to list</InputLabel>
-        <Select
-        fullWidth
-        sx={{height: '2.25em'}}
-        onChange={handleChange}
-        label="Add to list"
-        title= 'Select a list to add this movie to'
-        >
-          {movieLists.map((list) => (
-          <MenuItem value={list.id}>{list.title}</MenuItem>
-          ))}
-        </Select>
-        </FormControl>
-
-      </CardActions> */}
     </Card>
   );
 }

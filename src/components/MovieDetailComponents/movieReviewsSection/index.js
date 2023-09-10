@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, TextField, Button, Box, Card, Alert, Grid, Divider, Avatar} from '@mui/material';
+import { Container, Typography, TextField, Button, Box, Card, Link, Grid, Divider, Avatar} from '@mui/material';
 import { getMovieReviews } from '../../../api/TMDBAPI';
 import { dateReadableFormatter } from '../../../utils';
 
@@ -15,6 +15,7 @@ const MovieReviewSection = ({ movieId }) => {
       setReviews(reviews);
     });
   }, [movieId, reviewPage]);
+  
 
   if(reviews.length === 0) return (
     <Container>
@@ -32,10 +33,13 @@ const MovieReviewSection = ({ movieId }) => {
           <Grid container spacing={2} sx={{marginTop:'.5em', marginBottom:'.5em'}}>
 
                     <Grid item xs={9} sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar alt={review.author} src={`https://image.tmdb.org/t/p/original${review.avatar_path}`} sx={{marginRight:'1em'}}/>
+            <Avatar alt={review.author} src={`https://image.tmdb.org/t/p/w200/${review.author_details.avatar_path}`} sx={{marginRight:'1em'}}/>
+            <Link href={`https://www.themoviedb.org/u/${review.author_details.username}`}>
+
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                 {review.author}
             </Typography>
+            </Link>
             </Grid>
 
             <Grid item xs={3} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
