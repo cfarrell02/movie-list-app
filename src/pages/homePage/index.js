@@ -41,7 +41,7 @@ const Homepage = () => {
 
 
   return (
-    <Box  sx={{paddingLeft: '10%', paddingRight:'10%' }}>
+    <Box  sx={{paddingLeft: '10%', paddingRight:'10%', paddingBottom:'4em'}}>
       <Card spacing={2} sx={{padding:'5%', marginBottom:'5%', display:'flex', justifyContent:'center', marginLeft:'20%', marginRight:'20%', marginTop:'2%'}}>
         <Stack spacing={2}>
       <Typography variant="h2" component="h1" align="center" sx={{ mb: 4 }}>
