@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, Button, Grid, Box, Input, Card, Stack, CircularProgress} from '@mui/material';
+import { Container, Typography, CardContent, Grid, Box, Input, Card, Stack, CircularProgress, Tab, Paper, TableContainer} from '@mui/material';
 import { getMovies, getMovieSearchResults } from '../../api/TMDBAPI';
 import MovieCard from '../../components/MovieComponents/movieCard';
 
@@ -42,23 +42,40 @@ const Homepage = () => {
 
   return (
     <Box  sx={{paddingLeft: '10%', paddingRight:'10%', paddingBottom:'4em'}}>
-      <Card spacing={2} sx={{padding:'5%', marginBottom:'5%', display:'flex', justifyContent:'center', marginLeft:'20%', marginRight:'20%', marginTop:'2%'}}>
-        <Stack spacing={2}>
-      <Typography variant="h2" component="h1" align="center" sx={{ mb: 4 }}>
-        Browse Movies
-      </Typography>
-      <Input onChange={onChange} placeholder="Search for a movie" />
+ <Card
+    sx={{
+      marginTop: '20px', // Move card 20px away from siblings
+      padding: '16px', // Adjust padding for more space
+      marginBottom: '20px', // Wider spacing
+      borderRadius: '12px', // Rounded corners
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Subtle shadow
+    }}
+  >
+    <CardContent>
+      <Stack spacing={2}>
+        <Typography variant="h4" align="center" sx={{ mb: 2, fontWeight: 'bold' }}>
+          Browse Movies
+        </Typography>
+        <Input
+          onChange={onChange}
+          placeholder="Search for a movie"
+        />
       </Stack>
-      </Card>
+    </CardContent>
+  </Card>
       {loading ? ( 
         <CircularProgress align='center'/>
       ) : (
+        <TableContainer component={Paper}>
+          <Tab label="Movies">
+          </Tab>
         <Grid container spacing={2}>
         {!movies ? null : movies.map((movie) => (
         <Grid item xs={6} md={2}>
         <MovieCard  movie={movie} />
         </Grid>
       ))}</Grid>
+      </TableContainer>
       )}
       
     </Box>
