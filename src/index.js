@@ -9,6 +9,7 @@ import { addUser } from './api/userDataStorage';
 import { auth } from './firebase-config';
 import MovieTrackingPage from './pages/movieTrackingPage';
 import MovieHomePage from './pages/movieHomePage';
+import SiteFooter from './components/siteFooter';
 import MovieDetailsPage from './pages/movieDetailsPage';
 import HomePage from './pages/homePage';
 import Header from './components/siteHeader';
@@ -129,6 +130,7 @@ const App = () => {
           />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
+        <SiteFooter/>
         <AlertNotice/>
         </AlertProvider>
         </WeatherProvider>
