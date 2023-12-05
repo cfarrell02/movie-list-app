@@ -96,7 +96,7 @@ export const dateReadableFormatter = (date) => {
     const seconds = Math.floor((today - targetDate) / 1000);
     if(seconds < 86400){
         if(seconds < 60){
-            return `${seconds}s ago`;
+        return 'Just now';
         }else if(seconds < 3600){
             return `${Math.floor(seconds/60)}m ago`;
         }else if(seconds < 86400){
