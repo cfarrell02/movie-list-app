@@ -86,12 +86,12 @@ const MovieHomePage = () => {
       ) : (
         <Grid container spacing={2} alignItems="center">
           {movieLists.map((movieList) => (
-            <Grid item xs={4} key={movieList.id}>
+            <Grid item xs={12} md={4}  key={movieList.id}>
               <MovieListCard movieList={movieList} onDelete={handleDeleteMovieList} />
             </Grid>
           ))}
 
-        <Grid item xs={4} alignContent="center" alignItems="center" justifyContent="center">
+        <Grid item xs={12} md={4} alignContent="center" alignItems="center" justifyContent="center">
           <Link onClick={() => setModalOpen(true)}>
             <Card
               sx={{

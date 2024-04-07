@@ -44,18 +44,14 @@ const App = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-      } else {
-        setUser(null);
-      }
-    });
+      setUser(user);
+      setLoadedUser(true);
+    }
+    );
 
     return () => {
       unsubscribe();
-      setLoadedUser(true);
-    };
-
+    }
   }, []);
 
   const handleLogin = async (username, password) => {

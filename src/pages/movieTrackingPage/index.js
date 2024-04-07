@@ -19,6 +19,7 @@ import MovieAdd from '../../components/MovieComponents/movieAdd';
 import { useParams , useNavigate} from 'react-router-dom';
 import {auth} from '../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
+import { CheckBox } from '@mui/icons-material';
 
 const MovieTrackingPage = (props) => {
   const [movies, setMovies] = useState([]);

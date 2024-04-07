@@ -4,7 +4,7 @@ import { Typography, Link } from '@mui/material';
 function SiteFooter() {
     
     return (
-        <div>
+        <div style={{paddingTop:'2em'}}>
             <Typography variant="h6" align="center" gutterBottom>
                 Movie List App
             </Typography>
