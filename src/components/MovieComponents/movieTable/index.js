@@ -231,11 +231,11 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   
 
     </Grid>
-      <Stack direction="row" spacing={1} justifyContent="center">
+      {/* <Stack direction="row" spacing={1} justifyContent="center">
         {filters.map((filter, index) => (
           <Chip label={filter.label} variant="outlined" onDelete={() => handleDelete(index)} key={index}/>
         ))}
-    </Stack>
+    </Stack> */}
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
       <TableHead>
           <TableRow align="left">
