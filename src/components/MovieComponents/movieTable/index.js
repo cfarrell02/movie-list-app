@@ -213,7 +213,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
         <Typography variant="subtitle2" component="div">
           Show watched movies</Typography>
         <Checkbox defaultChecked={true}
-        value={filters.some((filter) => filter.label === 'watched = true')}
+        value={!filters.some((filter) => filter.label === 'watched = true')}
           onChange={(e) => {
             if(!e.target.checked){
               setFilters([...filters, {field: 'watched', operator: '=', value: false, label: 'watched = true'}]);
