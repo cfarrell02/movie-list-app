@@ -35,7 +35,7 @@ const Header = ({ handleLogout}) => {
   };
 
   return (
-    <AppBar position="static" sx={{ margin: '1em', borderRadius: '1em' , width: 'calc(100% - 2em)'}}>
+    <AppBar position="static" sx={{ margin: '.25em 1em 1em 1em', borderRadius: '1em' , width: 'calc(100% - 2em)'}}>
       <Toolbar>
         {user!==null ? ( <>
         {/* <IconButton color="inherit" onClick={handleBack} sx={{marginRight:"1em"}}>
