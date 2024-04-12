@@ -69,7 +69,7 @@ const Homepage = () => {
         <TableContainer component={Paper}>
           <Tab label="Movies">
           </Tab>
-        <Grid container spacing={2}>
+        <Grid container spacing={2} sx={{padding: '0 1em 1em 1em'}}>
         {!movies ? null : movies.map((movie) => (
         <Grid item xs={6} md={2}>
         <MovieCard  movie={movie} />

@@ -23,7 +23,8 @@ import {
   Alert,
   InputAdornment
 } from '@mui/material';
-import { ArrowUpward, ArrowDownward, Filter, Label } from '@mui/icons-material';
+import { ArrowUpward, ArrowDownward, Filter, Label, Refresh } from '@mui/icons-material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { orderBy } from 'lodash';
 import { AlertContext } from '../../../contexts/alertContext';
 import Checkbox from '@mui/material/Checkbox';
@@ -209,7 +210,20 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
           onChange={handleSearch}
         />
       </Grid>
-      <Grid item xs={4} align="centre">
+      <Grid item xs={1} align="left">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+
+          }}
+        >
+          <RefreshIcon />
+        </Button>
+      </Grid>
+
+
+      <Grid item xs={3} align="centre">
         <Typography variant="subtitle2" component="div">
           Show watched movies</Typography>
         <Checkbox defaultChecked={true}
