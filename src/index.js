@@ -17,6 +17,8 @@ import AlertNotice from './components/alertNotice';
 import LoginPage from './pages/loginPage';
 import './index.css';
 import PersonPage from './pages/personPage';
+import CircularProgress from '@mui/material/CircularProgress';
+
 
 const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
   const [shouldRedirect, setShouldRedirect] = useState(false);
@@ -29,11 +31,13 @@ const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
     }
   }, [isAuthenticated, loadedUser]); // Include both dependencies in the array
 
-  return isAuthenticated || !shouldRedirect ? (
+  return isAuthenticated ? (
     children
-  ) : (
+  ) : (shouldRedirect ?(
     <Navigate to="/login" replace />
-  );
+  )
+  : <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}><CircularProgress/></div>
+);
 };
 
 

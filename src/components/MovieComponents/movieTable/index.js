@@ -24,7 +24,6 @@ import {
   InputAdornment
 } from '@mui/material';
 import { ArrowUpward, ArrowDownward, Filter, Label, Refresh } from '@mui/icons-material';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import { orderBy } from 'lodash';
 import { AlertContext } from '../../../contexts/alertContext';
 import Checkbox from '@mui/material/Checkbox';
@@ -201,7 +200,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   return (
     <TableContainer component={Paper}>
     <Grid container spacing={2} sx={{ p: 2 }} alignItems="center">
-      <Grid item xs={8} align="left">
+      <Grid item xs={9} align="left">
         <TextField
           variant="outlined"
           margin="normal"
@@ -210,17 +209,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
           onChange={handleSearch}
         />
       </Grid>
-      <Grid item xs={1} align="left">
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
 
-          }}
-        >
-          <RefreshIcon />
-        </Button>
-      </Grid>
 
 
       <Grid item xs={3} align="centre">

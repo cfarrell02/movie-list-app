@@ -32,6 +32,14 @@ const MovieTrackingPage = (props) => {
   const {addAlert} = React.useContext(AlertContext);
   const navigate = useNavigate();
 
+  const refreshMovieList = async () => {
+    setLoading(true);
+    const movies = await getMovieListById(listId);
+    setMovies(movies.movies);
+    setMovieList(movies);
+    setLoading(false);
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -128,6 +136,7 @@ const MovieTrackingPage = (props) => {
   setMovies={setMovies}
   disabled={accessType === 0} 
   currentUserID = {user ? user.uid : null}
+  onRefresh={refreshMovieList}
 />
 
           <MovieTable

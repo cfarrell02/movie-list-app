@@ -5,15 +5,15 @@ import {AlertContext} from '../../../contexts/alertContext';
 import { Container, Typography, TextField, Button, Card, Grid, Autocomplete, CircularProgress, Alert, Box } from '@mui/material';
 import { getMovie, getMovieSearchResults } from '../../../api/TMDBAPI';
 import { getMovies, addMovieToList, updateMovieInList, deleteMovieFromList} from '../../../api/movieStorage';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 
-const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID}) => {
+const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID, onRefresh}) => {
   const [open, setOpen] = useState(false);
   const [fetchingMovies, setFetchingMovies] = useState(false);
   const [options, setOptions] = useState([]);
   const { addAlert } = useContext(AlertContext);
-
-  const movieTitleTextField = useRef(null);
+  const [searchText, setSearchText] = useState('');
 
   const [movie, setMovie] = useState({});
 
@@ -37,7 +37,8 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID}) =
   const handleTextFieldChange = async (event) => {
     try {
       setFetchingMovies(true);
-      let data = await getMovieSearchResults(1, event.target.value);
+      setSearchText(event.target.value);
+      let data = await getMovieSearchResults(1, searchText);
       if (data) {
         setOptions(data);
       } else {
@@ -56,20 +57,20 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID}) =
       if (movie.id === undefined) throw new Error('No movie selected.');
       if (movies.find((m) => m.id === movie.id)) throw new Error('Movie already added.');
       movie.watched = false;
-
+      
     //   const listID = await addMovie(ownerID, movie);
       movie.addedDate = new Date().toISOString();
       movie.addedBy = currentUserID;
 
       const updatedMovieList = [...movies, { id: movie.id, ...movie }];
 
-
+      // setSearchText('');
+      // setMovie({});
       
       setMovies(updatedMovieList);
       await addMovieToList(listId, movie);
       
-      movieTitleTextField.current.value = '';
-      setMovie({});
+
       addAlert('success', `${movie.title} added to list.`);
     } catch (error) {
       addAlert('error', error.message);
@@ -81,12 +82,20 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID}) =
 
   return (
     <Card sx={{ marginBottom: '1em', marginTop: '1em' }}>
-      <Grid container spacing={2} alignItems="center">
-        <Grid item xs={12}>
+      <Grid container spacing={2} alignItems="center" sx={{ padding: '1em' }}>
+      <Grid item xs={2}>
+      </Grid>
+
+        <Grid item xs={8}>
           <Typography variant="h4" component="h1" align="center" sx={{ mb: 2 }}>
             {title}
           </Typography>
         </Grid>
+        <Grid item xs={2}>
+          <Button variant="contained" onClick={onRefresh} disabled={disabled}>
+            <RefreshIcon />
+          </Button>
+          </Grid>
       </Grid>
       <Autocomplete
         disabled={disabled}
@@ -118,10 +127,10 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID}) =
         renderInput={(params) => (
           <TextField
             {...params}
+            value={searchText}
             label="Movie Title"
             onChange={handleTextFieldChange}
             style={{ marginBottom: '4em', marginTop: '2em', width: '90%' }}
-            ref={movieTitleTextField}
             InputProps={{
               ...params.InputProps,
               endAdornment: (
