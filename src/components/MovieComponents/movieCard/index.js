@@ -90,7 +90,7 @@ export default function MovieCard({ movie }) {
         <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center'}}>
           <CalendarIcon fontSize="small" sx={{ marginRight: '4px' }} />
           <Typography variant="h6" component="p">
-            {new Date(movie.release_date).toLocaleDateString()}
+            {new Date(movie.release_date).getFullYear()}
           </Typography>
         </Grid>
         <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
