@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, TextField, Button, Box, Card, Alert, Input} from '@mui/material';
+import { Container, Typography, TextField, Button, Box, Card, Alert, Input, Grid} from '@mui/material';
+import { Switch } from '@mui/material';
 import {auth} from '../../firebase-config';
 import { onAuthStateChanged } from "firebase/auth";
 
-const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
+const LoginPage = ({ handleLogin, handleRegister , handleLogout, toggleTheme, theme}) => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -64,9 +65,11 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100vh',
+        marginBottom: '8rem',
       }}
     >
+
+
         
       <Typography variant="h2" component="h1" align="center" sx={{ mb: 4 }}>
         Welcome! {user ? user.email : null}
@@ -157,9 +160,12 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
         </Button>
         </>)
         :(
+          
+ 
             <Button variant="contained" size="large" color="primary" onClick={() => handleLogout()}>
             Logout
             </Button>
+      
         )}
 
       </Card>
@@ -167,6 +173,11 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout}) => {
       {error !== '' ?
         <Alert severity="error" sx={{marginTop:'2em'}}>{error}</Alert>
         : null}   
+
+      <Card sx={{marginTop:'2em', flexDirection:'column', display:'flex', alignItems:'center', padding:'1em'}} >
+        <Typography variant="h6" component="p" sx={{marginBottom:'1em'}}>Toggle Theme</Typography>
+        <Switch onChange={toggleTheme} checked={theme === 'dark'}/>
+      </Card>
     </Container>
   );
 };

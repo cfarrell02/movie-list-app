@@ -35,6 +35,7 @@ const Header = ({ handleLogout}) => {
   };
 
   return (
+    <div style={{display: 'flex', justifyContent: 'center', margin:'0' }}>
     <AppBar position="static" sx={{ margin: '.25em 1em 1em 1em', borderRadius: '1em' , width: 'calc(100% - 2em)'}}>
       <Toolbar>
         {user!==null ? ( <>
@@ -57,7 +58,7 @@ const Header = ({ handleLogout}) => {
           Weather
         </Button> */}
         <Button color="inherit" onClick={() => navigate('/login')}>
-          Logout
+          Settings
         </Button>
         </>
         ) : (
@@ -67,6 +68,7 @@ const Header = ({ handleLogout}) => {
         )}
       </Toolbar>
     </AppBar>
+    </div>
     
   );
 };
