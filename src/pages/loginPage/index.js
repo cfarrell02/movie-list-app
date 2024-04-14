@@ -71,7 +71,7 @@ const LoginPage = ({ handleLogin, handleRegister , handleLogout, toggleTheme, th
 
 
         
-      <Typography variant="h2" component="h1" align="center" sx={{ mb: 4 }}>
+      <Typography variant="h2" component="h1" align="center" sx={{ mb: 4 , color: 'text.primary'}}>
         Welcome! {user ? user.email : null}
       </Typography>
       

@@ -32,6 +32,7 @@ const MovieHomePage = () => {
 
   useEffect(() => {
     const fetchMovieLists = async () => {
+    
       try {
         setLoading(true);
         if (user) {
@@ -77,7 +78,7 @@ const MovieHomePage = () => {
       sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', paddingTop: '5%' }}
     >
       <NewMovieListModal title="New Movie List" body="Enter a name for your new movie list." open={modalOpen} onClose={handleNewMovieList} />
-      <Typography variant="h2" component="h1" align="center" sx={{ mb: 4 }}>
+      <Typography variant="h2" align="center" sx={{ mb: 4, color: 'text.primary' }}>
         Welcome!
       </Typography>
 

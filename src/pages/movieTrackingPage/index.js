@@ -121,7 +121,7 @@ const MovieTrackingPage = (props) => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4 , minHeight: '100vh'}}>
       <Paper elevation={3} sx={{ p: 2, mb: 2 }} align="center">
         <Tabs value={selectedTab} onChange={handleTabChange} centered sx={{marginBottom:'2em'}}>
           <Tab label="Movies" />
