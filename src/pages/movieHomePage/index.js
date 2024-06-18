@@ -32,6 +32,7 @@ const MovieHomePage = () => {
 
   useEffect(() => {
     const fetchMovieLists = async () => {
+    
       try {
         setLoading(true);
         if (user) {
@@ -77,7 +78,7 @@ const MovieHomePage = () => {
       sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', paddingTop: '5%' }}
     >
       <NewMovieListModal title="New Movie List" body="Enter a name for your new movie list." open={modalOpen} onClose={handleNewMovieList} />
-      <Typography variant="h2" component="h1" align="center" sx={{ mb: 4 }}>
+      <Typography variant="h2" align="center" sx={{ mb: 4, color: 'text.primary' }}>
         Welcome!
       </Typography>
 
@@ -86,12 +87,12 @@ const MovieHomePage = () => {
       ) : (
         <Grid container spacing={2} alignItems="center">
           {movieLists.map((movieList) => (
-            <Grid item xs={4} key={movieList.id}>
+            <Grid item xs={12} md={4}  key={movieList.id}>
               <MovieListCard movieList={movieList} onDelete={handleDeleteMovieList} />
             </Grid>
           ))}
 
-        <Grid item xs={4} alignContent="center" alignItems="center" justifyContent="center">
+        <Grid item xs={12} md={4} alignContent="center" alignItems="center" justifyContent="center">
           <Link onClick={() => setModalOpen(true)}>
             <Card
               sx={{

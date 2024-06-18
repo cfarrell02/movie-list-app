@@ -23,9 +23,10 @@ import {
   Alert,
   InputAdornment
 } from '@mui/material';
-import { ArrowUpward, ArrowDownward, Filter, Label } from '@mui/icons-material';
+import { ArrowUpward, ArrowDownward, Filter, Label, Refresh } from '@mui/icons-material';
 import { orderBy } from 'lodash';
 import { AlertContext } from '../../../contexts/alertContext';
+import Checkbox from '@mui/material/Checkbox';
 
 const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const [page, setPage] = useState(0);
@@ -199,7 +200,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   return (
     <TableContainer component={Paper}>
     <Grid container spacing={2} sx={{ p: 2 }} alignItems="center">
-      <Grid item xs={12} align="left">
+      <Grid item xs={9} align="left">
         <TextField
           variant="outlined"
           margin="normal"
@@ -208,50 +209,36 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
           onChange={handleSearch}
         />
       </Grid>
-      {/* <Grid item xs={2}>
-        <Select
-          native
-          label="Field"
-          sx={{ marginTop: '8px' }}
-          onChange={(e) => setField(e.target.value)}
-          fullWidth
-          inputProps={{
-            name: 'field',
-            id: 'field-select',
+
+
+
+      <Grid item xs={3} align="centre">
+        <Typography variant="subtitle2" component="div">
+          Show watched movies</Typography>
+        <Checkbox defaultChecked={true}
+        value={!filters.some((filter) => filter.label === 'watched = false')}
+          onChange={(e) => {
+            if(!e.target.checked){
+              setFilters([...filters, {field: 'watched', operator: '=', value: false, label: 'watched = false'}]);
+            }else{
+              setFilters(filters.filter((filter) => filter.label !== 'watched = false'));
+            }
           }}
-        >
-          <option value="release_date">Release Date</option>
-          <option value="vote_average">Rating</option>
-          <option value="runtime">Runtime</option>
-          <option value="watched">Watched</option>
-          <option value="addedDate">Added Date</option>
-        </Select>
+        />
+
+
+          
       </Grid>
-      <Grid item xs={1}>
-        <Select
-          native
-          sx={{ marginTop: '8px' }}
-          label="Operator"
-          onChange={(e) => setOperator(e.target.value)}
-          fullWidth
-        >
-          {renderOperatorOptions()}
-        </Select>
-      </Grid>
-      <Grid item xs={2} sx={{ marginTop: '8px' }}>
-        {renderFilterValueInput()}
-      </Grid>
-      <Grid item xs={1}>
-        <Button variant="contained" color="primary" onClick={handleFilter}>
-          Filter
-        </Button>
-      </Grid> */}
+
+
+  
+
     </Grid>
-      <Stack direction="row" spacing={1} justifyContent="center">
+      {/* <Stack direction="row" spacing={1} justifyContent="center">
         {filters.map((filter, index) => (
           <Chip label={filter.label} variant="outlined" onDelete={() => handleDelete(index)} key={index}/>
         ))}
-    </Stack>
+    </Stack> */}
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
       <TableHead>
           <TableRow align="left">

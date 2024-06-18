@@ -19,6 +19,7 @@ import MovieAdd from '../../components/MovieComponents/movieAdd';
 import { useParams , useNavigate} from 'react-router-dom';
 import {auth} from '../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
+import { CheckBox } from '@mui/icons-material';
 
 const MovieTrackingPage = (props) => {
   const [movies, setMovies] = useState([]);
@@ -30,6 +31,14 @@ const MovieTrackingPage = (props) => {
   const [accessType, setAccessType] = useState(0);
   const {addAlert} = React.useContext(AlertContext);
   const navigate = useNavigate();
+
+  const refreshMovieList = async () => {
+    setLoading(true);
+    const movies = await getMovieListById(listId);
+    setMovies(movies.movies);
+    setMovieList(movies);
+    setLoading(false);
+  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -112,7 +121,7 @@ const MovieTrackingPage = (props) => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4 , minHeight: '100vh'}}>
       <Paper elevation={3} sx={{ p: 2, mb: 2 }} align="center">
         <Tabs value={selectedTab} onChange={handleTabChange} centered sx={{marginBottom:'2em'}}>
           <Tab label="Movies" />
@@ -127,6 +136,7 @@ const MovieTrackingPage = (props) => {
   setMovies={setMovies}
   disabled={accessType === 0} 
   currentUserID = {user ? user.uid : null}
+  onRefresh={refreshMovieList}
 />
 
           <MovieTable

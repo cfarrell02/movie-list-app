@@ -86,17 +86,17 @@ export default function MovieCard({ movie }) {
         title={movie.title}
         image={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
       >
-        <Grid container sx={{ background: 'linear-gradient(to bottom, transparent, rgba(0, 0, 0, 1))', color:'white', paddingTop:'2em'}}>
-        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center' }}>
+        <Grid container sx={{ background: 'linear-gradient(to bottom, transparent, rgba(0, 0, 0, 1))', color:'white', padding: '0 .3em .1em .3em' }}>
+        <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center'}}>
           <CalendarIcon fontSize="small" sx={{ marginRight: '4px' }} />
           <Typography variant="h6" component="p">
-            {new Date(movie.release_date).toLocaleDateString()}
+            {new Date(movie.release_date).getFullYear()}
           </Typography>
         </Grid>
         <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <Typography variant="h6" component="p">
             <StarRateIcon fontSize="small" sx={{ marginRight: '4px' }} />
-            {movie.vote_average}
+            {Math.round(movie.vote_average * 10) / 10}
           </Typography>
         </Grid>
         </Grid>
