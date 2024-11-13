@@ -6,11 +6,13 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import {auth } from '../../firebase-config';
 import { onAuthStateChanged } from "firebase/auth";
 import { getUserById } from '../../api/userDataStorage';
+import { SiteDataContext } from '../../contexts/siteDataContext';
 
 
 const Header = ({ handleLogout}) => {
   const navigate = useNavigate();
   const [user , setUser] = useState(null);
+  const {adultContent, setAdultContent} = React.useContext(SiteDataContext);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -47,7 +49,7 @@ const Header = ({ handleLogout}) => {
         </IconButton> */}
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           <Button color="inherit" onClick={() => navigate('/home')}>
-          Movie App - {user.firstName} {user.lastName}
+          Movie App - {user.firstName} {user.lastName} {adultContent ? '(Adult Content)' : ''}
         </Button>
         </Typography>
 

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import WeatherProvider from './contexts/weatherContext';
+import  SiteDataProvider  from './contexts/siteDataContext';
 import { AlertProvider } from './contexts/alertContext';
 import WeatherPage from './pages/weatherPage';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
@@ -47,6 +48,7 @@ const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
 const App = () => {
   const [user, setUser] = useState(null);
   const [loadedUser, setLoadedUser] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -54,28 +56,6 @@ const App = () => {
       setLoadedUser(true);
     }
     );
-
-    let theme = localStorage.getItem('theme');
-    if(theme){
-      setTheme(theme);
-      if(theme === 'dark'){
-        document.body.style.backgroundColor = '#333333'
-      }
-      else{
-        document.body.style.backgroundColor = '#f0f0f0'
-      }
-    }else{
-      //default to system theme
-      if(window.matchMedia('(prefers-color-scheme: dark)').matches){
-        setTheme('dark');
-        document.body.style.backgroundColor = '#333333'
-      }
-      else{
-        setTheme('light');
-        document.body.style.backgroundColor = '#f0f0f0'
-      }
-      
-    }
 
     return () => {
       unsubscribe();
@@ -108,21 +88,10 @@ const App = () => {
     }
   };
 
-  const [theme, setTheme] = useState('light');
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
-    //change background color in css
-    if(theme === 'light'){
-      document.body.style.backgroundColor = '#333333'
-    }
-    else{
-      document.body.style.backgroundColor = '#f0f0f0'
-    }
-
-    //Add to browser local storage
-    localStorage.setItem('theme', theme === 'light' ? 'dark' : 'light');
+  const updateThemeProvider = (isDarkMode) => {
+    setDarkMode(isDarkMode);
   };
+ 
 
   const handleLogout = async () => {
     try {
@@ -134,15 +103,17 @@ const App = () => {
   };
 
   return (
-      <ThemeProvider theme={theme === 'light' ? lightTheme : darkTheme}>
       <Router>
         <WeatherProvider>
         <AlertProvider>
+        <SiteDataProvider>
+        <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+
         <Header authenticated={user !== null}  />
         <Routes>
           <Route
             path="/login"
-            element={<LoginPage handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} isAuthenticated={user !==null} toggleTheme={toggleTheme} theme={theme} />}
+            element={<LoginPage handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} isAuthenticated={user !==null} updateThemeProvider={updateThemeProvider} />}
           />
           <Route
             path="/weather"
@@ -172,10 +143,11 @@ const App = () => {
         </Routes>
         <SiteFooter/>
         <AlertNotice/>
+        </ThemeProvider>
+        </SiteDataProvider>
         </AlertProvider>
         </WeatherProvider>
       </Router>
-      </ThemeProvider>
   );
 };
 
