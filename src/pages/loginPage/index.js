@@ -78,10 +78,15 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, toggleTheme, the
               <Register handleRegister={handleRegister} setError={setError} />
               )
           )
+
+          
         ) : (
+          <>
+          {/*Logged in settings*/}
           <Button variant="contained" size="large" color="primary" onClick={() => handleLogout()}>
             Logout
           </Button>
+          </>
         )}
 
         {user === null && (
@@ -97,7 +102,6 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, toggleTheme, the
             </Button>
           }
           </>
-
         
         )}
       </Card>
@@ -109,6 +113,7 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, toggleTheme, the
       )}
 
       <Card sx={{ marginTop: '2em', flexDirection: 'column', display: 'flex', alignItems: 'center', padding: '1em' }}>
+        {/*Universal settings*/}
         <Typography variant="h6" component="p" sx={{ marginBottom: '1em' }}>Toggle Theme</Typography>
         <Switch onChange={toggleTheme} checked={theme === 'dark'} />
       </Card>
