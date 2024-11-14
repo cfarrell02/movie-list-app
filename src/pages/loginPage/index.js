@@ -21,28 +21,6 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
         setUser(null);
       }
     });
-    
-
-    let theme = localStorage.getItem('isDarkMode');
-    if(theme){
-      updateThemeProvider(theme === 'dark');
-      setDarkMode(theme === 'dark');
-      if(theme === 'dark'){
-        document.body.style.backgroundColor = '#333333'
-      }
-      else{
-        document.body.style.backgroundColor = '#f0f0f0'
-      }
-    }else{
-      //default to system theme
-      if(window.matchMedia('(prefers-color-scheme: dark)').matches){
-        document.body.style.backgroundColor = '#333333'
-      }
-      else{
-        document.body.style.backgroundColor = '#f0f0f0'
-      }
-      
-    }
 
   }, []);
 

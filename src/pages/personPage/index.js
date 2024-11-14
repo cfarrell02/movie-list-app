@@ -63,13 +63,15 @@ const PersonPage = (props) => {
         </Grid>
         <Grid item xs={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
           <ButtonGroup sx={{marginBottom: '.5em', marginRight:'1em'}}>
-            <Button variant="contained" target="_blank" href={`https://www.imdb.com/name/${person.imdb_id}`} title='IMDB'>IMDB</Button>
+            {person.imdb_id && <Button variant="contained" target="_blank" href={`https://www.imdb.com/name/${person.imdb_id}`} title='IMDB'>IMDB</Button>}
             <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/person/${tmdbId}`} title='TMDB'>TMDB</Button>
           </ButtonGroup>
         </Grid>
         </Grid>
         <Divider/>
+        {person.known_for_department ? (
         <Typography variant="subtitle1" color='text.secondary' >{person.known_for_department}</Typography>
+        ) : ''}
         <Grid container spacing={2}>
           <Grid item xs={9}>
             <PersonDetailsSection person={person}/>

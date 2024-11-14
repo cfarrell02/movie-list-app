@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';  // Grouped import statements
 import { Card, CardContent, CardMedia, Typography, Grid, List, ListItem, ListItemText, Link } from '@mui/material';
+import defaultImage from '../../../images/default.jpg';
 
 
 const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
@@ -8,6 +9,7 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
   const [producers, setProducers] = useState([]);
   const [starring, setStarring] = useState([]);
   const [productionCompanies, setProductionCompanies] = useState([]);
+  const [posterURL, setPosterURL] = useState('');
 
   useEffect(() => {
     // You might want to check if 'movie' exists before accessing its properties
@@ -18,12 +20,14 @@ const MovieDetailCard = ({ movie }) => {  // Destructuring the movie prop
       setStarring(movie.credits.cast.filter((credit) => credit.order <= 5));
       setProductionCompanies(movie.production_companies);
 
+      const localURL = movie.poster_path ? `https://image.tmdb.org/t/p/original${movie.poster_path}` : movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : defaultImage;
+      setPosterURL(localURL);
     }
   }, [movie]);
 try{
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <CardMedia component="img"  src={`https://image.tmdb.org/t/p/original${movie.poster_path}`} alt={movie.title} />
+      <CardMedia component="img"  src={posterURL} alt={movie.title} />
       <CardContent>
 
         <Grid container spacing={2}>
@@ -42,8 +46,8 @@ try{
                 </ListItem>
             </List>
           </Grid>
-          </> ) : null}
-
+          </> ) : ''}
+          {writers.length > 0 ? ( <>
           <Grid item xs={6}>
             <Typography variant="h6"  sx={{marginTop:'.7em'}}>
               Written By:
@@ -58,6 +62,9 @@ try{
               ))}
             </List>
           </Grid>
+          </> ) : ''}
+
+          {producers.length > 0 ? ( <>
           <Grid item xs={6}>
             <Typography variant="h6"  sx={{marginTop:'.7em'}}>
               Produced By:
@@ -72,6 +79,8 @@ try{
               ))}
             </List>
           </Grid>
+          </> ) : ''}
+          {starring.length > 0 ? ( <>
           <Grid item xs={6}>
             <Typography variant="h6"  sx={{marginTop:'.7em'}}>
               Starring:
@@ -86,6 +95,8 @@ try{
               ))}
             </List>
           </Grid>
+          </> ) : ''}
+          {productionCompanies.length > 0 ? ( <>
           <Grid item xs={6}>
             <Typography variant="h6"  sx={{marginTop:'.7em'}}>
               {productionCompanies.length > 1 ? 'Production Companies:' : 'Production Company:'}
@@ -98,6 +109,8 @@ try{
               ))}
             </List>
           </Grid>
+          </> ) : ''}
+          {movie.release_date ? ( <>
           <Grid item xs={6}>
             <Typography variant="h6"  sx={{marginTop:'.7em'}}>
               Released:
@@ -108,6 +121,7 @@ try{
                 <ListItem><ListItemText primary={(new Date(movie.release_date)).toLocaleDateString()}/></ListItem>
             </List>
           </Grid>
+          </> ) : ''}
           </Grid>
       </CardContent>
     </Card>

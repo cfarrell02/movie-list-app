@@ -57,6 +57,20 @@ const App = () => {
     }
     );
 
+
+
+    let theme = localStorage.getItem('isDarkMode') === 'true' ? 'dark' : 'light';
+    if(theme){
+      updateThemeProvider(theme === 'dark');
+      setDarkMode(theme === 'dark');
+      if(theme === 'dark'){
+        document.body.style.backgroundColor = '#333333'
+      }
+      else{
+        document.body.style.backgroundColor = '#f0f0f0'
+      }
+    }
+
     return () => {
       unsubscribe();
     }

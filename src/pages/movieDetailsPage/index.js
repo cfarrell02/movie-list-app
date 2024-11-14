@@ -39,6 +39,7 @@ const MovieDetailsPage = (props) => {
   const {addAlert} = React.useContext(AlertContext);  
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [formattedTitle, setFormattedTitle] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -50,6 +51,7 @@ const MovieDetailsPage = (props) => {
       }
     });
 
+
     return () => {
       unsubscribe();
     };
@@ -60,12 +62,16 @@ const MovieDetailsPage = (props) => {
         setLoading(true);
         const fetchedMovie = await getMovie(id);
         const fetchedCredits = await getMovieCredits(id);
-        setStremioLinkEnding(
-          fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
-            '-' +
-            fetchedMovie.imdb_id.substring(2)
-        );
+        if(fetchedMovie.imdb_id){
+          setStremioLinkEnding(
+            fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
+              '-' +
+              fetchedMovie.imdb_id.substring(2)
+          );
+        }
+
         setMovie({ ...fetchedMovie, credits: fetchedCredits });
+        console.log(movie);
       } catch (error) {
         console.error(error);
         // Handle the error, show an error message, or take appropriate action.
@@ -75,6 +81,7 @@ const MovieDetailsPage = (props) => {
       }
 
     };
+
   
     fetchData();
   }, []);
@@ -90,6 +97,13 @@ const MovieDetailsPage = (props) => {
     };
     fetchData();
   }, [user]);
+
+  useEffect(() => {
+    if(!movie) return;
+    const title = movie.title ? movie.title.length > 30 ? movie.title.substring(0, 30) + '...' : movie.title : '';
+    const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
+    setFormattedTitle(`${title} (${year})`);
+  }, [movie]);
 
   const handleChange = async (event) => {
     const userData = await getUserById(user.uid);
@@ -107,21 +121,19 @@ const MovieDetailsPage = (props) => {
   };
   
 
-
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', marginLeft:'10%', marginRight:'10%', marginTop:'2%', padding: '2%'}}>
       {loading ? <CircularProgress align='center'/> : <>
       <Grid container spacing={2}>
         <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-end'}}>
-      <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{movie.title} ({new Date(movie.release_date).getFullYear()})</Typography>
+      <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{formattedTitle}</Typography>
       </Grid>
       <Grid item xs={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
         <Stack> 
-        <FormControl sx={{ m: 1, minWidth: 80 }} size='small'>
+        <FormControl sx={{ m: 1, minWidth: '15em' }} size='small'>
         <InputLabel> Add to list</InputLabel>
         <Select
         autoWidth
-        sx={{marginRight:'1em'}}
         onChange={handleChange}
         label="Add to list"
         title= 'Select a list to add this movie to'
@@ -131,16 +143,16 @@ const MovieDetailsPage = (props) => {
           ))}
         </Select>
         </FormControl>
-        <ButtonGroup sx={{marginBottom: '.5em', marginRight:'1em'}}>
-          <Button variant="contained" target="_blank" href={`https://www.imdb.com/title/${movie.imdb_id}`} title='IMDB'>IMDB</Button>
-          <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/movie/${movie.id}`} title='TMDB'>TMDB</Button>
-          <Button variant="contained" target="_blank" href={`https://www.strem.io/s/movie/${stremioLinkEnding}`} title='Stremio'>Stremio</Button>
+        <ButtonGroup sx={{marginBottom: '.5em', marginRight:'auto',marginLeft:'auto'}}>
+          {movie.imdb_id && <Button variant="contained" target="_blank" href={`https://www.imdb.com/title/${movie.imdb_id}`} title='IMDB'>IMDB</Button>}
+          {movie.id && <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/movie/${movie.id}`} title='TMDB'>TMDB</Button>}
+          {stremioLinkEnding && <Button variant="contained" target="_blank" href={`https://www.strem.io/s/movie/${stremioLinkEnding}`} title='Stremio'>Stremio</Button>}
         </ButtonGroup>
         </Stack>
       </Grid>
       </Grid>
       <Divider/>
-      <Typography variant="subtitle1" color='text.secondary' >{movie.tagline}</Typography>
+      {movie.tagline && <Typography variant="subtitle1" color='text.secondary' >{movie.tagline}</Typography>}
       <Grid container spacing={2}>
         <Grid item xs={9}>
           <MovieDetailSection movie={movie}/>
