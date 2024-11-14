@@ -31,9 +31,11 @@ const PersonDetailsCard = ({ person }) => {  // Destructuring the movie prop
               <ListItem>
               <ListItemText primary={person.name} />
                 </ListItem>
+                {person.birthday ? (
                 <ListItem>
               <ListItemText primary={new Date(person.birthday).toLocaleDateString()+ ' '+ ageFormatter(person.birthday)+ '\u00A0Years Old'} />
                 </ListItem>
+                ) : ''}
                 <ListItem>
               <ListItemText primary={person.place_of_birth} />
                 </ListItem>

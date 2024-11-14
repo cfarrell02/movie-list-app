@@ -22,12 +22,14 @@ import { auth } from "../../../firebase-config";
 import { onAuthStateChanged } from "firebase/auth";
 import Stack from '@mui/material/Stack';
 import { NativeSelect, FormControl } from "@mui/material";
+import defaultImage from '../../../images/default.jpg';
 
 
 export default function MovieCard({ movie }) {
  const [user, setUser] = React.useState(null);
   const [movieLists, setMovieLists] = React.useState([]);
   const {addAlert} = React.useContext(AlertContext);
+  const [posterUrl , setPosterUrl] = React.useState('');
   React.useEffect(() => {
     const fetchData = async () => {
       try {
@@ -62,6 +64,14 @@ export default function MovieCard({ movie }) {
     };
   }, []);
 
+  React.useEffect(() => {
+    if(movie){
+      const localURL = movie.poster_path ? `https://image.tmdb.org/t/p/w500/${movie.poster_path}` : movie.backdrop_path ? `https://image.tmdb.org/t/p/w500/${movie.backdrop_path}` : defaultImage;
+      setPosterUrl(localURL);
+    }
+  }
+  , [movie]);
+
   const handleChange = async (event) => {
     const userData = await getUserById(user.uid);
     try{
@@ -84,21 +94,25 @@ export default function MovieCard({ movie }) {
       <CardMedia
         sx={{ height: 'auto', paddingTop: '150%', position: 'relative'}}
         title={movie.title}
-        image={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
+        image={posterUrl}
       >
         <Grid container sx={{ background: 'linear-gradient(to bottom, transparent, rgba(0, 0, 0, 1))', color:'white', padding: '0 .3em .1em .3em' }}>
+          {movie.release_date ? ( <>
         <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center'}}>
           <CalendarIcon fontSize="small" sx={{ marginRight: '4px' }} />
           <Typography variant="h6" component="p">
             {new Date(movie.release_date).getFullYear()}
           </Typography>
         </Grid>
+        </> ) : ''}
+        {movie.vote_average ? ( <>
         <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <Typography variant="h6" component="p">
             <StarRateIcon fontSize="small" sx={{ marginRight: '4px' }} />
-            {Math.round(movie.vote_average * 10) / 10}
+            {movie.vote_average ? (Math.round(movie.vote_average * 10) / 10): ''}
           </Typography>
         </Grid>
+        </> ) : ''}
         </Grid>
       </CardMedia>
       </Link>
