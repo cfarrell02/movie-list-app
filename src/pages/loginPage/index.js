@@ -143,7 +143,8 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
 
         {user && (<>
           {/*Logged in specific settings*/}
-          <Typography variant="h6" component="p" sx={{ marginBottom: '.2em' }}>Adult Content</Typography>
+          
+          <Typography variant="h6" component="p" sx={{ marginBottom: '.2em' }}>X</Typography>
           <Switch onChange={toggleAdultContent} checked={adultContent} />
         </>)}
       </Card>
