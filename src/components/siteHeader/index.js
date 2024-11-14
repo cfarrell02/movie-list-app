@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography, Button } from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Container } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box"; // Required for rendering options with images
@@ -11,11 +11,12 @@ import { SiteDataContext } from "../../contexts/siteDataContext";
 import { getSearchResults } from "../../api/TMDBAPI"; // Assuming this API call fetches search results
 import defaultImage from "../../images/default.jpg";
 import chilli from "../../images/chilli.png";
+import './index.css';
 
 const Header = ({ handleLogout }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const { adultContent } = React.useContext(SiteDataContext);
+  const { adultContent , darkMode} = React.useContext(SiteDataContext);
   const [searchResults, setSearchResults] = useState([]); // State for storing search results
   const [searchHistory, setSearchHistory] = useState([]); // State for storing search history
   const [inputValue, setInputValue] = useState(""); // State for storing user input
@@ -92,60 +93,71 @@ const Header = ({ handleLogout }) => {
               <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                 <Button color="inherit" onClick={() => navigate("/home")}>
                   Movie App - {user.firstName} {user.lastName}{"  "}
-                  {adultContent ? <img src={chilli} style={{ width: "1.5em", height: 'auto', margin: '0 0 .5em .2em'}} alt='Adult Content' /> : ""}
+                  {adultContent ? '🌶️' : ''}
                 </Button>
               </Typography>
-              <Autocomplete
-                id="search-bar"
+              <Container
                 sx={{
-                  width: 500,
-                  marginRight: 2,
-                  // backgroundColor: "white",
-                  borderRadius: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  width: "25em",
+                  height: "75%", // Updated height to match the text box
                 }}
-                options={searchResults ? searchResults : searchHistory}
-                autoHighlight
-                getOptionLabel={(option) =>
-                  option.media_type === "movie" ? option.title : option.name
-                }
-                onChange={handleSearch}
-                renderOption={(props, option) => (
-                  <Box
-                    component="li"
-                    sx={{ "& > img": { mr: 2, flexShrink: 0 } }}
-                    {...props}
-                  >
-                    <img
-                      loading="lazy"
-                      width="25"
-                      src={`https://image.tmdb.org/t/p/w500/${
-                        option.media_type === "person"
-                          ? option.profile_path
-                          : option.poster_path
-                      }`}
-                      alt=""
+
+                id="search-container"
+              >
+                <Autocomplete
+                  id="search-bar"
+                  sx={{
+                    backgroundColor: darkMode ? "#333333" : "#f0f0f0",
+                    borderRadius: 2,
+                    width: "100%",
+                  }}
+                  options={searchResults ? searchResults : searchHistory}
+                  autoHighlight
+                  getOptionLabel={(option) =>
+                    option.media_type === "movie" ? option.title : option.name
+                  }
+                  onChange={handleSearch}
+                  renderOption={(props, option) => (
+                    <Box
+                      component="li"
+                      sx={{ "& > img": { mr: 2, flexShrink: 0 } }}
+                      {...props}
+                    >
+                      <img
+                        loading="lazy"
+                        width="25"
+                        src={`https://image.tmdb.org/t/p/w500/${
+                          option.media_type === "person"
+                            ? option.profile_path
+                            : option.poster_path
+                        }`}
+                        alt=""
+                      />
+                      {option.media_type === "movie" ? option.title : option.name}{" "}
+                      ({capitalize(option.media_type)}){" "}
+                      {option.adult ? "(Adult)" : ""}
+                      {option.media_type === "person"
+                        ? option.media_type === "movie"
+                          ? option.release_date
+                          : option.first_air_date
+                        : ""}
+                    </Box>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Search the database..."
+                      inputProps={{
+                        ...params.inputProps,
+                      }}
+                      onChange={handleAutoFill}
+                      onAction={handleSearch}
                     />
-                    {option.media_type === "movie" ? option.title : option.name}{" "}
-                    ({capitalize(option.media_type)}){" "}{option.adult ? "(Adult)" : ""}
-                    {option.media_type === "person"
-                      ? option.media_type === "movie"
-                        ? option.release_date
-                        : option.first_air_date
-                      : ''}
-                  </Box>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Search the database..."
-                    inputProps={{
-                      ...params.inputProps,
-                    }}
-                    onChange={handleAutoFill}
-                    onAction={handleSearch}
-                  />
-                )}
-              />
+                  )}
+                />
+              </Container>
               <Button color="inherit" onClick={() => navigate("/movielist")}>
                 Movie Lists
               </Button>
