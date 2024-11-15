@@ -26,6 +26,8 @@ const MovieHomePage = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setLoading(true);
+
       if (user) {
         getUserById(user.uid).then((userData) => {
           setUser({ ...user, ...userData });
@@ -44,7 +46,6 @@ const MovieHomePage = () => {
     const fetchMovieLists = async () => {
     
       try {
-        setLoading(true);
         if (user) {
           let newMovieLists = await getMovieListsByUserId(user.uid); // Replace with the desired owner ID
           let movieListCount = newMovieLists.length;

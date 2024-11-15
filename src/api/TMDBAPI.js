@@ -246,6 +246,16 @@ export const getMovieSearchResults = async (pageNum, searchTerm) => {
   const json = await response.json();
   return json.results;
 };
+export const getTVShowSearchResults = async (pageNum, searchTerm) => {
+  const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
+  const response = await fetch(
+    `https://api.themoviedb.org/3/search/tv?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&include_adult=${allowAdult}&query=${searchTerm}`
+  );
+  const json = await response.json();
+  return json.results;
+};
+
+
 
 export const getMovieCredits = async (id) => {
   const response = await fetch(

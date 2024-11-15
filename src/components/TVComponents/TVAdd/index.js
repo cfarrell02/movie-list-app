@@ -1,44 +1,44 @@
-// MovieAdd.js
+// TVAdd.js
 
 import React, { useState, useRef, useContext } from 'react';
 import {AlertContext} from '../../../contexts/alertContext';
 import { Container, Typography, TextField, Button, Card, Grid, Autocomplete, CircularProgress, Alert, Box } from '@mui/material';
-import { getMovie, getMovieSearchResults } from '../../../api/TMDBAPI';
-import { getMovies, addMovieToList, updateMovieInList, deleteMovieFromList} from '../../../api/movieStorage';
+import { getTVShow, getTVShowSearchResults } from '../../../api/TMDBAPI';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { addTVShowToList } from '../../../api/movieStorage';
 
 
-const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID, onRefresh}) => {
+const TVAdd = ({title, tvshows, listId, setTvShows, disabled, currentUserID, onRefresh}) => {
   const [open, setOpen] = useState(false);
-  const [fetchingMovies, setFetchingMovies] = useState(false);
+  const [fetchingShows, setFetchingShows] = useState(false);
   const [options, setOptions] = useState([]);
   const { addAlert } = useContext(AlertContext);
   const [searchText, setSearchText] = useState('');
 
-  const [movie, setMovie] = useState({});
+  const [tvshow, setTvShow] = useState({});
 
   const handleAutocompleteChange = async (event, value) => {
     if (value) {
       try {
-        setFetchingMovies(true);
-        const newMovie = await getMovie(value.id);
+        setFetchingShows(true);
+        const newShow = await getTVShow(value.id);
         setOptions([]);
-        setMovie(newMovie);
+        setTvShow(newShow);
         setOpen(false);
       } catch (error) {
         addAlert('error', error.message);
-        console.error('Error getting movie:', error);
+        console.error('Error getting tv show:', error);
       } finally {
-        setFetchingMovies(false);
+        setFetchingShows(false);
       }
     }
   };
 
   const handleTextFieldChange = async (event) => {
     try {
-      setFetchingMovies(true);
+      setFetchingShows(true);
       setSearchText(event.target.value);
-      let data = await getMovieSearchResults(1, searchText);
+      let data = await getTVShowSearchResults(1, searchText);
       if (data) {
         data = data.sort((a, b) => a.popularity - b.popularity).reverse();
         setOptions(data);
@@ -47,37 +47,38 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID, on
       }
     } catch (error) {
       addAlert('error', error.message);
-      console.error('Error getting movies:', error);
+      console.error('Error getting shows:', error);
     } finally {
-      setFetchingMovies(false);
+      setFetchingShows(false);
     }
   };
 
-  const handleAddMovie = async () => {
+  const handleAddShow = async () => {
     try {
-      if (movie.id === undefined) throw new Error('No movie selected.');
-      if (movies.find((m) => m.id === movie.id)) throw new Error('Movie already added.');
-      movie.watched = false;
+      if (tvshow.id === undefined) throw new Error('No tv show selected.');
+      if (tvshows.find((m) => m.id === tvshow.id)) throw new Error('Tv Show already added.');
+      tvshow.watched = false;
       
-    //   const listID = await addMovie(ownerID, movie);
-      movie.addedDate = new Date().toISOString();
-      movie.addedBy = currentUserID;
+    //   const listID = await addMovie(ownerID, tvshow);
+      tvshow.addedDate = new Date().toISOString();
+      tvshow.addedBy = currentUserID;
 
-      const updatedMovieList = [...movies, { id: movie.id, ...movie }];
+      const updatedMovieList = [...tvshows, { id: tvshow.id, ...tvshow }];
 
       // setSearchText('');
-      // setMovie({});
+      // setTvShow({});
       
-      setMovies(updatedMovieList);
-      await addMovieToList(listId, movie);
+      setTvShows(updatedMovieList);
+      await addTVShowToList(listId, tvshow);
       
 
-      addAlert('success', `${movie.title} added to list.`);
+      addAlert('success', `${tvshow.name} added to list.`);
     } catch (error) {
       addAlert('error', error.message);
-      console.error('Error adding movie:', error);
+      console.error('Error adding tv show:', error);
     }
   };
+  
 
  
 
@@ -110,7 +111,7 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID, on
           setOpen(false);
         }}
         isOptionEqualToValue={(option, value) => option.name === value.name}
-        getOptionLabel={(option) => option.title + ' (' + new Date(option.release_date).getFullYear()+ ')'}
+        getOptionLabel={(option) => option.name + ' (' + new Date(option.first_air_date).getFullYear()+ ')'}
         renderOption={(props, option) => (
           <Box component="li" sx={{ '& > img': { mr: 2, flexShrink: 0 } }} {...props}>
             <img
@@ -120,25 +121,25 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID, on
               srcSet={`https://image.tmdb.org/t/p/w200${option.poster_path} 2x`}
               alt=""
             />
-            {option.title} ({new Date(option.release_date).getFullYear()})
+            {option.name} ({new Date(option.first_air_date).getFullYear()})
           </Box>
         )}
         options={options}
-        loading={fetchingMovies}
+        loading={fetchingShows}
         renderInput={(params) => (
           <TextField
             {...params}
             value={searchText}
-            label="Movie Title"
+            label="Show Title"
             onChange={handleTextFieldChange}
             style={{ marginBottom: '4em', marginTop: '2em', width: '90%' }}
             InputProps={{
               ...params.InputProps,
               endAdornment: (
                 <React.Fragment>
-                  {fetchingMovies ? <CircularProgress color="inherit" size={20} /> : null}
+                  {fetchingShows ? <CircularProgress color="inherit" size={20} /> : null}
                   {params.InputProps.endAdornment}
-                  <Button variant="contained" onClick={handleAddMovie} disabled={disabled}>
+                  <Button variant="contained" onClick={handleAddShow} disabled={disabled}>
                     Add
                   </Button>
                 </React.Fragment>
@@ -152,4 +153,4 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID, on
   );
 };
 
-export default MovieAdd;
+export default TVAdd;
