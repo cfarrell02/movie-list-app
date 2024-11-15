@@ -123,8 +123,13 @@ const MovieDetailsPage = (props) => {
       movie.addedBy = user.uid;
       const movieList = await getMovieListById(event.target.value);
       if(movieList.movies.find(m => m.id === movie.id)) throw new Error('Movie already in list');
-      addMovieToList(event.target.value, movie);
-      addAlert('success', `${movie.title} added to ${movieList.title}`);
+      try{
+        await addMovieToList(event.target.value, movie);
+      }catch(error){
+        addAlert('error', error.message);
+      }finally{
+        addAlert('success', `${movie.title} added to ${movieList.title}`);
+      }
     }
     catch(error){
       addAlert('error', error.message);

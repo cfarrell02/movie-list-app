@@ -1,18 +1,18 @@
 import { collection, addDoc, getDoc, setDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
-// Function to add a movie list
+// Function to add a watch list
 export const addMovieList = async (movieList) => {
   try {
     const docRef = doc(db, 'movieLists', movieList.id);
     await setDoc(docRef, movieList);
     return movieList.id;
   } catch (error) {
-    throw new Error('Error adding movie list to Firestore: ' + error.message);
+    throw new Error('Error adding watch list to Firestore: ' + error.message);
   }
 };
 
-// Function to get all movie lists
+// Function to get all watch lists
 export const getAllMovieLists = async () => {
   try {
     const movieListQuery = query(collection(db, 'movieLists'));
@@ -23,11 +23,11 @@ export const getAllMovieLists = async () => {
     });
     return movieLists;
   } catch (error) {
-    throw new Error('Error getting movie lists from Firestore: ' + error.message);
+    throw new Error('Error getting watch lists from Firestore: ' + error.message);
   }
 };
 
-// Function to get a movie list by its ID
+// Function to get a watch list by its ID
 export const getMovieListById = async (listID) => {
   try {
     const docRef = doc(db, 'movieLists', listID);
@@ -35,14 +35,14 @@ export const getMovieListById = async (listID) => {
     if (docSnapshot.exists()) {
       return { id: docSnapshot.id, ...docSnapshot.data() };
     } else {
-      throw new Error('Movie list not found.');
+      throw new Error('Watch List not found.');
     }
   } catch (error) {
-    throw new Error('Error getting movie list from Firestore: ' + error.message);
+    throw new Error('Error getting watch list from Firestore: ' + error.message);
   }
 };
 
-// Function to get movie lists by user ID
+// Function to get watch lists by user ID
 export const getMovieListsByUserId = async (userId) => {
   try {
     const movieListQuery = query(collection(db, 'movieLists'), where('userIds', 'array-contains', userId));
@@ -53,21 +53,21 @@ export const getMovieListsByUserId = async (userId) => {
     });
     return movieLists;
   } catch (error) {
-    throw new Error('Error getting movie lists by userId from Firestore: ' + error.message);
+    throw new Error('Error getting watch lists by userId from Firestore: ' + error.message);
   }
 };
 
-// Function to update a movie list
+// Function to update a watch list
 export const updateMovieList = async (listID, updatedMovieList) => {
   try {
     const movieListRef = doc(db, 'movieLists', listID);
     await updateDoc(movieListRef, updatedMovieList);
   } catch (error) {
-    throw new Error('Error updating movie list in Firestore: ' + error.message);
+    throw new Error('Error updating watch list in Firestore: ' + error.message);
   }
 };
 
-// Function to add a movie to a movie list
+// Function to add a movie to a watch list
 export const addMovieToList = async (listID, movie) => {
   try {
     const movieListRef = doc(db, 'movieLists', listID);
@@ -80,14 +80,61 @@ export const addMovieToList = async (listID, movie) => {
 
       await updateDoc(movieListRef, updatedMovieList);
     } else {
-      throw new Error('Movie list not found.');
+      throw new Error('Watch List not found.');
     }
   } catch (error) {
     throw new Error('Error adding movie to list in Firestore: ' + error.message);
   }
 };
 
-// Function to update a movie in a movie list
+// Function to add a movie to a watch list
+export const addTVShowToList = async (listID, show) => {
+  try {
+    const movieListRef = doc(db, 'movieLists', listID);
+    const movieListSnapshot = await getDoc(movieListRef);
+
+    if (movieListSnapshot.exists()) {
+      const updatedMovieList = {
+        tvShows : [...movieListSnapshot.data().tvShows, show]
+      };
+
+      await updateDoc(movieListRef, updatedMovieList);
+    } else {
+      throw new Error('Watch List not found.');
+    }
+  } catch (error) {
+    throw new Error('Error adding movie to list in Firestore: ' + error.message);
+  }
+};
+
+export const updateTVShowInList = async (listID, showID, updatedShow) => {
+  try {
+    const movieListRef = doc(db, 'movieLists', listID);
+    const movieListSnapshot = await getDoc(movieListRef);
+
+    if (movieListSnapshot.exists()) {
+      const shows = movieListSnapshot.data().tvShows;
+      const updatedShows = shows.map((show) => {
+        if (show.id === showID) {
+          return { ...show, ...updatedShow };
+        }
+        return show;
+      });
+
+      const updatedMovieList = {
+        tvShows: updatedShows
+      };
+
+      await updateDoc(movieListRef, updatedMovieList);
+    } else {
+      throw new Error('Watch List not found.');
+    }
+  } catch (error) {
+    throw new Error('Error updating movie in list in Firestore: ' + error.message);
+  }
+}
+
+// Function to update a movie in a watch list
 export const updateMovieInList = async (listID, movieID, updatedMovie) => {
   try {
     const movieListRef = doc(db, 'movieLists', listID);
@@ -108,14 +155,14 @@ export const updateMovieInList = async (listID, movieID, updatedMovie) => {
 
       await updateDoc(movieListRef, updatedMovieList);
     } else {
-      throw new Error('Movie list not found.');
+      throw new Error('Watch List not found.');
     }
   } catch (error) {
     throw new Error('Error updating movie in list in Firestore: ' + error.message);
   }
 };
 
-// Function to delete a movie from a movie list
+// Function to delete a movie from a watch list
 export const deleteMovieFromList = async (listID, movieID) => {
   try {
     const movieListRef = doc(db, 'movieLists', listID);
@@ -131,19 +178,42 @@ export const deleteMovieFromList = async (listID, movieID) => {
 
       await updateDoc(movieListRef, updatedMovieList);
     } else {
-      throw new Error('Movie list not found.');
+      throw new Error('Watch List not found.');
     }
   } catch (error) {
     throw new Error('Error deleting movie from list in Firestore: ' + error.message);
   }
 };
 
-// Function to delete a movie list
+// Function to delete a tv show from a watch list
+export const deleteTVShowFromList = async (listID, showID) => {
+  try {
+    const movieListRef = doc(db, 'movieLists', listID);
+    const movieListSnapshot = await getDoc(movieListRef);
+
+    if (movieListSnapshot.exists()) {
+      const shows = movieListSnapshot.data().tvShows;
+      const updatedShows = shows.filter((show) => show.id !== showID);
+
+      const updatedMovieList = {
+        tvShows: updatedShows
+      };
+
+      await updateDoc(movieListRef, updatedMovieList);
+    } else {
+      throw new Error('Watch List not found.');
+    }
+  } catch (error) {
+    throw new Error('Error deleting tv show from list in Firestore: ' + error.message);
+  }
+};
+
+// Function to delete a watch list
 export const deleteMovieList = async (listID) => {
   try {
     const movieListRef = doc(db, 'movieLists', listID);
     await deleteDoc(movieListRef);
   } catch (error) {
-    throw new Error('Error deleting movie list from Firestore: ' + error.message);
+    throw new Error('Error deleting watch list from Firestore: ' + error.message);
   }
 };

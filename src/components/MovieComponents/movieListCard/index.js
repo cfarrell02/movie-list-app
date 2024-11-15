@@ -43,7 +43,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
         setAccessType(userObj.accessType);
     }
     } catch (error) {
-      console.error('Error getting movie lists:', error);
+      console.error('Error getting watch lists:', error);
     }
   }, [user]);
 

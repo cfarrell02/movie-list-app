@@ -58,7 +58,7 @@ const MovieHomePage = () => {
           }
 
           if(newMovieLists.length < movieListCount){
-            setHiddenContentMessage('Some movie lists contain adult content. Please enable adult content to view all lists.');
+            setHiddenContentMessage('Some watch lists contain adult content. Please enable adult content to view all lists.');
           }else{
             setHiddenContentMessage('');
           }
@@ -67,7 +67,7 @@ const MovieHomePage = () => {
           
         }
       } catch (error) {
-        console.error('Error getting movie lists:', error);
+        console.error('Error getting watch lists:', error);
       } finally {
         setLoading(false);
       }
@@ -80,12 +80,12 @@ const MovieHomePage = () => {
   const handleNewMovieList = async (name) => {
     try {
       const movieList = { title: name, userIds: [user.uid], users: [{accessType: 3, email:user.email, uid:user.uid}]
-        , id: uid(), movies: [] };
+        , id: uid(), movies: [] , tvShows : []};
       await addMovieList(movieList);
       setMovieLists((prevMovieLists) => [...prevMovieLists, movieList]);
       setModalOpen(false);
     } catch (error) {
-      console.error('Error adding movie list:', error);
+      console.error('Error adding watch list:', error);
     }
   };
 
@@ -100,7 +100,7 @@ const MovieHomePage = () => {
       await deleteMovieList(id);
       setMovieLists(movieLists.filter((movieList) => movieList.id !== id));
     } catch (error) {
-      console.error('Error deleting movie list:', error);
+      console.error('Error deleting watch list:', error);
     }
 
     setDeleteModalOpen(false);
@@ -111,10 +111,10 @@ const MovieHomePage = () => {
       maxWidth="lg"
       sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', paddingTop: '5%' }}
     >
-      <NewMovieListModal title="New Movie List" body="Enter a name for your new movie list." open={modalOpen} onClose={handleNewMovieList} />
-      <ConfirmationModal header="Delete Movie List" body="Are you sure you want to delete this movie list?" open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={() => handleDeleteMovieList()} />
+      <NewMovieListModal title="New Watch List" body="Enter a name for your new watch list." open={modalOpen} onClose={handleNewMovieList} />
+      <ConfirmationModal header="Delete Watch List" body="Are you sure you want to delete this watch list?" open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={() => handleDeleteMovieList()} />
       <Typography variant="h2" align="center" sx={{ mb: 4, color: 'text.primary' }}>
-        {user && user.firstName ? `${user.firstName}'s Movie Lists` : 'Movie Lists'}
+        {user && user.firstName ? `${user.firstName}'s Watch Lists` : 'Watch Lists'}
       </Typography>
       {hiddenContentMessage && <Typography variant="h6" align="center" sx={{ mb: 4, color: 'text.primary' }}>
         <em>

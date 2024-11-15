@@ -42,7 +42,6 @@ const Header = ({ handleLogout }) => {
     if (inputValue) {
       getSearchResults(inputValue).then((results) => {
         //filter out tv shows and movies
-        results = results.filter((result) => result.media_type === "movie" ||  result.media_type === "person");
         setSearchResults(results);
       });
     } else {
@@ -68,8 +67,7 @@ const Header = ({ handleLogout }) => {
   const handleAutoFill = (event, value) => {
     const query = event.target.value;
     getSearchResults(1, query).then((results) => {
-      results = results.filter((result) => result.media_type === "movie" ||  result.media_type === "person");
-      setSearchResults(results);
+      setSearchResults(results.sort((a, b) => b.popularity - a.popularity));
     });
   };
 
@@ -165,7 +163,7 @@ const Header = ({ handleLogout }) => {
                 />
               </Container>
               <Button color="inherit" onClick={() => navigate("/movielist")}>
-                Movie Lists
+                Watch Lists
               </Button>
               <Button color="inherit" onClick={() => navigate("/login")}>
                 Settings

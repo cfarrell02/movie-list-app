@@ -205,9 +205,9 @@ export const getMovieReviews = async (id, pageNum) => {
   return json.results;
 };
 
-export const getTVReviews = async (id) => {
+export const getTVReviews = async (id, pageNum) => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/tv/${id}/reviews&page=1?api_key=${process.env.REACT_APP_TMDB_KEY}`
+    `https://api.themoviedb.org/3/tv/${id}/reviews?api_key=${process.env.REACT_APP_TMDB_KEY}&page=${pageNum}`
   );
   const json = await response.json();
   return json.results;

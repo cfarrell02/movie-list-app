@@ -20,20 +20,20 @@ import {
   Stack
 } from '@mui/material';
 import { getTVShow,getTVCredits , getMovieSearchResults } from '../../api/TMDBAPI';
-import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
+import { getMovieListById, addTVShowToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
-import MovieDetailCard from '../../components/MovieDetailComponents/movieDetailCard';
-import MovieDetailSection from '../../components/MovieDetailComponents/movieDetailSection';
-import MovieReviewSection from '../../components/MovieDetailComponents/movieReviewsSection';
+import TVDetailCard from '../../components/TVDetailComponents/tvDetailCard';
+import TVDetailSection from '../../components/TVDetailComponents/tvDetailSection';
+import TVReviewSection from '../../components/TVDetailComponents/tvReviewsSection';
 import { AlertContext } from '../../contexts/alertContext';
 import { getUserById } from '../../api/userDataStorage';
 
 
 const TVDetailsPage = (props) => {
   const {id} = useParams();
-  const [movie, setMovie] = useState({});
+  const [tvShow, setMovie] = useState({});
   const [stremioLinkEnding, setStremioLinkEnding] = useState('');
   const [movieLists, setMovieLists] = useState([]);
   const {addAlert} = React.useContext(AlertContext);  
@@ -70,9 +70,9 @@ const TVDetailsPage = (props) => {
           );
         }
 
-        const movie = {...fetchedMovie, credits: fetchedCredits};
-        setMovie(translateTVShowToMovieObject(movie));
-        console.log(movie);
+        const tvShow = {...fetchedMovie, credits: fetchedCredits};
+        setMovie(tvShow);
+        console.log(tvShow);
       } catch (error) {
         console.error(error);
         // Handle the error, show an error message, or take appropriate action.
@@ -87,18 +87,6 @@ const TVDetailsPage = (props) => {
     fetchData();
   }, []);
 
-  const translateTVShowToMovieObject = (tvShow) => {
-
-    const movie = {
-      adult: tvShow.adult,
-      name: tvShow.title,
-      backdrop_path: tvShow.backdrop_path,
-      
-    }
-    return tvShow;
-  }
-
-
   useEffect(() => {
     const fetchData = async () => {
     if(user){
@@ -112,21 +100,28 @@ const TVDetailsPage = (props) => {
   }, [user]);
 
   useEffect(() => {
-    if(!movie) return;
-    const title = movie.title ? movie.title.length > 30 ? movie.title.substring(0, 30) + '...' : movie.title : '';
-    const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
-    setFormattedTitle(`${title} (${year})`);
-  }, [movie]);
+    if(!tvShow) return;
+    const name = tvShow.name ? tvShow.name.length > 30 ? tvShow.name.substring(0, 30) + '...' : tvShow.name : '';
+    const year = tvShow.first_air_date ? new Date(tvShow.first_air_date).getFullYear() : '';
+    const endYear = tvShow.last_air_date ? new Date(tvShow.last_air_date).getFullYear() : '';
+    const yearString = '(' + (year ? year : '') + (endYear && year !== endYear ? ' - ' + endYear : '') + ')';
+    setFormattedTitle(`${name} ${yearString}`);
+  }, [tvShow]);
 
   const handleChange = async (event) => {
     const userData = await getUserById(user.uid);
     try{
-      movie.addedDate = new Date().toISOString();
-      movie.addedBy = user.uid;
+      tvShow.addedDate = new Date().toISOString();
+      tvShow.addedBy = user.uid;
       const movieList = await getMovieListById(event.target.value);
-      if(movieList.movies.find(m => m.id === movie.id)) throw new Error('Movie already in list');
-      addMovieToList(event.target.value, movie);
-      addAlert('success', `${movie.title} added to ${movieList.title}`);
+      if(movieList.tvShows.find(m => m.id === tvShow.id)) throw new Error('tvShow already in list');
+      try{
+        await addTVShowToList(event.target.value, tvShow);
+      }catch(error){
+        addAlert('error', error.message);
+      }finally{
+        addAlert('success', `${tvShow.name} added to ${movieList.title}`);
+      }
     }
     catch(error){
       addAlert('error', error.message);
@@ -149,7 +144,7 @@ const TVDetailsPage = (props) => {
         autoWidth
         onChange={handleChange}
         label="Add to list"
-        title= 'Select a list to add this movie to'
+        title= 'Select a list to add this tvShow to'
         >
           {movieLists.map((list) => (
           <MenuItem value={list.id}>{list.title}</MenuItem>
@@ -157,28 +152,28 @@ const TVDetailsPage = (props) => {
         </Select>
         </FormControl>
         <ButtonGroup sx={{marginBottom: '.5em', marginRight:'auto',marginLeft:'auto'}}>
-          {movie.imdb_id && <Button variant="contained" target="_blank" href={`https://www.imdb.com/title/${movie.imdb_id}`} title='IMDB'>IMDB</Button>}
-          {movie.id && <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/movie/${movie.id}`} title='TMDB'>TMDB</Button>}
-          {stremioLinkEnding && <Button variant="contained" target="_blank" href={`https://www.strem.io/s/movie/${stremioLinkEnding}`} title='Stremio'>Stremio</Button>}
+          {tvShow.imdb_id && <Button variant="contained" target="_blank" href={`https://www.imdb.com/title/${tvShow.imdb_id}`} title='IMDB'>IMDB</Button>}
+          {tvShow.id && <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/tvShow/${tvShow.id}`} title='TMDB'>TMDB</Button>}
+          {stremioLinkEnding && <Button variant="contained" target="_blank" href={`https://www.strem.io/s/tvShow/${stremioLinkEnding}`} title='Stremio'>Stremio</Button>}
         </ButtonGroup>
         </Stack>
       </Grid>
       </Grid>
       <Divider/>
-      {movie.tagline && <Typography variant="subtitle1" color='text.secondary' >{movie.tagline}</Typography>}
+      {tvShow.tagline && <Typography variant="subtitle1" color='text.secondary' >{tvShow.tagline}</Typography>}
       <Grid container spacing={2}>
         <Grid item xs={9}>
-          <MovieDetailSection movie={movie}/>
+          <TVDetailSection tvShow={tvShow}/>
           </Grid>
           <Grid item xs={3}>
-            <MovieDetailCard movie={movie}/>
+            <TVDetailCard tvShow={tvShow}/>
           </Grid>
           <Grid item xs={12}>
           <Typography variant="h4" sx={{ marginTop: '1em' }}>
                     Reviews 
             </Typography>
             <Divider sx={{ marginBottom: '1em' }} />
-            <MovieReviewSection movieId={movie.id} />
+            <TVReviewSection tvId={tvShow.id} />
             </Grid>
           </Grid>
         </>}

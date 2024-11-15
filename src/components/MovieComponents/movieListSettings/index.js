@@ -61,7 +61,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       }
     }
   } catch (error) {
-    console.error('Error getting movie lists:', error);
+    console.error('Error getting watch lists:', error);
   }
   }, [user, movieList.users]);
 
@@ -82,10 +82,10 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       const updatedMovieList = { ...movieList, title };
       await updateMovieList(updatedMovieList.id, updatedMovieList);
       setMovieList(updatedMovieList);
-      addAlert('success', 'Movie list title updated.');
+      addAlert('success', 'Watch List title updated.');
     } catch (error) {
-      console.error('Error updating movie list title:', error);
-      addAlert('error', 'Error updating movie list title.');
+      console.error('Error updating watch list title:', error);
+      addAlert('error', 'Error updating watch list title.');
     }
   };
 
@@ -115,7 +115,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       }
   
       if (movieList.userIds.includes(userID)) {
-        throw new Error('User already added to movie list.');
+        throw new Error('User already added to watch list.');
       }
   
       const user = await getUserById(userID);
@@ -130,7 +130,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       setUsers(updatedUsers);
       await updateMovieList(updatedMovieList.id, updatedMovieList);
       setMovieList(updatedMovieList);
-      addAlert('success', `User ${user.email} added to movie list.`);
+      addAlert('success', `User ${user.email} added to watch list.`);
     } catch (error) {
       addAlert('error', error.message);
     }
@@ -173,7 +173,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       setUsers(updatedUsers);
       await updateMovieList(updatedMovieList.id, updatedMovieList);
       setMovieList(updatedMovieList);
-      addAlert('info', `User ${user.email} removed from movie list.`);
+      addAlert('info', `User ${user.email} removed from watch list.`);
       if(user.uid === userID){
         navigate('/movielist');
       }
@@ -197,7 +197,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Error exporting movie list:', error);
+      console.error('Error exporting watch list:', error);
     }
   };
   
@@ -205,22 +205,22 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
   return (
     <Container>
       <Typography variant="h4" component="h2" gutterBottom>
-        Movie List Settings
+        Watch List Settings
       </Typography>
       <Accordion>
         <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
           <Typography variant="h5" component="h3" gutterBottom>
-            Export/Import Movie List
+            Export/Import Watch List
             </Typography>
         </AccordionSummary>
         <AccordionDetails>
     <ButtonGroup variant="contained" color="primary" aria-label="contained primary button group">
               <Button variant="contained" color="primary" onClick={() => handleExportMovieList(movieList)}>
-                Export Movie List
+                Export Watch List
               </Button>
 
               <Button variant="contained" color="primary" disabled>
-                Import Movie List
+                Import Watch List
               </Button>
             </ButtonGroup>
  
@@ -230,7 +230,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       <Accordion>
         <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
           <Typography variant="h5" component="h3" gutterBottom>
-            Movie List Name
+            Watch List Name
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
@@ -238,7 +238,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
             <Grid item xs={12} sx={{ margin: '1em', borderRadius: '5px' }}>
           <TextField
             id="outlined-basic"
-            label="New Movie List Title"
+            label="New Watch List Title"
             value={movieListTitle}
             disabled={accessType === 0}
             variant="outlined"

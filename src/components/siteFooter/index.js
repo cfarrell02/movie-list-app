@@ -6,7 +6,7 @@ function SiteFooter() {
     return (
         <div style={{paddingTop:'2em'}}>
             <Typography variant="h6" align="center" gutterBottom sx={{color:'text.primary'}}>
-                Movie List App
+                Watch List App
             </Typography>
             <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
                 Created by Cian Farrell
