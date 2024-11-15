@@ -52,12 +52,15 @@ const Header = ({ handleLogout }) => {
     if (!value) return;
     setSearchHistory([...searchHistory, value]);
     if (value.media_type === "movie") {
-      navigate(`/movies/${value.id}`);
+      navigate(`/movie/${value.id}`);
     } else if (value.media_type === "tv") {
-      navigate(`/tvshows/${value.id}`);
+      navigate(`/tvshow/${value.id}`);
     } else {
       navigate(`/person/${value.id}`);
     }
+
+    //reload
+    window.location.reload();
   };
 
   const handleAutoFill = (event, value) => {

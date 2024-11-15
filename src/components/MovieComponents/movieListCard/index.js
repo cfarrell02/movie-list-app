@@ -4,6 +4,7 @@ import { Card, Typography, Button, CardMedia, IconButton, Grid} from '@mui/mater
 import DeleteIcon from '@mui/icons-material/Delete';
 import {auth } from '../../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
+import defaultImage from '../../../images/default.jpg';
 
 const MovieListCard = ({ movieList, onDelete }) => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
   useEffect(() => {
 
       const posterPaths = movieList.movies.map((movie) => movie.poster_path);
-      const imagePaths = posterPaths.map((path) => `https://image.tmdb.org/t/p/w200${path}`);
+      const imagePaths = posterPaths.map((path) => `https://image.tmdb.org/t/p/w500${path}`);
       setImageSrcs(imagePaths);
     
     setAccessType(accessType);
@@ -52,7 +53,26 @@ const MovieListCard = ({ movieList, onDelete }) => {
         {movieList.title}
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>
-        {imageSrcs.length >= 3 ? imageSrcs.map(value => ({ value, sort: Math.random() }))
+        
+        {
+          imageSrcs.length <= 0 ?
+            <Grid item xs={12}>
+              <CardMedia
+                key={0}
+                component="img"
+                src={defaultImage}
+                alt={`Poster 1`}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  aspectRatio: '1/1',
+                  objectFit: 'cover',
+                }}
+              />
+            </Grid>
+            :
+        
+        imageSrcs.length >= 3 ? imageSrcs.map(value => ({ value, sort: Math.random() }))
                         .sort((a, b) => a.sort - b.sort)
                         .map(({ value }) => value).splice(0,4).map((src, index) => (
             <Grid item xs={6}>

@@ -155,7 +155,7 @@ const App = () => {
           />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
-        <SiteFooter/>
+        {/* <SiteFooter /> */}
         <AlertNotice/>
         </ThemeProvider>
         </SiteDataProvider>

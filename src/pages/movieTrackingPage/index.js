@@ -139,6 +139,14 @@ const MovieTrackingPage = (props) => {
   onRefresh={refreshMovieList}
 />
 
+          {movies.length === 0 && !loading ? (
+
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              No movies found, add some!
+            </Typography>
+
+          ):(
+
           <MovieTable
           movies={movies}
           deleteMovie={removeMovie}
@@ -146,6 +154,7 @@ const MovieTrackingPage = (props) => {
           loading={loading}
           accessType={accessType}
         />
+          )}
         </>
         )}
         {selectedTab === 1 && (
