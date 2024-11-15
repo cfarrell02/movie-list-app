@@ -41,6 +41,8 @@ const Header = ({ handleLogout }) => {
   useEffect(() => {
     if (inputValue) {
       getSearchResults(inputValue).then((results) => {
+        //filter out tv shows and movies
+        results = results.filter((result) => result.media_type === "movie" ||  result.media_type === "person");
         setSearchResults(results);
       });
     } else {
@@ -66,6 +68,7 @@ const Header = ({ handleLogout }) => {
   const handleAutoFill = (event, value) => {
     const query = event.target.value;
     getSearchResults(1, query).then((results) => {
+      results = results.filter((result) => result.media_type === "movie" ||  result.media_type === "person");
       setSearchResults(results);
     });
   };

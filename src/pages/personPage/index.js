@@ -29,12 +29,16 @@ import PersonDetailsSection from '../../components/personComponents/personDetail
 import PersonCreditsSection from '../../components/personComponents/personCreditsSection';
 import { AlertContext } from '../../contexts/alertContext';
 import { getUserById } from '../../api/userDataStorage';
+import { useNavigate } from 'react-router-dom';
+import { SiteDataContext } from '../../contexts/siteDataContext';
 
 const PersonPage = (props) => {
     const {id} = useParams();
     const [loading , setLoading] = useState(false);
     const [person, setPerson] = useState({});
     const [tmdbId, setTmdbId] = useState(null);
+    const {adultContent} = React.useContext(SiteDataContext);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -42,6 +46,11 @@ const PersonPage = (props) => {
                 setLoading(true);
                 const fetchedPerson = await getPerson(id);
                 const fetchedMovieCredits = await getPersonMovies(id);
+                
+                if(!adultContent && fetchedPerson.adult){
+                    navigate('/');
+                }
+
                 setPerson({...fetchedPerson, credits: fetchedMovieCredits});
                 setTmdbId(fetchedPerson.id + fetchedPerson.name.replace(/\s/g, '-'));
             } catch (error) {

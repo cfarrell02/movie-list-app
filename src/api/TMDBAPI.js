@@ -30,9 +30,8 @@ export const getTVShows = async (args) => {
   }
 };
 
-export const getTVShow = async (args) => {
-  const [, idPart] = args.queryKey;
-  const { id } = idPart;
+export const getTVShow = async (id) => {
+
   try {
     const response = await fetch(
       `https://api.themoviedb.org/3/tv/${id}?api_key=${process.env.REACT_APP_TMDB_KEY}`

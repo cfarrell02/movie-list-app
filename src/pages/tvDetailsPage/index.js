@@ -19,7 +19,7 @@ import {
   InputLabel,
   Stack
 } from '@mui/material';
-import { getMovie,getMovieCredits , getMovieSearchResults } from '../../api/TMDBAPI';
+import { getTVShow,getTVCredits , getMovieSearchResults } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -29,12 +29,9 @@ import MovieDetailSection from '../../components/MovieDetailComponents/movieDeta
 import MovieReviewSection from '../../components/MovieDetailComponents/movieReviewsSection';
 import { AlertContext } from '../../contexts/alertContext';
 import { getUserById } from '../../api/userDataStorage';
-import { SiteDataContext } from '../../contexts/siteDataContext';
-import { Navigate } from 'react-router-dom';
-import { useNavigate } from "react-router-dom";
 
 
-const MovieDetailsPage = (props) => {
+const TVDetailsPage = (props) => {
   const {id} = useParams();
   const [movie, setMovie] = useState({});
   const [stremioLinkEnding, setStremioLinkEnding] = useState('');
@@ -43,8 +40,6 @@ const MovieDetailsPage = (props) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formattedTitle, setFormattedTitle] = useState('');
-  const {adultContent} = React.useContext(SiteDataContext);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -65,8 +60,8 @@ const MovieDetailsPage = (props) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const fetchedMovie = await getMovie(id);
-        const fetchedCredits = await getMovieCredits(id);
+        const fetchedMovie = await getTVShow(id);
+        const fetchedCredits = await getTVCredits(id);
         if(fetchedMovie.imdb_id){
           setStremioLinkEnding(
             fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
@@ -75,13 +70,8 @@ const MovieDetailsPage = (props) => {
           );
         }
 
-        const localMovie = { ...fetchedMovie, credits: fetchedCredits };
-
-        if(!adultContent && localMovie.adult){
-          navigate('/')
-        }
-
-        setMovie(localMovie);
+        const movie = {...fetchedMovie, credits: fetchedCredits};
+        setMovie(translateTVShowToMovieObject(movie));
         console.log(movie);
       } catch (error) {
         console.error(error);
@@ -96,6 +86,18 @@ const MovieDetailsPage = (props) => {
   
     fetchData();
   }, []);
+
+  const translateTVShowToMovieObject = (tvShow) => {
+
+    const movie = {
+      adult: tvShow.adult,
+      name: tvShow.title,
+      backdrop_path: tvShow.backdrop_path,
+      
+    }
+    return tvShow;
+  }
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -184,4 +186,4 @@ const MovieDetailsPage = (props) => {
   );
 };
 
-export default MovieDetailsPage;
+export default TVDetailsPage;

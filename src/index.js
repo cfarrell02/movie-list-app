@@ -12,6 +12,7 @@ import MovieTrackingPage from './pages/movieTrackingPage';
 import MovieHomePage from './pages/movieHomePage';
 import SiteFooter from './components/siteFooter';
 import MovieDetailsPage from './pages/movieDetailsPage';
+import TVDetailsPage from './pages/tvDetailsPage';
 import HomePage from './pages/homePage';
 import Header from './components/siteHeader';
 import AlertNotice from './components/alertNotice';
@@ -144,6 +145,10 @@ const App = () => {
           <Route
             path="/movie/:id"
             element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><MovieDetailsPage /></PrivateRoute>}
+          />
+          <Route
+            path="/tvshow/:id"
+            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><TVDetailsPage /></PrivateRoute>}
           />
           <Route
             path="/movielist"
