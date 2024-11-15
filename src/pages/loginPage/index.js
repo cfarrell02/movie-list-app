@@ -12,6 +12,7 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
   const [pageState, setPageState] = useState('login');
   const [error, setError] = useState({severity: '', message: ''});
   const { adultContent, setAdultContent, darkMode, setDarkMode} = React.useContext(SiteDataContext);
+  const [showAdultContentSettings, setShowAdultContentSettings] = useState(false);
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
@@ -134,7 +135,8 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
         </Alert>
       )}
 
-      <Card sx={{ marginTop: '2em', flexDirection: 'column', display: 'flex', alignItems: 'center', padding: '1em' }}>
+      <Card sx={{ marginTop: '2em', flexDirection: 'column', display: 'flex', alignItems: 'center', padding: '0 1em 2em 1em' }}>
+                <Button onClick={() => setShowAdultContentSettings(!showAdultContentSettings)} sx={{ margin: '2em 0 0 0'}}/>
         <Typography variant="h5" component="p" sx={{ marginBottom: '1em' }}>Settings</Typography>
         {/*Universal settings*/}
         
@@ -143,9 +145,10 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
 
         {user && (<>
           {/*Logged in specific settings*/}
-          
-          <Typography variant="h6" component="p" sx={{ marginBottom: '.2em' }}>X</Typography>
+          {showAdultContentSettings && (<>
+          <Typography variant="h6" component="p" sx={{ marginBottom: '.2em' }}>Adult Content 🌶️ </Typography>
           <Switch onChange={toggleAdultContent} checked={adultContent} />
+          </>)}
         </>)}
       </Card>
     </Container>

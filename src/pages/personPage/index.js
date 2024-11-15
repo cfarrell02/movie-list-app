@@ -19,7 +19,7 @@ import {
   InputLabel,
   Stack
 } from '@mui/material';
-import { getPerson, getPersonMovies } from '../../api/TMDBAPI';
+import { getPerson, getPersonMovies, getPersonTV } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -46,12 +46,13 @@ const PersonPage = (props) => {
                 setLoading(true);
                 const fetchedPerson = await getPerson(id);
                 const fetchedMovieCredits = await getPersonMovies(id);
+                const fetchedTVCredits = await getPersonTV(id);
                 
                 if(!adultContent && fetchedPerson.adult){
                     navigate('/');
                 }
 
-                setPerson({...fetchedPerson, credits: fetchedMovieCredits});
+                setPerson({...fetchedPerson, credits: fetchedMovieCredits, tvCredits: fetchedTVCredits});
                 setTmdbId(fetchedPerson.id + fetchedPerson.name.replace(/\s/g, '-'));
             } catch (error) {
                 console.log(error);
