@@ -195,7 +195,6 @@ const MovieTrackingPage = (props) => {
 
         {selectedTab === 1 && (
             <>
-
             <TVAdd
             title={movieList.title}
             listId={listId}

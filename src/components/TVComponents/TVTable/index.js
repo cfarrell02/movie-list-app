@@ -289,7 +289,7 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
                 handleDelete={deleteTVShow}
                 handleEdit={editTVShow}        //Filtered TV Shows
                 key={tvShow.id}
-                tvShow={tvShow}
+                tv={tvShow}
                 accessType={accessType}
               />
             ))
