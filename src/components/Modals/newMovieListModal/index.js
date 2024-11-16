@@ -12,7 +12,7 @@ const style = {
     p: 4,
   };
 
-const NewMovieListModal = ({ header, body, open, onClose }) => {
+const NewMovieListModal = ({ header, body, open, onClose, onCancel }) => {
   const [title, setTitle] = useState("");
   return (
     <Modal open={open} onClose={onClose} aria-labelledby={header}>
@@ -32,6 +32,9 @@ const NewMovieListModal = ({ header, body, open, onClose }) => {
         <TextField id="outlined-basic" label="Title" variant="outlined" onChange={(event) => setTitle(event.target.value)} />
           </Grid>
         <Grid item xs={12}>
+        <Button variant="contained" size="large" color="primary" sx={{marginTop:"2em", marginRight:'1em'}} onClick={() => onCancel()}>
+          Cancel
+        </Button>
         <Button variant="contained" size="large" color="primary" sx={{marginTop:"2em"}} onClick={() => onClose(title)}>
           Submit
         </Button>

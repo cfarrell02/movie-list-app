@@ -22,6 +22,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { CheckBox } from '@mui/icons-material';
 import TVTable from '../../components/TVComponents/TVTable';
 import TVAdd from '../../components/TVComponents/TVAdd';
+import { useLocation } from 'react-router-dom';
 
 const MovieTrackingPage = (props) => {
   const [movies, setMovies] = useState([]);
@@ -29,7 +30,9 @@ const MovieTrackingPage = (props) => {
   const [movieList, setMovieList] = useState({});
   const [loading, setLoading] = useState(false);
   const { listId } = useParams();
-  const [selectedTab, setSelectedTab] = useState(0);
+  const location = useLocation();
+  const tab = new URLSearchParams(location.search).get('tab');
+  const [selectedTab, setSelectedTab] = useState(tab ? parseInt(tab) : 0);
   const [user, setUser] = useState(null);
   const [accessType, setAccessType] = useState(0);
   const {addAlert} = React.useContext(AlertContext);
@@ -149,6 +152,8 @@ const MovieTrackingPage = (props) => {
   };
 
   const handleTabChange = (event, newValue) => {
+    // Update the URL with the new tab value
+    navigate(`?tab=${newValue}`);
     setSelectedTab(newValue);
   };
 

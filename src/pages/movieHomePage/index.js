@@ -17,6 +17,7 @@ const MovieHomePage = () => {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteModalBody, setDeleteModalBody] = useState('');
   const [selectedMovieList, setSelectedMovieList] = useState(null);
   const navigate = useNavigate();
   const {adultContent, setAdultContent} = useContext(SiteDataContext);
@@ -92,6 +93,13 @@ const MovieHomePage = () => {
 
   const handleDeleteMovieListSelected = (movieList) => {
     setSelectedMovieList(movieList);
+    //find the ConfirmationModal and set the body to 
+    const movieListObject = movieLists.find((m) => m.id === movieList);
+    if (movieListObject){
+      setDeleteModalBody(`Are you sure you want to delete the watch list "${movieListObject.title}"?`);
+    }else{
+      setDeleteModalBody('Are you sure you want to delete this watch list?');
+    }
     setDeleteModalOpen(true);
   };
 
@@ -110,10 +118,10 @@ const MovieHomePage = () => {
   return (
     <Container
       maxWidth="lg"
-      sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', paddingTop: '5%' }}
+      sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '2em', marginBottom: '2em' }}
     >
-      <NewMovieListModal title="New Watch List" body="Enter a name for your new watch list." open={modalOpen} onClose={handleNewMovieList} />
-      <ConfirmationModal header="Delete Watch List" body="Are you sure you want to delete this watch list?" open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={() => handleDeleteMovieList()} />
+      <NewMovieListModal title="New Watch List" body="Enter a name for your new watch list." open={modalOpen} onClose={handleNewMovieList} onCancel={() => setModalOpen(false)} />
+      <ConfirmationModal header="Delete Watch List" body={deleteModalBody} open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={() => handleDeleteMovieList()} />
       <Typography variant="h2" align="center" sx={{ mb: 4, color: 'text.primary' }}>
         {user && user.firstName ? `${user.firstName}'s Watch Lists` : 'Watch Lists'}
       </Typography>

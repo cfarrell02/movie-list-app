@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Typography, Button, CardMedia, IconButton, Grid} from '@mui/material';
+import { Card, Typography, Button, CardMedia, IconButton, Grid, Container} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {auth } from '../../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -29,7 +29,9 @@ const MovieListCard = ({ movieList, onDelete }) => {
   useEffect(() => {
 
       const posterPaths = movieList.movies.map((movie) => movie.poster_path);
+      const tvPosterPaths = movieList.tvShows.map((tvShow) => tvShow.poster_path);
       const imagePaths = posterPaths.map((path) => `https://image.tmdb.org/t/p/w500${path}`);
+      imagePaths.push(...tvPosterPaths.map((path) => `https://image.tmdb.org/t/p/w500${path}`));
       setImageSrcs(imagePaths);
     
     setAccessType(accessType);
@@ -48,7 +50,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
   }, [user]);
 
   return (
-    <Card sx={{ padding: '2em' }} align="center">
+    <Card sx={{ padding: '2em', height: '30em' }} align="center">
       <Typography variant="h4" component="h1" align="center" sx={{ mb: 2 }}>
         {movieList.title}
       </Typography>
@@ -108,16 +110,27 @@ const MovieListCard = ({ movieList, onDelete }) => {
     
     }
         </Grid>
+
       
+      <Button
+        variant="contained"
+        size="large"
+        sx={{ marginTop: '1em', marginRight: '.5em' }}
+        color="primary"
+        onClick={() => navigate('/movielist/' + movieList.id + '?tab=0')}
+        title="Movies"
+      >
+        Movies
+      </Button>
       <Button
         variant="contained"
         size="large"
         sx={{ marginTop: '1em', marginRight: '1em' }}
         color="primary"
-        onClick={() => navigate('/movielist/' + movieList.id)}
-        title="Open List"
+        onClick={() => navigate('/movielist/' + movieList.id + '?tab=1')}
+        title="TV Shows"
       >
-        Open List
+        TV Shows
       </Button>
       {accessType < 2 ? null : (
         <IconButton

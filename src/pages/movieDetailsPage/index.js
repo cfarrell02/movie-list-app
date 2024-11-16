@@ -111,7 +111,7 @@ const MovieDetailsPage = (props) => {
 
   useEffect(() => {
     if(!movie) return;
-    const title = movie.title ? movie.title.length > 30 ? movie.title.substring(0, 30) + '...' : movie.title : '';
+    const title = movie.title ? movie.title.length > 50 ? movie.title.substring(0, 50) + '...' : movie.title : '';
     const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
     setFormattedTitle(`${title} (${year})`);
   }, [movie]);
@@ -138,7 +138,7 @@ const MovieDetailsPage = (props) => {
   
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', marginLeft:'10%', marginRight:'10%', marginTop:'2%', padding: '2%'}}>
+    <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
       {loading ? <CircularProgress align='center'/> : <>
       <Grid container spacing={2}>
         <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-end'}}>

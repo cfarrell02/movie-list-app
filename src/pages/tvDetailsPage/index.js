@@ -130,7 +130,7 @@ const TVDetailsPage = (props) => {
   
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', marginLeft:'10%', marginRight:'10%', marginTop:'2%', padding: '2%'}}>
+    <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
       {loading ? <CircularProgress align='center'/> : <>
       <Grid container spacing={2}>
         <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-end'}}>
