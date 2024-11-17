@@ -61,7 +61,8 @@ const UserActionPage = () => {
             setSuccess('Email has been recovered successfully.');
             const user = auth.currentUser;
             const userData = await getUserById(user.uid);
-            await updateUser(user.uid, { ...userData, email: user.email });
+            userData.email = user.email;
+            await updateUser(user.uid, userData);
             const movieLists = await getMovieListsByUserId(user.uid);
             for (const movieList of movieLists) {
                 for (const userObj of movieList.users) {
