@@ -2,7 +2,7 @@ import React, { useEffect, useNav } from 'react';
 import { Container, Typography, TextField, Button, Box, Input } from '@mui/material';
 import { getUserById, updateUser, deleteUser } from '../../../api/userDataStorage';
 import { getMovieListsByUserId, updateMovieList, deleteMovieList } from '../../../api/movieStorage';
-import { onAuthStateChanged, getAuth } from 'firebase/auth';
+import { onAuthStateChanged, getAuth , } from 'firebase/auth';
 import { auth } from '../../../firebase-config';
 import ConfirmationModal from '../../Modals/confirmationModal';
 import { useNavigate } from 'react-router-dom';

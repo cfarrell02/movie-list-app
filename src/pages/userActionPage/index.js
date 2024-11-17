@@ -3,6 +3,9 @@ import { Card, Typography, Button, TextField, Box, Divider } from '@mui/material
 import { Link, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, confirmPasswordReset, verifyPasswordResetCode, applyActionCode } from "firebase/auth";
+import { getUserById, updateUser } from '../../api/userDataStorage';
+import { getMovieListsByUserId, updateMovieList} from '../../api/movieStorage';
+
 
 const UserActionPage = () => {
     const allowedModes = ['resetPassword', 'verifyEmail', 'recoverEmail'];
@@ -52,15 +55,25 @@ const UserActionPage = () => {
             });
     };
 
-    const handleRecoverEmail = () => {
-        // Recovering the email (optional flow handling if required)
-        applyActionCode(auth, oobCode)
-            .then(() => {
-                setSuccess('Email has been recovered successfully.');
-            })
-            .catch((error) => {
-                setError('Error recovering email. Please try again.');
-            });
+    const handleRecoverEmail = async () => {
+        try {
+            await applyActionCode(auth, oobCode);
+            setSuccess('Email has been recovered successfully.');
+            const user = auth.currentUser;
+            const userData = await getUserById(user.uid);
+            await updateUser(user.uid, { ...userData, email: user.email });
+            const movieLists = await getMovieListsByUserId(user.uid);
+            for (const movieList of movieLists) {
+                for (const userObj of movieList.users) {
+                    if (userObj.uid === user.uid) {
+                        userObj.email = user.email;
+                    }
+                }
+                await updateMovieList(movieList.id, movieList);
+            }
+        } catch (error) {
+            setError('Error recovering email. Please try again.');
+        }
     };
 
     return (
