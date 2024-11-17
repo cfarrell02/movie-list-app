@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Button, Card, Alert, Switch, useMediaQuery, Divider } from '@mui/material';
 import { onAuthStateChanged, sendPasswordResetEmail, updateEmail, updatePassword, deleteUser } from 'firebase/auth';
 import { auth } from '../../firebase-config';
-import Login from '../../components/Onboarding/login';
 import Register from '../../components/Onboarding/register';
 import ForgotPassword from '../../components/Onboarding/forgotPassword';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import { getUserById, updateUser } from '../../api/userDataStorage';
 import UpdateProfile from '../../components/Onboarding/updateProfile';
 import { AlertContext } from '../../contexts/alertContext';
+import Login from '../../components/Onboarding/login';
 
 const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvider }) => {
   const [user, setUser] = useState(null);

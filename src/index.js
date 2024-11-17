@@ -14,6 +14,7 @@ import SiteFooter from './components/siteFooter';
 import MovieDetailsPage from './pages/movieDetailsPage';
 import TVDetailsPage from './pages/tvDetailsPage';
 import HomePage from './pages/homePage';
+import UserActionPage from './pages/userActionPage';
 import Header from './components/siteHeader';
 import AlertNotice from './components/alertNotice';
 import LoginPage from './pages/loginPage';
@@ -22,6 +23,7 @@ import PersonPage from './pages/personPage';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ThemeProvider } from '@emotion/react';
 import { darkTheme,lightTheme } from './themes';
+import NotFoundPage from './pages/notFoundPage';
 
 
 const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
@@ -38,7 +40,7 @@ const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
   return isAuthenticated ? (
     children
   ) : (shouldRedirect ?(
-    <Navigate to="/login" replace />
+    <Navigate to="/usermgmt" replace />
   )
   : <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}><CircularProgress/></div>
 );
@@ -125,11 +127,10 @@ const App = () => {
         <AlertProvider>
         <SiteDataProvider>
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
-
-        <Header authenticated={user !== null}  />
+        {window.location.pathname !== '/usermgmt/action' && <Header authenticated={user !== null} />}
         <Routes>
           <Route
-            path="/login"
+            path="/usermgmt"
             element={<LoginPage handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} isAuthenticated={user !==null} updateThemeProvider={updateThemeProvider} />}
           />
           <Route
@@ -160,7 +161,15 @@ const App = () => {
             path="/person/:id"
             element={<PrivateRoute isAuthenticated={user !== null}><PersonPage /></PrivateRoute>}
           />
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route 
+            path="/usermgmt/action"
+            element={<UserActionPage />}
+          />
+          <Route
+            path="/404"
+            element={<NotFoundPage />}
+          />
+          <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
         {/* <SiteFooter /> */}
         <AlertNotice/>

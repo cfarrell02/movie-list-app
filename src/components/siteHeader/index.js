@@ -167,7 +167,7 @@ const Header = ({ handleLogout }) => {
               <Button color="inherit" sx={{ marginTop: isMobile ? "0.5em" : 0, marginRight: isMobile ? '.5em' : 0 }} onClick={() => navigate("/movielist")}>
                 Watch Lists
               </Button>
-              <Button color="inherit" sx={{ marginTop: isMobile ? "0.5em" : 0,  marginLeft: isMobile ? '.5em' : 0}} onClick={() => navigate("/login")}>
+              <Button color="inherit" sx={{ marginTop: isMobile ? "0.5em" : 0,  marginLeft: isMobile ? '.5em' : 0}} onClick={() => navigate("/usermgmt")}>
                 Settings
               </Button>
             </Container>
