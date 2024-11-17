@@ -6,7 +6,7 @@ import Login from '../../components/Onboarding/login';
 import Register from '../../components/Onboarding/register';
 import ForgotPassword from '../../components/Onboarding/forgotPassword';
 import { SiteDataContext } from '../../contexts/siteDataContext';
-import { getUserById } from '../../api/userDataStorage';
+import { getUserById, updateUser } from '../../api/userDataStorage';
 import UpdateProfile from '../../components/Onboarding/updateProfile';
 import { AlertContext } from '../../contexts/alertContext';
 
@@ -36,9 +36,13 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
     setPageState(pageState === 'login' ? 'register' : 'login');
   };
 
-  const toggleAdultContent = (event) => {
+  const toggleAdultContent = async (event) => {
     setAdultContent(event.target.checked);
     localStorage.setItem('adultContent', event.target.checked);
+
+    const userData = await getUserById(user.uid);
+    userData.adultAllowed = event.target.checked;
+    await updateUser(user.uid,userData);
   }
 
   const toggleTheme = () => {

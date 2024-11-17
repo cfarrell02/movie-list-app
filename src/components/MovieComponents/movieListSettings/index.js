@@ -217,7 +217,25 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
         "id",
       ];
       const movieListCSV = convertArrayOfObjectsToCSV(movieList.movies, keys);
-      const blob = new Blob([movieListCSV], {
+      const tvKeys = [
+        "poster_path",
+        "name",
+        "tagline",
+        "first_air_date",
+        "last_air_date",
+        "vote_average",
+        "watched",
+        "addedDate",
+        "addedBy",
+        "id",
+      ];
+      const tvListCSV = convertArrayOfObjectsToCSV(movieList.tvShows, tvKeys);
+
+      const iterationList = [movieListCSV, tvListCSV].join("\n");
+
+      
+
+      const blob = new Blob([iterationList], {
         type: "text/csv;charset=utf-8;",
       });
       const url = URL.createObjectURL(blob);

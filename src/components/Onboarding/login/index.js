@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
+import { SiteDataContext } from '../../../contexts/siteDataContext';
+import { getUserById } from '../../../api/userDataStorage';
 
 const Login = ({ handleLogin, addAlert }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const {adultContent, setAdultContent} = React.useContext(SiteDataContext);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -14,7 +17,10 @@ const Login = ({ handleLogin, addAlert }) => {
     }
 
     try {
-      await handleLogin(username, password);
+      const result = await handleLogin(username, password);
+      const userData = await getUserById(result.user.uid);
+      setAdultContent(userData.adultAllowed);
+      localStorage.setItem('adultContent', userData.adultAllowed);
       addAlert('success', 'Logged in');
     } catch (error) {
       addAlert('error', 'Error logging in: ' + error.message);

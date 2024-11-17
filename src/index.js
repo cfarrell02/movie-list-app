@@ -95,7 +95,8 @@ const App = () => {
         dateOfBirth: dateOfBirth,
         firstName: firstName,
         lastName: lastName,
-        id: user.user.uid
+        id: user.user.uid,
+        adultAllowed: false
       };
       await addUser(userObject);
     } catch (error) {
