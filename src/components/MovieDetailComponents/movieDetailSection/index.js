@@ -26,7 +26,7 @@ const MovieDetailSection = ({ movie }) => {
 
     return (
         <Container>
-            <Stack direction="row" spacing={2} sx={{ marginTop: '1em', marginBottom: '2em' }} justifyContent="center">
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ marginTop: '1em', marginBottom: '2em' }} justifyContent="center">
                 {genres.map((genre) => (
                         <Chip key={genre.id} label={genre.name} />
                 ))}    
@@ -39,27 +39,27 @@ const MovieDetailSection = ({ movie }) => {
             </Typography>
             <Divider sx={{ marginBottom: '1em' }} />
             <List sx={{ width: '100%'}}>
-                <Grid container spacing={2}>
+                <Grid container spacing={2} sx = {{ display: 'flex', justifyContent: 'center'}}>
                     {movie.release_date ? (
-                    <Grid item xs={3}>
+                    <Grid item sm={6} md={3}>
                         <ListItem>
                             <ListItemText primary="Release Date" secondary={new Date(movie.release_date).toLocaleDateString()} />
                         </ListItem> 
                     </Grid> ): ''}
                     {movie.runtime ? (
-                    <Grid item xs={3}>
+                    <Grid item sm={6} md={3}>
                         <ListItem>
                             <ListItemText primary="Runtime" secondary={movie.runtime + " minutes"} />
                         </ListItem> 
                     </Grid> ): ''}
                     {movie.budget ? (
-                    <Grid item xs={3}>
+                    <Grid item  sm={6} md={3}>
                         <ListItem>
                             <ListItemText primary="Budget" secondary={"$" + new Intl.NumberFormat('en-US').format(movie.budget)} />
                         </ListItem> 
                     </Grid> ):''}
                     {movie.revenue ? (
-                    <Grid item xs={3}>
+                    <Grid item sm={6} md={3}>
                         <ListItem>
                             <ListItemText primary="Revenue" secondary={"$" + new Intl.NumberFormat('en-US').format(movie.revenue)} />
                         </ListItem> 
@@ -77,7 +77,7 @@ const MovieDetailSection = ({ movie }) => {
                                 {movie.vote_count} votes
                             </Typography>
                         </Grid>
-                                                <Grid item xs={12} title = {movie.vote_average + "/10"}>
+                        <Grid item xs={12} title = {movie.vote_average + "/10"}>
                             <ListItem sx={{ display: 'flex', justifyContent: 'center' }}  >
                                 <Rating
                                     name="Vote Average"
@@ -100,7 +100,7 @@ const MovieDetailSection = ({ movie }) => {
                 <List sx={{ width: '100%', overflowY: 'scroll' }}>
                     <Grid container spacing={2}>
                         {cast.map((castMember) => (
-                            <Grid item xs={6} md={4} key={castMember.id}>
+                            <Grid item xs={12} sm={6} md={4} key={castMember.id}>
                                 <ListItemButton to={"/person/" + castMember.id} component="a">
                                     <ListItem key={castMember.id}>
                                         <ListItemAvatar>
@@ -122,7 +122,7 @@ const MovieDetailSection = ({ movie }) => {
                 <List sx={{ width: '100%', overflowY: 'scroll' }}>
                     <Grid container spacing={2}>
                         {crew.map((crewMember) => (
-                            <Grid item xs={6} md={4} key={crewMember.id}>
+                            <Grid item xs={12} sm={6} md={4} key={crewMember.id}>
                                 <ListItemButton to={"/person/" + crewMember.id} component="a">
                                     <ListItem key={crewMember.id}>
                                         <ListItemAvatar>

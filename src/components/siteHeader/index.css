@@ -1,5 +1,6 @@
-#search-container .MuiOutlinedInput-notchedOutline {
-    position: absolute ;
-    bottom: 8px !important;
+@media (min-width: 600px) {
+    #search-container .MuiOutlinedInput-notchedOutline {
+        position: absolute;
+        bottom: 8px !important;
+    }
 }
-

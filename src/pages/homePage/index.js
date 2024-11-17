@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, CardContent, Grid, Box, Input, Card, Stack, CircularProgress, Tab, Paper, TableContainer} from '@mui/material';
+import { Container, Typography, CardContent, Grid, Box, Input, Card, Stack, CircularProgress, Tab, Paper, TableContainer, useMediaQuery} from '@mui/material';
 import { getMovies, getMovieSearchResults } from '../../api/TMDBAPI';
 import MovieCard from '../../components/MovieComponents/movieCard';
 
@@ -8,6 +8,7 @@ const Homepage = () => {
     const navigate = useNavigate();
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(false);
+    const isMobile = useMediaQuery('(max-width:600px)');
     const fetchMovies = async () => {
       try {
           setLoading(true);
@@ -41,7 +42,7 @@ const Homepage = () => {
 
 
   return (
-    <Box  sx={{paddingLeft: '10%', paddingRight:'10%', paddingBottom:'4em'}}>
+    <Box  sx={{paddingLeft: isMobile ? '2%': '10%', paddingRight: isMobile ? '2%': '10%', paddingBottom:'4em'}}>
  <Card
     sx={{
       marginTop: '20px', // Move card 20px away from siblings

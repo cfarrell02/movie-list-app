@@ -18,14 +18,14 @@ const PersonDetailsSection = ({ person }) => {
         <Container>
             {alternateNames.length > 0 ? (
             <Stack
-                direction="row"
+                direction={{ xs: 'column', sm: 'row' }}
                 spacing={2}
                 sx={{
                     marginTop: '2em',
                     marginBottom: '3em',
                     justifyContent: 'center',
                     width: '100%',
-                    overflowX: 'scroll',
+                    overflowX: { xs: 'visible', sm: 'scroll' },
                 }}
             >
                 {alternateNames.map((name, index) => (

@@ -21,6 +21,7 @@ import {
   Switch,
   Grid,
   Alert,
+  useMediaQuery,
   InputAdornment
 } from '@mui/material';
 import { ArrowUpward, ArrowDownward, Filter, Label, Refresh } from '@mui/icons-material';
@@ -39,6 +40,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [filters, setFilters] = useState([]);
   const {addAlert} = React.useContext(AlertContext);
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -200,7 +202,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   return (
     <TableContainer component={Paper}>
     <Grid container spacing={2} sx={{ p: 2 }} alignItems="center">
-      <Grid item xs={9} align="left">
+      <Grid item sm={9} xs={12} align="left">
         <TextField
           variant="outlined"
           margin="normal"
@@ -212,7 +214,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
 
 
 
-      <Grid item xs={3} align="centre">
+      <Grid item sm={3} xs={12} align="centre">
         <Typography variant="subtitle2" component="div">
           Show watched movies</Typography>
         <Checkbox defaultChecked={true}
@@ -239,7 +241,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
           <Chip label={filter.label} variant="outlined" onDelete={() => handleDelete(index)} key={index}/>
         ))}
     </Stack> */}
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      <Table sx={{ minWidth: isMobile ? 0 : 650 }} aria-label="simple table">
       <TableHead>
           <TableRow align="left">
           <TableCell >
@@ -252,6 +254,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
                 Title {getSortIcon('title')}
               </Typography>
             </TableCell>
+            {isMobile ? null : ( <>
             <TableCell align="center" onClick={() => handleSort('release_date')} style={{ cursor: 'pointer'}} >
             <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
             Released {getSortIcon('release_date')}
@@ -272,6 +275,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
                 Added {getSortIcon('addedDate')}
               </Typography>
             </TableCell>
+            </>)}
             <TableCell align="center"></TableCell>
           </TableRow>
         </TableHead>
@@ -336,13 +340,14 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
       </Table>
      {searchTerm.length===0 && filters.length === 0 ? (
       <TablePagination
-        rowsPerPageOptions={[10, 25, 50, movies.length]}
+        rowsPerPageOptions={[10, 25, 50, { label: 'All', value: movies.length }]}
         component="div"
         count={movies.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        labelRowsPerPage={isMobile ? 'Movies' : 'Movies per page'}
       />
      ): null
      }

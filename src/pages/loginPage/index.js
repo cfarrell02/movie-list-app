@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Button, Card, Alert, Switch } from '@mui/material';
+import { Container, Typography, Button, Card, Alert, Switch, useMediaQuery, Divider } from '@mui/material';
 import { onAuthStateChanged, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../firebase-config';
 import Login from '../../components/Onboarding/login';
 import Register from '../../components/Onboarding/register';
 import ForgotPassword from '../../components/Onboarding/forgotPassword';
 import { SiteDataContext } from '../../contexts/siteDataContext';
+import { getUserById } from '../../api/userDataStorage';
 
 const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvider }) => {
   const [user, setUser] = useState(null);
@@ -13,10 +14,13 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
   const [error, setError] = useState({severity: '', message: ''});
   const { adultContent, setAdultContent, darkMode, setDarkMode} = React.useContext(SiteDataContext);
   const [showAdultContentSettings, setShowAdultContentSettings] = useState(false);
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
+        const userData = await getUserById(user.uid);
+        user = {...user, ...userData};
         setUser(user);
       } else {
         setUser(null);
@@ -64,21 +68,22 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
   }
 
   return (
-    <Container
-      maxWidth="sm"
+    <Card
+      
       sx={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '8rem',
+        padding: '2rem',
+        margin: 'auto 5%',
       }}
     >
-      <Typography variant="h2" component="h1" align="center" sx={{ mb: 4, color: 'text.primary' }}>
-        Welcome! {user && user.email}
+      <Typography variant={isMobile ? 'h5':'h2'} component="h1" align="center" sx={{ mb: 4, color: 'text.primary' }}>
+        Welcome {user && user.firstName}!
       </Typography>
 
-      <Card
+      <Container
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -95,7 +100,6 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
           ) : (
 
               pageState === 'forgotPassword' ? (
-                  
                   <ForgotPassword sendPasswordResetEmail={sendPasswordEmail} setError={setError} />
               ) : (
 
@@ -105,7 +109,10 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
 
           
         ) : (
-          <>
+          <> {/*Logged in section*/}
+          
+
+
           <Button variant="contained" size="large" color="primary" onClick={() => handleLogout()}>
             Logout
           </Button>
@@ -127,16 +134,19 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
           </>
         
         )}
-      </Card>
+      </Container>
 
       {error.message && (
         <Alert severity={error.severity} sx={{ marginTop: '2em' }}>
           {error.message}
         </Alert>
       )}
+      <Container sx={{ marginTop: '2em', flexDirection: 'column', display: 'flex', alignItems: 'center', padding: '0 1em 2em 1em' }}>
+      <Divider sx={{ width: '100%', marginBottom: '1em' }}/>
 
-      <Card sx={{ marginTop: '2em', flexDirection: 'column', display: 'flex', alignItems: 'center', padding: '0 1em 2em 1em' }}>
-                <Button onClick={() => setShowAdultContentSettings(!showAdultContentSettings)} sx={{ margin: '2em 0 0 0'}}/>
+        {user && <Button onClick={() => setShowAdultContentSettings(!showAdultContentSettings)} sx={{ margin: '2em 0 0 0'}}/> } 
+
+
         <Typography variant="h5" component="p" sx={{ marginBottom: '1em' }}>Settings</Typography>
         {/*Universal settings*/}
         
@@ -150,8 +160,8 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
           <Switch onChange={toggleAdultContent} checked={adultContent} />
           </>)}
         </>)}
-      </Card>
-    </Container>
+      </Container>
+    </Card>
   );
 };
 

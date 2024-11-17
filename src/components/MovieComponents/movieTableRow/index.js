@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Rating, Tooltip, Button, ButtonGroup, Link} from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Rating, Tooltip, Button, useMediaQuery, Link} from '@mui/material';
 import { dateFormatter, timeFormatter, dateReadableFormatter} from '../../../utils';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -15,6 +15,7 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
     const [watched, setWatched] = useState(movie.watched);
     const [addedByUser, setAddedByUser] = useState({});
     const [imageSrc, setImageSrc] = useState('');
+    const isMobile = useMediaQuery('(max-width:600px)');
 
 
     useEffect(() => {
@@ -49,6 +50,7 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
               <TableCell align='center' component="th" scope="row" >
                 <Link href={`/movie/${movie.id}`} >{movie.title}</Link><br/>
               </TableCell>
+              {isMobile ? null : (<>
               <TableCell align="center">{movie.release_date ? new Date(movie.release_date).getFullYear():''} </TableCell>
               {movie.vote_average ?
               <Tooltip title={movie.vote_average+'/10'} placement="top"><TableCell align="center"><Rating precision={0.25} name="read-only" value={movie.vote_average/2} readOnly /></TableCell></Tooltip>
@@ -60,6 +62,7 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
                 </>) : '-'}
               </TableCell>
               <TableCell align="center">{addedByUser.firstName}<br/>{dateReadableFormatter(movie.addedDate)}</TableCell>
+              </>)}
               <TableCell align="right">
                 {accessType === 0 ? null : (
                   <>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography, Button, Container } from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Container , useMediaQuery, Grid} from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box"; // Required for rendering options with images
@@ -20,6 +20,7 @@ const Header = ({ handleLogout }) => {
   const [searchResults, setSearchResults] = useState([]); // State for storing search results
   const [searchHistory, setSearchHistory] = useState([]); // State for storing search history
   const [inputValue, setInputValue] = useState(""); // State for storing user input
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -83,100 +84,102 @@ const Header = ({ handleLogout }) => {
 
   return (
     <div style={{ display: "flex", justifyContent: "center", margin: "0" }}>
-      <AppBar
-        position="static"
-        sx={{
-          margin: ".25em 1em 1em 1em",
-          borderRadius: "1em",
-          width: "calc(100% - 2em)",
-        }}
-      >
-        <Toolbar>
-          {user !== null ? (
-            <>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                <Button color="inherit" onClick={() => navigate("/home")}>
-                  Movie App - {user.firstName} {user.lastName}{"  "}
-                  {adultContent ? '🌶️' : ''}
-                </Button>
-              </Typography>
-              <Container
+    <AppBar
+      position="static"
+      sx={{
+        margin: isMobile ? ".1em 0.1em 1em 0.1em" : ".25em 1em 1em 1em",
+        borderRadius: "1em",
+        width: isMobile ? "calc(100% - .1em)" : "calc(100% - 2em)",
+      }}
+    >
+      <Toolbar sx={{ flexDirection: isMobile ? "column" : "row" }}>
+        {user !== null ? (
+          <>
+            <Typography variant="h6" component="div" sx={{ flexGrow: isMobile ? 0 : 1 , marginTop: isMobile ? '.5em' : 0}}>
+              <Button color="inherit" onClick={() => navigate("/home")}>
+                Movie App - {user.firstName} {user.lastName}{"  "}
+                {adultContent ? '🌶️' : ''}
+              </Button>
+            </Typography>
+            <Container
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                width: isMobile ? "100%" : "25em",
+                height: "75%",
+                marginTop: isMobile ? ".5em" : 0, // Adds space on mobile view
+              }}
+              id="search-container"
+            >
+              <Autocomplete
+                id="search-bar"
                 sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  width: "25em",
-                  height: "75%", // Updated height to match the text box
+                  backgroundColor: darkMode ? "#333333" : "#f0f0f0",
+                  borderRadius: 2,
+                  width: "100%",
                 }}
-
-                id="search-container"
-              >
-                <Autocomplete
-                  id="search-bar"
-                  sx={{
-                    backgroundColor: darkMode ? "#333333" : "#f0f0f0",
-                    borderRadius: 2,
-                    width: "100%",
-                  }}
-                  options={searchResults ? searchResults : searchHistory}
-                  autoHighlight
-                  getOptionLabel={(option) =>
-                    option.media_type === "movie" ? option.title : option.name
-                  }
-                  onChange={handleSearch}
-                  renderOption={(props, option) => (
-                    <Box
-                      component="li"
-                      sx={{ "& > img": { mr: 2, flexShrink: 0 } }}
-                      {...props}
-                    >
-                      <img
-                        loading="lazy"
-                        width="25"
-                        src={`https://image.tmdb.org/t/p/w500/${
-                          option.media_type === "person"
-                            ? option.profile_path
-                            : option.poster_path
-                        }`}
-                        alt=""
-                      />
-                      {option.media_type === "movie" ? option.title : option.name}{" "}
-                      ({capitalize(option.media_type)}){" "}
-                      {option.adult ? "(Adult)" : ""}
-                      {option.media_type === "person"
-                        ? option.media_type === "movie"
-                          ? option.release_date
-                          : option.first_air_date
-                        : ""}
-                    </Box>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Search the database..."
-                      inputProps={{
-                        ...params.inputProps,
-                      }}
-                      onChange={handleAutoFill}
-                      onAction={handleSearch}
+                options={searchResults ? searchResults : searchHistory}
+                autoHighlight
+                getOptionLabel={(option) =>
+                  option.media_type === "movie" ? option.title : option.name
+                }
+                onChange={handleSearch}
+                renderOption={(props, option) => (
+                  <Box
+                    component="li"
+                    sx={{ "& > img": { mr: 2, flexShrink: 0 } }}
+                    {...props}
+                  >
+                    <img
+                      loading="lazy"
+                      width="25"
+                      src={`https://image.tmdb.org/t/p/w500/${
+                        option.media_type === "person"
+                          ? option.profile_path
+                          : option.poster_path
+                      }`}
+                      alt=""
                     />
-                  )}
-                />
-              </Container>
-              <Button color="inherit" onClick={() => navigate("/movielist")}>
+                    {option.media_type === "movie" ? option.title : option.name}{" "}
+                    ({capitalize(option.media_type)}){" "}
+                    {option.adult ? "(Adult)" : ""}
+                    {option.media_type === "person"
+                      ? option.media_type === "movie"
+                        ? option.release_date
+                        : option.first_air_date
+                      : ""}
+                  </Box>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search the database..."
+                    inputProps={{
+                      ...params.inputProps,
+                    }}
+                    onChange={handleAutoFill}
+                    onAction={handleSearch}
+                  />
+                )}
+              />
+            </Container>
+            <Container sx={{ display: "flex", marginBottom: isMobile ? '.5em' : 0 , justifyContent: isMobile ? 'center' : 'flex-end', width: isMobile ? '100%' : '18em'}}>
+              <Button color="inherit" sx={{ marginTop: isMobile ? "0.5em" : 0, marginRight: isMobile ? '.5em' : 0 }} onClick={() => navigate("/movielist")}>
                 Watch Lists
               </Button>
-              <Button color="inherit" onClick={() => navigate("/login")}>
+              <Button color="inherit" sx={{ marginTop: isMobile ? "0.5em" : 0,  marginLeft: isMobile ? '.5em' : 0}} onClick={() => navigate("/login")}>
                 Settings
               </Button>
-            </>
-          ) : (
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Movie App
-            </Typography>
-          )}
-        </Toolbar>
-      </AppBar>
-    </div>
+            </Container>
+          </>
+        ) : (
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Movie App
+          </Typography>
+        )}
+      </Toolbar>
+    </AppBar>
+  </div>
   );
 };
 

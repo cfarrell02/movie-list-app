@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Alert } from '@mui/material';
+import { Box, TextField, Button, Typography, Alert, useMediaQuery } from '@mui/material';
 
 const ForgotPassword = ({sendPasswordResetEmail, setError}) => {
   const [email, setEmail] = useState('');
+  const isMobile = useMediaQuery('(max-width:600px)');
 
 
   const handleSubmit = async (event) => {
@@ -18,7 +19,7 @@ const ForgotPassword = ({sendPasswordResetEmail, setError}) => {
 
   return (
     <>
-      <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
+      <Typography variant={isMobile ? 'h5':"h4"} component="h1" sx={{ mb: 4 }}>
         Forgot Password
       </Typography>
       <Box

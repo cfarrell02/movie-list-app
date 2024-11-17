@@ -19,8 +19,8 @@ const TVDetailSection = ({ tvShow }) => {
 
     return (
         <Container>
-            <Stack direction="row" spacing={2} sx={{ marginTop: '1em', marginBottom: '2em' }} justifyContent="center">
-                {genres.map((genre) => (
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ marginTop: '1em', marginBottom: '2em' }} justifyContent="center">
+            {genres.map((genre) => (
                         <Chip key={genre.id} label={genre.name} />
                 ))}    
             </Stack>
@@ -32,33 +32,33 @@ const TVDetailSection = ({ tvShow }) => {
             </Typography>
             <Divider sx={{ marginBottom: '1em' }} />
             <List sx={{ width: '100%'}}>
-                <Grid container spacing={2}>
-                    {tvShow.first_air_date ? (
-                    <Grid item xs={3}>
+            <Grid container spacing={2} sx = {{ display: 'flex', justifyContent: 'center'}}>
+            {tvShow.first_air_date ? (
+                    <Grid item sm={6} md={3}>
                         <ListItem>
                             <ListItemText primary="First aired on" secondary={new Date(tvShow.first_air_date).toLocaleDateString()} />
                         </ListItem> 
                     </Grid> ): ''}
                     {tvShow.last_air_date ? (
-                    <Grid item xs={3}>
+                    <Grid item sm={6} md={3}>
                         <ListItem>
                         <ListItemText primary="Last aired on" secondary={new Date(tvShow.last_air_date).toLocaleDateString()} />
                         </ListItem> 
                     </Grid> ): 
-                    <Grid item xs={3}>
+                    <Grid item sm={6} md={3}>
                         <ListItem>
                         <ListItemText primary="Status" secondary={tvShow.status} />
                         </ListItem>
                     </Grid>}
                     
                     {tvShow.seasons ? (
-                    <Grid item xs={3}>
+                    <Grid item sm={6} md={3}>
                         <ListItem>
                             <ListItemText primary="Seasons" secondary={tvShow.seasons.length} />
                         </ListItem> 
                     </Grid> ):''}
                     {episodeCount ? (
-                    <Grid item xs={3}>
+                    <Grid item sm={6} md={3}>
                         <ListItem>
                             <ListItemText primary="Episodes" secondary={episodeCount} />
                         </ListItem> 
@@ -99,7 +99,7 @@ const TVDetailSection = ({ tvShow }) => {
                 <List sx={{ width: '100%', overflowY: 'scroll' }}>
                     <Grid container spacing={2}>
                         {cast.map((castMember) => (
-                            <Grid item xs={6} md={4} key={castMember.id}>
+                            <Grid item xs={12} sm={6} md={4} key={castMember.id}>
                                 <ListItemButton to={"/person/" + castMember.id} component="a">
                                     <ListItem key={castMember.id}>
                                         <ListItemAvatar>

@@ -51,7 +51,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
 
   return (
     <Card sx={{ padding: '2em', height: '30em' }} align="center">
-      <Typography variant="h4" component="h1" align="center" sx={{ mb: 2 }}>
+      <Typography variant="h5" component="h1" align="center" sx={{ mb: 2 }}>
         {movieList.title}
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>

@@ -17,6 +17,7 @@ import {
   Divider,
   ButtonGroup,
   InputLabel,
+  useMediaQuery,
   Stack
 } from '@mui/material';
 import { getMovie,getMovieCredits , getMovieSearchResults } from '../../api/TMDBAPI';
@@ -44,6 +45,7 @@ const MovieDetailsPage = (props) => {
   const [loading, setLoading] = useState(false);
   const [formattedTitle, setFormattedTitle] = useState('');
   const {adultContent} = React.useContext(SiteDataContext);
+  const isMobile = useMediaQuery('(max-width:600px)');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -141,10 +143,10 @@ const MovieDetailsPage = (props) => {
     <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
       {loading ? <CircularProgress align='center'/> : <>
       <Grid container spacing={2}>
-        <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-end'}}>
+        <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-start', justifyContent: isMobile ? 'center' : 'flex-start'}} >
       <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{formattedTitle}</Typography>
       </Grid>
-      <Grid item xs={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+      <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-end'}}>
         <Stack> 
         <FormControl sx={{ m: 1, minWidth: '15em' }} size='small'>
         <InputLabel> Add to list</InputLabel>
@@ -169,13 +171,23 @@ const MovieDetailsPage = (props) => {
       </Grid>
       <Divider/>
       {movie.tagline && <Typography variant="subtitle1" color='text.secondary' >{movie.tagline}</Typography>}
-      <Grid container spacing={2}>
+      <Grid container spacing={ isMobile ? 0 : 2}>
+        {isMobile ? (<>
+          <Grid item xs={12}>
+            <MovieDetailCard movie={movie}/>
+          </Grid>
+          <Grid item xs={12}>
+          <MovieDetailSection movie={movie}/>
+          </Grid>
+
+        </>) : (<>
         <Grid item xs={9}>
           <MovieDetailSection movie={movie}/>
           </Grid>
           <Grid item xs={3}>
             <MovieDetailCard movie={movie}/>
           </Grid>
+        </>)}
           <Grid item xs={12}>
           <Typography variant="h4" sx={{ marginTop: '1em' }}>
                     Reviews 

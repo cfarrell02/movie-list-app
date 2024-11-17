@@ -21,6 +21,7 @@ import {
   Switch,
   Grid,
   Alert,
+  useMediaQuery,
   InputAdornment
 } from '@mui/material';
 import { ArrowUpward, ArrowDownward, Filter, Label, Refresh } from '@mui/icons-material';
@@ -38,6 +39,7 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
   const [value, setValue] = useState('');
   const [filteredTVShows, setFilteredTVShows] = useState([]);
   const [filters, setFilters] = useState([]);
+  const isMobile = useMediaQuery('(max-width:600px)');
   const {addAlert} = React.useContext(AlertContext);
 
   const handleChangePage = (event, newPage) => {
@@ -200,7 +202,7 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
   return (
     <TableContainer component={Paper}>
     <Grid container spacing={2} sx={{ p: 2 }} alignItems="center">
-      <Grid item xs={9} align="left">
+      <Grid item md={9} xs={12} align="left">
         <TextField
           variant="outlined"
           margin="normal"
@@ -212,7 +214,7 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
 
 
 
-      <Grid item xs={3} align="centre">
+      <Grid item md={3} xs={12} align="centre">
         <Typography variant="subtitle2" component="div">
           Show watched TV shows</Typography>
         <Checkbox defaultChecked={true}
@@ -239,7 +241,7 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
           <Chip label={filter.label} variant="outlined" onDelete={() => handleDelete(index)} key={index}/>
         ))}
     </Stack> */}
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      <Table sx={{ minWidth: isMobile ? 0 : 650 }} aria-label="simple table">
       <TableHead>
           <TableRow align="left">
           <TableCell >
@@ -252,6 +254,7 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
                 Title {getSortIcon('name')}
               </Typography>
             </TableCell>
+            {isMobile ? null : (<>
             <TableCell align="center" onClick={() => handleSort('first_air_date')} style={{ cursor: 'pointer'}} >
             <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
             Years Aired {getSortIcon('first_air_date')}
@@ -272,6 +275,7 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
                 Added {getSortIcon('addedDate')}
               </Typography>
             </TableCell>
+            </>)}
             <TableCell align="center"></TableCell>
           </TableRow>
         </TableHead>
@@ -336,13 +340,14 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
       </Table>
      {searchTerm.length===0 && filters.length === 0 ? (
       <TablePagination
-        rowsPerPageOptions={[10, 25, 50, tvShows.length]}
+        rowsPerPageOptions={[10, 25, 50, { label: 'All', value: tvShows.length }]}
         component="div"
         count={tvShows.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        labelRowsPerPage={isMobile ? 'Shows' : 'Shows per page'}
       />
      ): null
      }

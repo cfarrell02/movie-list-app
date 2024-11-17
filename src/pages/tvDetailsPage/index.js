@@ -17,7 +17,8 @@ import {
   Divider,
   ButtonGroup,
   InputLabel,
-  Stack
+  Stack,
+  useMediaQuery
 } from '@mui/material';
 import { getTVShow,getTVCredits , getMovieSearchResults } from '../../api/TMDBAPI';
 import { getMovieListById, addTVShowToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
@@ -40,6 +41,7 @@ const TVDetailsPage = (props) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formattedTitle, setFormattedTitle] = useState('');
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -133,10 +135,10 @@ const TVDetailsPage = (props) => {
     <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
       {loading ? <CircularProgress align='center'/> : <>
       <Grid container spacing={2}>
-        <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-end'}}>
+      <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-start', justifyContent: isMobile ? 'center' : 'flex-start'}} >
       <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{formattedTitle}</Typography>
       </Grid>
-      <Grid item xs={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+      <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-end'}}>
         <Stack> 
         <FormControl sx={{ m: 1, minWidth: '15em' }} size='small'>
         <InputLabel> Add to list</InputLabel>
@@ -153,7 +155,7 @@ const TVDetailsPage = (props) => {
         </FormControl>
         <ButtonGroup sx={{marginBottom: '.5em', marginRight:'auto',marginLeft:'auto'}}>
           {tvShow.imdb_id && <Button variant="contained" target="_blank" href={`https://www.imdb.com/title/${tvShow.imdb_id}`} title='IMDB'>IMDB</Button>}
-          {tvShow.id && <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/tvShow/${tvShow.id}`} title='TMDB'>TMDB</Button>}
+          {tvShow.id && <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/tv/${tvShow.id}`} title='TMDB'>TMDB</Button>}
           {stremioLinkEnding && <Button variant="contained" target="_blank" href={`https://www.strem.io/s/tvShow/${stremioLinkEnding}`} title='Stremio'>Stremio</Button>}
         </ButtonGroup>
         </Stack>
@@ -161,13 +163,22 @@ const TVDetailsPage = (props) => {
       </Grid>
       <Divider/>
       {tvShow.tagline && <Typography variant="subtitle1" color='text.secondary' >{tvShow.tagline}</Typography>}
-      <Grid container spacing={2}>
+      <Grid container spacing={ isMobile ? 0 : 2}>
+        {isMobile ? (<>
+          <Grid item xs={12}>
+            <TVDetailCard tvShow={tvShow}/>
+          </Grid>
+          <Grid item xs={12}>
+          <TVDetailSection tvShow={tvShow}/>
+          </Grid>
+          </>):<>
         <Grid item xs={9}>
           <TVDetailSection tvShow={tvShow}/>
           </Grid>
           <Grid item xs={3}>
             <TVDetailCard tvShow={tvShow}/>
           </Grid>
+          </>}
           <Grid item xs={12}>
           <Typography variant="h4" sx={{ marginTop: '1em' }}>
                     Reviews 

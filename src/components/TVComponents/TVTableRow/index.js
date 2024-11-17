@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Rating, Tooltip, Button, ButtonGroup, Link} from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Rating, Tooltip, Button, useMediaQuery, Link} from '@mui/material';
 import { dateFormatter, timeFormatter, dateReadableFormatter} from '../../../utils';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -17,7 +17,7 @@ const TVTableRow = ({tv, handleDelete, handleEdit, accessType}) => {
     const [addedByUser, setAddedByUser] = useState({});
     const [imageSrc, setImageSrc] = useState('');
     const [runtime, setRuntime] = useState('');
-
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     useEffect(() => {
       const imageSrc = tv.poster_path ? `https://image.tmdb.org/t/p/w500${tv.poster_path}` : defaultImage;
@@ -54,6 +54,7 @@ const TVTableRow = ({tv, handleDelete, handleEdit, accessType}) => {
               <TableCell align='center' component="th" scope="row" >
                 <Link href={`/tvshow/${tv.id}`} >{tv.name}</Link><br/>
               </TableCell>
+              {isMobile ? null : (<>
               <TableCell align="center">{runtime ? runtime : '-'}</TableCell>
               {tv.vote_average ?
               <Tooltip title={tv.vote_average+'/10'} placement="top"><TableCell align="center"><Rating precision={0.25} name="read-only" value={tv.vote_average/2} readOnly /></TableCell></Tooltip>
@@ -63,6 +64,7 @@ const TVTableRow = ({tv, handleDelete, handleEdit, accessType}) => {
                 {tv.seasons ? tv.seasons.length : '-'}  
               </TableCell>
               <TableCell align="center">{addedByUser.firstName}<br/>{dateReadableFormatter(tv.addedDate)}</TableCell>
+              </>)}
               <TableCell align="right">
                 {accessType === 0 ? null : (
                   <>

@@ -16,8 +16,8 @@ import {
   FormControl,
   Divider,
   ButtonGroup,
-  InputLabel,
-  Stack
+  Stack,
+  useMediaQuery
 } from '@mui/material';
 import { getPerson, getPersonMovies, getPersonTV } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
@@ -39,6 +39,7 @@ const PersonPage = (props) => {
     const [tmdbId, setTmdbId] = useState(null);
     const {adultContent} = React.useContext(SiteDataContext);
     const navigate = useNavigate();
+    const isMobile = useMediaQuery  ('(max-width:600px)');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -68,10 +69,10 @@ const PersonPage = (props) => {
       <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
         {loading ? <CircularProgress align='center'/> : <>
         <Grid container spacing={2}>
-          <Grid item xs={8} sx={{ display: 'flex', alignItems: 'flex-end'}}>
+          <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-start' }}>
         <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{person.name}</Typography>
         </Grid>
-        <Grid item xs={4} sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+        <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-end' }}>
           <ButtonGroup sx={{marginBottom: '.5em', marginRight:'1em'}}>
             {person.imdb_id && <Button variant="contained" target="_blank" href={`https://www.imdb.com/name/${person.imdb_id}`} title='IMDB'>IMDB</Button>}
             <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/person/${tmdbId}`} title='TMDB'>TMDB</Button>
@@ -82,13 +83,22 @@ const PersonPage = (props) => {
         {person.known_for_department ? (
         <Typography variant="subtitle1" color='text.secondary' >{person.known_for_department}</Typography>
         ) : ''}
-        <Grid container spacing={2}>
+        <Grid container spacing={ isMobile ? 0 : 2}>
+          {isMobile ? (<>
+            <Grid item xs={12}>
+              <PersonDetailsCard person={person}/>
+            </Grid>
+            <Grid item xs={12}>
+            <PersonDetailsSection person={person}/>
+            </Grid>
+            </>):<>
           <Grid item xs={9}>
             <PersonDetailsSection person={person}/>
             </Grid>
             <Grid item xs={3}>
               <PersonDetailsCard person={person}/>
-            </Grid>
+            </Grid> 
+            </>}
             <Grid item xs={12}>
             <Typography variant="h4" sx={{ marginTop: '1em' }}>
                       Credits 

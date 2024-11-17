@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useContext } from 'react';
 import {AlertContext} from '../../../contexts/alertContext';
-import { Container, Typography, TextField, Button, Card, Grid, Autocomplete, CircularProgress, Alert, Box } from '@mui/material';
+import { Container, Typography, TextField, Button, Card, Grid, Autocomplete, CircularProgress, Alert, Box, useMediaQuery } from '@mui/material';
 import { getTVShow, getTVShowSearchResults } from '../../../api/TMDBAPI';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { addTVShowToList } from '../../../api/movieStorage';
@@ -14,6 +14,7 @@ const TVAdd = ({title, tvshows, listId, setTvShows, disabled, currentUserID, onR
   const [options, setOptions] = useState([]);
   const { addAlert } = useContext(AlertContext);
   const [searchText, setSearchText] = useState('');
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const [tvshow, setTvShow] = useState({});
 
@@ -85,19 +86,20 @@ const TVAdd = ({title, tvshows, listId, setTvShows, disabled, currentUserID, onR
   return (
     <Card sx={{ marginBottom: '1em', marginTop: '1em' }}>
       <Grid container spacing={2} alignItems="center" sx={{ padding: '1em' }}>
-      <Grid item xs={2}>
-      </Grid>
-
-        <Grid item xs={8}>
-          <Typography variant="h4" component="h1" align="center" sx={{ mb: 2 }}>
+        {!isMobile && (
+          <Grid item xs={2}>
+          </Grid>
+        )}
+        <Grid item xs={isMobile ? 12 : 8}>
+          <Typography variant="h5" component="h1" align="center" sx={{ mb: 2 }}>
             {title}
           </Typography>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={isMobile ? 12 : 2} sx={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end' }}>
           <Button variant="contained" onClick={onRefresh} disabled={disabled}>
             <RefreshIcon />
           </Button>
-          </Grid>
+        </Grid>
       </Grid>
       <Autocomplete
         disabled={disabled}
@@ -130,9 +132,9 @@ const TVAdd = ({title, tvshows, listId, setTvShows, disabled, currentUserID, onR
           <TextField
             {...params}
             value={searchText}
-            label="Show Title"
+            label="TV Show Name"
             onChange={handleTextFieldChange}
-            style={{ marginBottom: '4em', marginTop: '2em', width: '90%' }}
+            style={{ marginBottom: isMobile ? '1em' : '4em', marginTop: isMobile ? '.5em' : '2em', width: '90%' }}
             InputProps={{
               ...params.InputProps,
               endAdornment: (
