@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
 
-const Login = ({ handleLogin, setError }) => {
+const Login = ({ handleLogin, addAlert }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!username || !password) {
+      addAlert('error', 'Please fill out all fields');
+      return;
+    }
+
     try {
       await handleLogin(username, password);
-      setError({ message: 'Logged in', severity: 'success' });
+      addAlert('success', 'Logged in');
     } catch (error) {
-      setError({ message: error.message, severity: 'error' });
+      addAlert('error', 'Error logging in: ' + error.message);
     }
   };
 

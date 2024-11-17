@@ -79,10 +79,11 @@ const App = () => {
 
   const handleLogin = async (username, password) => {
     try {
-      await signInWithEmailAndPassword(auth, username, password);
+      const res = await signInWithEmailAndPassword(auth, username, password);
+      return res;
     } catch (error) {
       console.log(error);
-      throw new Error('Error signing in: ' + error.code);
+      throw new Error('Incorrect username or password');
     }
   };
 

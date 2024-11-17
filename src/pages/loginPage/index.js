@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Button, Card, Alert, Switch, useMediaQuery, Divider } from '@mui/material';
-import { onAuthStateChanged, sendPasswordResetEmail } from 'firebase/auth';
+import { onAuthStateChanged, sendPasswordResetEmail, updateEmail, updatePassword, deleteUser } from 'firebase/auth';
 import { auth } from '../../firebase-config';
 import Login from '../../components/Onboarding/login';
 import Register from '../../components/Onboarding/register';
 import ForgotPassword from '../../components/Onboarding/forgotPassword';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import { getUserById } from '../../api/userDataStorage';
+import UpdateProfile from '../../components/Onboarding/updateProfile';
+import { AlertContext } from '../../contexts/alertContext';
 
 const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvider }) => {
   const [user, setUser] = useState(null);
   const [pageState, setPageState] = useState('login');
-  const [error, setError] = useState({severity: '', message: ''});
+  const {addAlert} = React.useContext(AlertContext);
   const { adultContent, setAdultContent, darkMode, setDarkMode} = React.useContext(SiteDataContext);
   const [showAdultContentSettings, setShowAdultContentSettings] = useState(false);
   const isMobile = useMediaQuery('(max-width:600px)');
+
 
   useEffect(() => {
     onAuthStateChanged(auth, async (user) => {
@@ -61,7 +64,7 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
     try {
       console.log('sendPasswordResetEmail', sendPasswordResetEmail)
       await sendPasswordResetEmail(auth, email);
-      setError({ message: 'Password reset email sent', severity: 'success' });
+      addAlert('success', 'Password reset email sent');
     } catch (error) {
       throw new Error('Error sending password reset email: ' + error.code);
     }
@@ -96,22 +99,23 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
       >
         {user === null ? (
           pageState === 'login' ? (
-            <Login handleLogin={handleLogin} setError={setError} />
+            <Login handleLogin={handleLogin}  addAlert={addAlert} />
           ) : (
 
               pageState === 'forgotPassword' ? (
-                  <ForgotPassword sendPasswordResetEmail={sendPasswordEmail} setError={setError} />
+                  <ForgotPassword sendPasswordResetEmail={sendPasswordEmail} addAlert={addAlert} />
               ) : (
 
-              <Register handleRegister={handleRegister} setError={setError} />
+              <Register handleRegister={handleRegister}  addAlert={addAlert} />
               )
           )
 
           
         ) : (
           <> {/*Logged in section*/}
-          
-
+          <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 1em 2em 1em' }}>
+          <UpdateProfile updateEmail={updateEmail} deleteUserAuth={deleteUser} reAuthenticate={handleLogin} />
+          </Container>
 
           <Button variant="contained" size="large" color="primary" onClick={() => handleLogout()}>
             Logout
@@ -136,11 +140,6 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
         )}
       </Container>
 
-      {error.message && (
-        <Alert severity={error.severity} sx={{ marginTop: '2em' }}>
-          {error.message}
-        </Alert>
-      )}
       <Container sx={{ marginTop: '2em', flexDirection: 'column', display: 'flex', alignItems: 'center', padding: '0 1em 2em 1em' }}>
       <Divider sx={{ width: '100%', marginBottom: '1em' }}/>
 

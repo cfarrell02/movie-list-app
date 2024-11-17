@@ -12,7 +12,7 @@ const style = {
     p: 4,
   };
 
-const ConfirmationModal = ({ header, body, open, onClose, onConfirm }) => {
+const ConfirmationModal = ({ header, subHeader, body, open, onClose, onConfirm }) => {
   return (
     <Modal open={open} onClose={onClose} aria-labelledby={header}>
       <Card sx={style} align="center">
@@ -20,9 +20,12 @@ const ConfirmationModal = ({ header, body, open, onClose, onConfirm }) => {
           {header}
         </Typography>
         <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+          {subHeader}
+        </Typography>
+        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
           {body}
         </Typography>
-        <Grid container spacing={2} sx={{marginTop:"2em"}}>
+        <Grid container spacing={2}>
             <Grid item xs={6}>
         <Button variant="contained" size="large" color="primary" sx={{marginTop:"2em"}} onClick={onClose}>
                 Close

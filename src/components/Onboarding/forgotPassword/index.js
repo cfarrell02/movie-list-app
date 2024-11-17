@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Alert, useMediaQuery } from '@mui/material';
 
-const ForgotPassword = ({sendPasswordResetEmail, setError}) => {
+const ForgotPassword = ({sendPasswordResetEmail, addAlert}) => {
   const [email, setEmail] = useState('');
   const isMobile = useMediaQuery('(max-width:600px)');
 
@@ -11,9 +11,9 @@ const ForgotPassword = ({sendPasswordResetEmail, setError}) => {
     event.preventDefault();
     try {
       await sendPasswordResetEmail(email);
-      setError({ message: 'Password reset email sent', severity: 'success' });
+      addAlert('success', 'Reset link sent');
     } catch (error) {
-      setError({ message: error.message, severity: 'error' });
+      addAlert('error', 'Error sending reset link: ' + error.message);
     }
   };
 
