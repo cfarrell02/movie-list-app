@@ -57,20 +57,7 @@ const UserActionPage = () => {
 
     const handleRecoverEmail = async () => {
         try {
-            const res = await applyActionCode(auth, oobCode);
-            const user = auth.currentUser;
-            const userData = await getUserById(user.uid);
-            userData.email = user.email;
-            await updateUser(user.uid, userData);
-            const movieLists = await getMovieListsByUserId(user.uid);
-            for (const movieList of movieLists) {
-                for (const userObj of movieList.users) {
-                    if (userObj.uid === user.uid) {
-                        userObj.email = user.email;
-                    }
-                }
-                await updateMovieList(movieList.id, movieList);
-            }
+            await applyActionCode(auth, oobCode);
             setSuccess('Email has been recovered successfully.');
         } catch (error) {
             setError('Error recovering email. Please try again.');

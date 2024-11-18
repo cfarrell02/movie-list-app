@@ -24,6 +24,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ThemeProvider } from '@emotion/react';
 import { darkTheme,lightTheme } from './themes';
 import NotFoundPage from './pages/notFoundPage';
+import { getUserById, updateUser } from './api/userDataStorage';
+import { getMovieListsByUserId, updateMovieList } from './api/movieStorage';
 
 
 const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
@@ -82,6 +84,20 @@ const App = () => {
   const handleLogin = async (username, password) => {
     try {
       const res = await signInWithEmailAndPassword(auth, username, password);
+      const user = res.user;
+      const userData = await getUserById(user.uid);
+      userData.email = user.email;
+      await updateUser(user.uid, userData);
+      const movieLists = await getMovieListsByUserId(user.uid);
+      for (const movieList of movieLists) {
+          for (const userObj of movieList.users) {
+              if (userObj.uid === user.uid) {
+                  userObj.email = user.email;
+              }
+          }
+          await updateMovieList(movieList.id, movieList);
+      }
+
       return res;
     } catch (error) {
       console.log(error);
