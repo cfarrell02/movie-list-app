@@ -82,11 +82,11 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem',
-        margin: 'auto 5%',
+        padding: (isMobile ? '1em 0' : '2em'),
+        margin: '1em 5%',
       }}
     >
-      <Typography variant={isMobile ? 'h5':'h2'} component="h1" align="center" sx={{ mb: 4, color: 'text.primary' }}>
+      <Typography variant={isMobile ? 'h5':'h2'} component="h1" align="center" sx={{ mb: '1em', color: 'text.primary' }}>
         Welcome {user && user.firstName}!
       </Typography>
 
@@ -98,7 +98,7 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
           justifyContent: 'center',
           height: 'auto',
           width: 'auto',
-          padding: '2rem',
+          padding: (isMobile ? '1em 0' : '1em'),
         }}
       >
         {user === null ? (
@@ -144,7 +144,7 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
         )}
       </Container>
 
-      <Container sx={{ marginTop: '2em', flexDirection: 'column', display: 'flex', alignItems: 'center', padding: '0 1em 2em 1em' }}>
+      <Container sx={{ marginTop: '1em', flexDirection: 'column', display: 'flex', alignItems: 'center', padding: '0 1em 2em 1em' }}>
       <Divider sx={{ width: '100%', marginBottom: '1em' }}/>
 
         {user && <Button onClick={() => setShowAdultContentSettings(!showAdultContentSettings)} sx={{ margin: '2em 0 0 0'}}/> } 

@@ -1,5 +1,5 @@
 import React, { useEffect, useNav } from 'react';
-import { Container, Typography, TextField, Button, Box, Input } from '@mui/material';
+import { Container, Typography, TextField, Button, Box, Input, useMediaQuery } from '@mui/material';
 import { getUserById, updateUser, deleteUser } from '../../../api/userDataStorage';
 import { getMovieListsByUserId, updateMovieList, deleteMovieList } from '../../../api/movieStorage';
 import { onAuthStateChanged, getAuth , } from 'firebase/auth';
@@ -19,6 +19,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
     const [password, setPassword] = React.useState('');
     const [open, setOpen] = React.useState(false);
     const { addAlert } = React.useContext(AlertContext);
+    const isMobile = useMediaQuery('(max-width:600px)');
     const navigate = useNavigate();
     
     useEffect(() => {
@@ -52,7 +53,6 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
                 addAlert('info', 'Please make some changes before attempting to update your profile');
                 return;
             }
-
 
             if(!password) throw new Error('Please enter your password to update your profile');
 
@@ -143,7 +143,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
         
             
     return (
-        <Container maxWidth="sm">
+        <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
             <ConfirmationModal header='Delete Account?' subHeader = 'Are you sure you want to delete your account? ' body='This will also delete any lists you own and cannot be undone.' open={open} onClose={() => setOpen(false)} onConfirm = {handleDeleteAccount}/>
             <Box sx={{ mt: 4 }}>
                 <Typography variant="h4" component="h1" gutterBottom>
