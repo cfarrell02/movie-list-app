@@ -57,7 +57,7 @@ const UserActionPage = () => {
 
     const handleRecoverEmail = async () => {
         try {
-            await applyActionCode(auth, oobCode);
+            const res = await applyActionCode(auth, oobCode);
             const user = auth.currentUser;
             const userData = await getUserById(user.uid);
             userData.email = user.email;
