@@ -90,7 +90,8 @@ const Header = ({ handleLogout }) => {
         margin: isMobile ? ".1em 0.1em 1em 0.1em" : ".25em 1em 1em 1em",
         borderRadius: "1em",
         width: isMobile ? "calc(100% - .1em)" : "calc(100% - 2em)",
-      }}
+        justifyContent: "center",
+              }}
     >
       <Toolbar sx={{ flexDirection: isMobile ? "column" : "row" }}>
         {user !== null ? (
@@ -173,7 +174,7 @@ const Header = ({ handleLogout }) => {
             </Container>
           </>
         ) : (
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 , marginTop: isMobile ? '.5em' : 0}}>
             Movie App
           </Typography>
         )}

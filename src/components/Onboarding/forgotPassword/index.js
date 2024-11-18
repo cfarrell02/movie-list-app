@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Alert, useMediaQuery } from '@mui/material';
+import { Box, TextField, Button, Typography, Container, useMediaQuery } from '@mui/material';
 
 const ForgotPassword = ({sendPasswordResetEmail, addAlert}) => {
   const [email, setEmail] = useState('');
@@ -18,7 +18,7 @@ const ForgotPassword = ({sendPasswordResetEmail, addAlert}) => {
   };
 
   return (
-    <>
+    <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
       <Typography variant={isMobile ? 'h5':"h4"} component="h1" sx={{ mb: 4 }}>
         Forgot Password
       </Typography>
@@ -37,7 +37,7 @@ const ForgotPassword = ({sendPasswordResetEmail, addAlert}) => {
           Send Reset Link
         </Button>
       </Box>
-    </>
+    </Container>
   );
 };
 

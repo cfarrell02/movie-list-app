@@ -51,10 +51,13 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
   const { addAlert } = React.useContext(AlertContext);
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width:600px)");
+  const [creationDate, setCreationDate] = useState('' );
 
   useEffect(() => {
     try {
       setUsers(movieList.users);
+      const date = new Date(movieList.createdOn.seconds*1000);
+      setCreationDate(date.toDateString());
     } catch (error) {
       console.log("Error setting users:", error);
     }
@@ -256,6 +259,11 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       <Typography variant="h5" component="h2" gutterBottom>
         Watch List Settings
       </Typography>
+      {creationDate && (
+      <Typography variant="body1" component="p" gutterBottom>
+        This watch list was created on {creationDate}.
+      </Typography>
+      )}
       <Accordion>
         <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
           <Typography variant="h6" component="h3" gutterBottom>

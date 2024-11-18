@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography } from '@mui/material';
+import { Box, TextField, Button, Typography , Container, useMediaQuery} from '@mui/material';
 import { SiteDataContext } from '../../../contexts/siteDataContext';
 import { getUserById } from '../../../api/userDataStorage';
 
@@ -7,6 +7,7 @@ const Login = ({ handleLogin, addAlert }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const {adultContent, setAdultContent} = React.useContext(SiteDataContext);
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -28,7 +29,7 @@ const Login = ({ handleLogin, addAlert }) => {
   };
 
   return (
-    <>
+    <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
       <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
         Login
       </Typography>
@@ -38,12 +39,16 @@ const Login = ({ handleLogin, addAlert }) => {
         sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
       >
         <TextField
+          fullWidth
+          margin="normal"
           label="Email"
           variant="outlined"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
         />
         <TextField
+          fullWidth
+          margin="normal"
           label="Password"
           variant="outlined"
           type="password"
@@ -54,7 +59,7 @@ const Login = ({ handleLogin, addAlert }) => {
           Login
         </Button>
       </Box>
-    </>
+    </Container>
   );
 };
 

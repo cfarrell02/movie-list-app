@@ -59,6 +59,10 @@ const MovieHomePage = () => {
             });
           }
 
+          newMovieLists = newMovieLists.sort((a, b) => {
+            return new Date(a.createdOn.seconds) - new Date(b.createdOn.seconds);
+          });
+
           if(newMovieLists.length < movieListCount){
             setHiddenContentMessage('Some watch lists contain adult content. Please enable adult content to view all lists.');
           }else{
@@ -82,7 +86,7 @@ const MovieHomePage = () => {
   const handleNewMovieList = async (name) => {
     try {
       const movieList = { title: name, userIds: [user.uid], users: [{accessType: 3, email:user.email, uid:user.uid}]
-        , id: uid(), movies: [] , tvShows : []};
+        , id: uid(), movies: [] , tvShows : [], createdOn : new Date()};
       await addMovieList(movieList);
       setMovieLists((prevMovieLists) => [...prevMovieLists, movieList]);
       setModalOpen(false);

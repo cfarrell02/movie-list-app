@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Input } from '@mui/material';
+import { Box, TextField, Button, Typography, Input, Container,useMediaQuery } from '@mui/material';
 
 const Register = ({ handleRegister, addAlert }) => {
   const [username, setUsername] = useState('');
@@ -8,6 +8,7 @@ const Register = ({ handleRegister, addAlert }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     if (password && secondPassword && password !== secondPassword) {
@@ -41,7 +42,7 @@ const Register = ({ handleRegister, addAlert }) => {
   };
 
   return (
-    <>
+    <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
       <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
         Register
       </Typography>
@@ -93,7 +94,7 @@ const Register = ({ handleRegister, addAlert }) => {
           Register
         </Button>
       </Box>
-    </>
+      </Container>
   );
 };
 

@@ -97,58 +97,54 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
           alignItems: 'center',
           justifyContent: 'center',
           height: 'auto',
-          width: 'auto',
+          width: '100%', // Make the container wider
           padding: (isMobile ? '1em 0' : '1em'),
         }}
       >
         {user === null ? (
+        <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 1em 2em 1em' }}>
+          {
           pageState === 'login' ? (
-            <Login handleLogin={handleLogin}  addAlert={addAlert} />
+            <Login handleLogin={handleLogin} addAlert={addAlert} />
           ) : (
-
-              pageState === 'forgotPassword' ? (
-                  <ForgotPassword sendPasswordResetEmail={sendPasswordEmail} addAlert={addAlert} />
-              ) : (
-
-              <Register handleRegister={handleRegister}  addAlert={addAlert} />
-              )
-          )
-
-          
+            pageState === 'forgotPassword' ? (
+              <ForgotPassword sendPasswordResetEmail={sendPasswordEmail} addAlert={addAlert} />
+            ) : (
+              <Register handleRegister={handleRegister} addAlert={addAlert} />
+            )
+          )}
+          </Container>
         ) : (
           <> {/*Logged in section*/}
-          <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 1em 2em 1em' }}>
-          <UpdateProfile updateEmail={updateEmail} deleteUserAuth={deleteUser} reAuthenticate={handleLogin} />
-          </Container>
+            <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 1em 2em 1em' }}>
+              <UpdateProfile updateEmail={updateEmail} deleteUserAuth={deleteUser} reAuthenticate={handleLogin} />
+            </Container>
 
-          <Button variant="contained" size="large" color="primary" onClick={() => handleLogout()}>
-            Logout
-          </Button>
+            <Button variant="contained" size="large" color="primary" onClick={() => handleLogout()}>
+              Logout
+            </Button>
           </>
         )}
 
         {user === null && (
           <>
-          <Button onClick={handleToggle} sx={{ mt: 2 }}>
-            {pageState === 'login' ? 'Register' : 'Login'}
-          </Button>
-
-          {pageState !== 'forgotPassword' && 
-
-          <Button onClick={handleForgotPassword} sx={{ mt: 2 }}>
-            Forgot Password?
+            <Button onClick={handleToggle} sx={{ mt: 2 }}>
+              {pageState === 'login' ? 'Register' : 'Login'}
             </Button>
-          }
+
+            {pageState !== 'forgotPassword' && 
+              <Button onClick={handleForgotPassword} sx={{ mt: 2 }}>
+                Forgot Password?
+              </Button>
+            }
           </>
-        
         )}
       </Container>
 
       <Container sx={{ marginTop: '1em', flexDirection: 'column', display: 'flex', alignItems: 'center', padding: '0 1em 2em 1em' }}>
-      <Divider sx={{ width: '100%', marginBottom: '1em' }}/>
+        <Divider sx={{ width: '100%', marginBottom: '1em' }}/>
 
         {user && <Button onClick={() => setShowAdultContentSettings(!showAdultContentSettings)} sx={{ margin: '2em 0 0 0'}}/> } 
-
 
         <Typography variant="h5" component="p" sx={{ marginBottom: '1em' }}>Settings</Typography>
         {/*Universal settings*/}
