@@ -86,18 +86,21 @@ const App = () => {
       const res = await signInWithEmailAndPassword(auth, username, password);
       const user = res.user;
       const userData = await getUserById(user.uid);
-      userData.email = user.email;
-      await updateUser(user.uid, userData);
-      const movieLists = await getMovieListsByUserId(user.uid);
-      for (const movieList of movieLists) {
-          for (const userObj of movieList.users) {
-              if (userObj.uid === user.uid) {
-                  userObj.email = user.email;
-              }
-          }
-          await updateMovieList(movieList.id, movieList);
+      //Ensure db matches auth email
+      if(userData && userData.email !== user.email){
+        userData.email = user.email;
+        await updateUser(user.uid, userData);
+        const movieLists = await getMovieListsByUserId(user.uid);
+        for (const movieList of movieLists) {
+            for (const userObj of movieList.users) {
+                if (userObj.uid === user.uid) {
+                    userObj.email = user.email;
+                }
+            }
+            await updateMovieList(movieList.id, movieList);
+        }
+        window.location.reload();
       }
-
       return res;
     } catch (error) {
       console.log(error);
