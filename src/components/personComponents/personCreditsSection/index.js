@@ -59,7 +59,7 @@ return (
                                                 />
                                             </ListItemAvatar>
                                             <ListItemText
-                                                primary={credit.title + ' (' + new Date(credit.release_date).getFullYear() + ')'}
+                                                primary={credit.title + (credit.release_date ? (' (' + new Date(credit.release_date).getFullYear() + ')'):'')}
                                                 secondary={credit.character}
                                             />
                                         </ListItem>
@@ -93,7 +93,7 @@ return (
                                                 />
                                             </ListItemAvatar>
                                             <ListItemText
-                                                primary={credit.name + ' (' + new Date(credit.first_air_date).getFullYear() + ')'}
+                                                primary={credit.name + (credit.first_air_date ? (' (' + new Date(credit.first_air_date).getFullYear() + ')'):'')}
                                                 secondary={credit.character}
                                             />
                                         </ListItem>
@@ -127,7 +127,7 @@ return (
                                                 />
                                             </ListItemAvatar>
                                             <ListItemText
-                                                primary={credit.title + ' (' + new Date(credit.release_date).getFullYear() + ')'}
+                                                primary={credit.title + (credit.release_date?(' (' + new Date(credit.release_date).getFullYear() + ')'):'')}
                                                 secondary={credit.job}
                                             />
                                         </ListItem>
@@ -161,7 +161,7 @@ return (
                                                 />
                                             </ListItemAvatar>
                                             <ListItemText
-                                                primary={credit.name + ' (' + new Date(credit.first_air_date).getFullYear() + ')'}
+                                                primary={credit.name + (credit.first_air_date?(' (' + new Date(credit.first_air_date).getFullYear() + ')'):'')}
                                                 secondary={credit.job}
                                             />
                                         </ListItem>

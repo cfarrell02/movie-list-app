@@ -107,7 +107,7 @@ const TVDetailsPage = (props) => {
     const year = tvShow.first_air_date ? new Date(tvShow.first_air_date).getFullYear() : '';
     const endYear = tvShow.last_air_date ? new Date(tvShow.last_air_date).getFullYear() : '';
     const yearString = '(' + (year ? year : '') + (endYear && year !== endYear ? ' - ' + endYear : '') + ')';
-    setFormattedTitle(`${name} ${yearString}`);
+    setFormattedTitle('' + name + ' ' + (yearString ? yearString : ''));
   }, [tvShow]);
 
   const handleChange = async (event) => {

@@ -115,7 +115,7 @@ const MovieDetailsPage = (props) => {
     if(!movie) return;
     const title = movie.title ? movie.title.length > 50 ? movie.title.substring(0, 50) + '...' : movie.title : '';
     const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
-    setFormattedTitle(`${title} (${year})`);
+    setFormattedTitle('' + title + (year ? ' (' + year + ')' : ''));
   }, [movie]);
 
   const handleChange = async (event) => {
