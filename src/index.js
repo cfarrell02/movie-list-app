@@ -188,6 +188,10 @@ const App = () => {
             path="/404"
             element={<NotFoundPage />}
           />
+          <Route
+            path="/"
+            element={<Navigate to="/home" replace />}
+          />
           <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
         {/* <SiteFooter /> */}
