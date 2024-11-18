@@ -49,7 +49,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
 
       const handleUpdateProfile = async () => {
         try{
-            if(firstName === user.firstName && lastName === user.lastName && email === user.email && dob === user.dateOfBirth){
+            if(firstName === user.firstName && lastName === user.lastName && email === user.email && new Date(dob).toISOString().split('T')[0] === parseDate(user.dateOfBirth)){
                 addAlert('info', 'Please make some changes before attempting to update your profile');
                 return;
             }
