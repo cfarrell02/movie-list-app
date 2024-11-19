@@ -13,9 +13,7 @@ export const getMovies = async (pageNum) => {
   }
 };
 
-export const getTVShows = async (args) => {
-  const [, pageNumPart] = args.queryKey;
-  const { pageNum } = pageNumPart;
+export const getTVShows = async (pageNum) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
   try {
     const response = await fetch(
