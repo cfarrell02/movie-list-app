@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography, Button, Container , useMediaQuery, Grid} from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Container , useMediaQuery, Grid, Icon} from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box"; // Required for rendering options with images
@@ -10,7 +10,8 @@ import { getUserById } from "../../api/userDataStorage";
 import { SiteDataContext } from "../../contexts/siteDataContext";
 import { getSearchResults } from "../../api/TMDBAPI"; // Assuming this API call fetches search results
 import defaultImage from "../../images/default.jpg";
-import chilli from "../../images/chilli.png";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import './index.css';
 
 const Header = ({ handleLogout }) => {
@@ -21,6 +22,8 @@ const Header = ({ handleLogout }) => {
   const [searchHistory, setSearchHistory] = useState([]); // State for storing search history
   const [inputValue, setInputValue] = useState(""); // State for storing user input
   const isMobile = useMediaQuery('(max-width:600px)');
+  const [canGoForward, setCanGoForward] = useState(false);
+  const [canGoBack, setCanGoBack] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -37,6 +40,9 @@ const Header = ({ handleLogout }) => {
       unsubscribe();
     };
   }, []);
+
+
+
 
   // Fetch search results based on input value
   useEffect(() => {
@@ -60,9 +66,6 @@ const Header = ({ handleLogout }) => {
     } else {
       navigate(`/person/${value.id}`);
     }
-
-    //reload
-    window.location.reload();
   };
 
   const handleAutoFill = (event, value) => {
@@ -96,12 +99,24 @@ const Header = ({ handleLogout }) => {
       <Toolbar sx={{ flexDirection: isMobile ? "column" : "row" }}>
         {user !== null ? (
           <>
-            <Typography variant="h6" component="div" sx={{ flexGrow: isMobile ? 0 : 1 , marginTop: isMobile ? '.5em' : 0}}>
+          <Container sx={{ display: isMobile? 'block':'flex', justifyContent: 'center', width: isMobile ? '100%' : '50em', flexGrow: 1, alignItems: 'center'}}>
+
+            <Typography variant="h6" component="div" sx={{ marginTop: isMobile ? '.5em' : 0, width: isMobile ? '100%' : '18em', display: 'flex', justifyContent: isMobile ? 'center' : 'flex-start'}}>
               <Button color="inherit" onClick={() => navigate("/home")}>
                 Movie App - {user.firstName} {user.lastName}{"  "}
                 {adultContent ? '🌶️' : ''}
               </Button>
             </Typography>
+            
+              <Grid container spacing={2} sx = {{display: isMobile ? 'flex' : null, justifyContent: isMobile ? 'center' : 'flex-start', width: '100%'}}>
+                <Grid item>
+                  <Button variant="contained" color="primary" onClick={() => navigate(-1)}><ArrowBackIcon/></Button>
+                </Grid>
+                <Grid item>
+                  <Button variant="contained" color="primary" onClick={() => navigate(1)}><ArrowForwardIcon/></Button>
+                </Grid>
+              </Grid>
+            </Container>
             <Container
               sx={{
                 display: "flex",

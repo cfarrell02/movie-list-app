@@ -93,7 +93,7 @@ const TVDetailsPage = (props) => {
 
   
     fetchData();
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     const fetchData = async () => {

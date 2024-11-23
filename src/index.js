@@ -99,7 +99,6 @@ const App = () => {
             }
             await updateMovieList(movieList.id, movieList);
         }
-        window.location.reload();
       }
       return res;
     } catch (error) {

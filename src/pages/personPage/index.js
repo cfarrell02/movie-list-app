@@ -52,6 +52,7 @@ const PersonPage = (props) => {
                 const fetchedImages = await getPersonImages(id);
                 const fetchedTaggedImages = await getPersonTaggedImages(id);
                 
+                // If the person is adult only and the user has adult content disabled, redirect to home
                 if(!adultContent && fetchedPerson.adult){
                     navigate('/');
                 }
@@ -67,7 +68,7 @@ const PersonPage = (props) => {
             }
         }
         fetchData();
-    }, [id]);
+    }, [id, adultContent, navigate]);
 
 
     return (

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, Stack, Chip, Divider, List, ListItem, ListItemText, Paper, Rating, ListItemButton, Avatar, ListItemAvatar} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const MovieDetailSection = ({ movie }) => {
     const [genres, setGenres] = useState([]);
     const [cast, setCast] = useState([]);
     const [crew, setCrew] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if(!movie || !movie.genres ) return;
@@ -101,7 +103,7 @@ const MovieDetailSection = ({ movie }) => {
                     <Grid container spacing={2}>
                         {cast.map((castMember) => (
                             <Grid item xs={12} sm={6} md={4} key={castMember.id}>
-                                <ListItemButton to={"/person/" + castMember.id} component="a">
+                                <ListItemButton onClick={() => navigate("/person/" + castMember.id)}>
                                     <ListItem key={castMember.id}>
                                         <ListItemAvatar>
                                             <Avatar alt={castMember.name} src={"https://image.tmdb.org/t/p/w200" + castMember.profile_path} />
@@ -123,7 +125,7 @@ const MovieDetailSection = ({ movie }) => {
                     <Grid container spacing={2}>
                         {crew.map((crewMember) => (
                             <Grid item xs={12} sm={6} md={4} key={crewMember.id}>
-                                <ListItemButton to={"/person/" + crewMember.id} component="a">
+                                <ListItemButton onClick={() => navigate("/person/" + crewMember.id)}>
                                     <ListItem key={crewMember.id}>
                                         <ListItemAvatar>
                                             <Avatar alt={crewMember.name} src={"https://image.tmdb.org/t/p/w200" + crewMember.profile_path} />
