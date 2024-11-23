@@ -36,6 +36,7 @@ import { Navigate } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import MediaDisplay from '../../components/mediaDisplay';
 import MovieCard from '../../components/MovieComponents/movieCard';
+import ShowMoreWrapper from '../../components/showMoreWrapper';
 
 
 const MovieDetailsPage = (props) => {
@@ -202,14 +203,7 @@ const MovieDetailsPage = (props) => {
       Similar Movies
     </Typography>
     <Divider sx={{ marginBottom: '1em' }} />
-    <Container 
-      sx={{ 
-        maxHeight: '45em', 
-        overflow: 'auto', 
-        margin: '1em 0',
-            }}
-      style={{ maxWidth: '100%' }}
-    >
+    <ShowMoreWrapper initialHeight={350}>
       <Grid 
         container 
         spacing={2} 
@@ -220,7 +214,7 @@ const MovieDetailsPage = (props) => {
           </Grid>
         ))}
       </Grid>
-    </Container>
+    </ShowMoreWrapper>
   </Grid>
 )}
 
@@ -231,10 +225,7 @@ const MovieDetailsPage = (props) => {
                     Media
             </Typography>
         <Divider sx={{ marginBottom: '1em' }} />
-        <Container sx={{maxHeight: '45em', overflow: 'auto', margin: '1em 0'}}
-        style={{ maxWidth: '100%' }}>
         <MediaDisplay videos={movie.videos.results} images={movie.images.backdrops}/>
-        </Container>
         </Grid>
         }
 

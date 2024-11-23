@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Grid, Card, CardMedia } from '@mui/material';
+import ShowMoreWrapper from '../showMoreWrapper';
 
 
 const MediaDisplay = ({ videos, images }) => {
@@ -17,13 +18,16 @@ const MediaDisplay = ({ videos, images }) => {
         }
 
     }
+
+
     return (
         <Box className="media-display">
             {videos && videos.length > 0 && (
-            <Box className="video-section" mb={4}>
+            <Box className="video-section" mb={4} sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" gutterBottom>
                     Videos
                 </Typography>
+                <ShowMoreWrapper initialHeight={315}>
                 <Grid container spacing={2}>
                     {videos.map((video, index) => (
                         <Grid item xs={12} sm={6} md={4} key={index}>
@@ -41,13 +45,15 @@ const MediaDisplay = ({ videos, images }) => {
                         </Grid>
                     ))}
                 </Grid>
+                </ShowMoreWrapper>
             </Box>
             )}
             {images && images.length > 0 && (
-            <Box className="images-section">
+            <Box className="images-section" sx={{ textAlign: 'center' }}>
                 <Typography variant="h4" gutterBottom>
                     Images
                 </Typography>
+                <ShowMoreWrapper initialHeight={300}>
                 <Grid container spacing={2}>
                     {images.map((image, index) => (
                         <Grid item xs={12} sm={6} md={4} key={index}>
@@ -61,6 +67,7 @@ const MediaDisplay = ({ videos, images }) => {
                         </Grid>
                     ))}
                 </Grid>
+                </ShowMoreWrapper>
             </Box>
             )}
         </Box>

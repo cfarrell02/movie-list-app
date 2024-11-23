@@ -32,6 +32,7 @@ import { AlertContext } from '../../contexts/alertContext';
 import { getUserById } from '../../api/userDataStorage';
 import MediaDisplay from '../../components/mediaDisplay';
 import TVCard from '../../components/TVComponents/TVCard';
+import ShowMoreWrapper from '../../components/showMoreWrapper';
 
 
 const TVDetailsPage = (props) => {
@@ -191,14 +192,7 @@ const TVDetailsPage = (props) => {
       Similar Shows
     </Typography>
     <Divider sx={{ marginBottom: '1em' }} />
-    <Container 
-      sx={{ 
-        maxHeight: '45em', 
-        overflow: 'auto', 
-        margin: '1em 0',
-            }}
-      style={{ maxWidth: '100%' }}
-    >
+    <ShowMoreWrapper initialHeight={350}>
       <Grid 
         container 
         spacing={2} 
@@ -209,7 +203,7 @@ const TVDetailsPage = (props) => {
           </Grid>
         ))}
       </Grid>
-    </Container>
+    </ShowMoreWrapper>
   </Grid>
 )}
         {tvShow.images && tvShow.videos &&
@@ -218,10 +212,7 @@ const TVDetailsPage = (props) => {
                     Media
             </Typography>
         <Divider sx={{ marginBottom: '1em' }} />
-        <Container sx={{maxHeight: '45em', overflow: 'auto', margin: '1em 0'}}
-        style={{ maxWidth: '100%' }}>
         <MediaDisplay videos={tvShow.videos.results} images={tvShow.images.backdrops}/>
-        </Container>
         </Grid>
         }
           <Grid item xs={12}>
