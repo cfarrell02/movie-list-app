@@ -84,7 +84,7 @@ export default function TVCard({ tv }) {
 
     return (
         <Card>
-            <Link to={`/tv/${tv.id}`} sx={{ textDecoration: 'none', color: 'inherit' }} style={{ color: 'inherit', textDecoration: 'inherit' }}>
+            <Link to={`/tvshow/${tv.id}`} sx={{ textDecoration: 'none', color: 'inherit' }} style={{ color: 'inherit', textDecoration: 'inherit' }}>
                 <CardMedia
                     sx={{ height: 'auto', paddingTop: '150%', position: 'relative' }}
                     title={tv.name}

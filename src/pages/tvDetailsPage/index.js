@@ -20,7 +20,7 @@ import {
   Stack,
   useMediaQuery
 } from '@mui/material';
-import { getTVShow,getTVCredits , getMovieSearchResults } from '../../api/TMDBAPI';
+import { getTVShow,getTVCredits , getTVImages,getTVVideos, getSimilarTVShows } from '../../api/TMDBAPI';
 import { getMovieListById, addTVShowToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -30,6 +30,8 @@ import TVDetailSection from '../../components/TVDetailComponents/tvDetailSection
 import TVReviewSection from '../../components/TVDetailComponents/tvReviewsSection';
 import { AlertContext } from '../../contexts/alertContext';
 import { getUserById } from '../../api/userDataStorage';
+import MediaDisplay from '../../components/mediaDisplay';
+import TVCard from '../../components/TVComponents/TVCard';
 
 
 const TVDetailsPage = (props) => {
@@ -64,6 +66,9 @@ const TVDetailsPage = (props) => {
         setLoading(true);
         const fetchedMovie = await getTVShow(id);
         const fetchedCredits = await getTVCredits(id);
+        const fetchedImages = await getTVImages(id);
+        const fetchedVideos = await getTVVideos(id);
+        const fetchedSimilar = await getSimilarTVShows(id);
         if(fetchedMovie.imdb_id){
           setStremioLinkEnding(
             fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
@@ -72,7 +77,7 @@ const TVDetailsPage = (props) => {
           );
         }
 
-        const tvShow = {...fetchedMovie, credits: fetchedCredits};
+        const tvShow = {...fetchedMovie, credits: fetchedCredits, images: fetchedImages, videos: fetchedVideos, similar: fetchedSimilar};
         setMovie(tvShow);
         console.log(tvShow);
       } catch (error) {
@@ -179,6 +184,46 @@ const TVDetailsPage = (props) => {
             <TVDetailCard tvShow={tvShow}/>
           </Grid>
           </>}
+
+          {tvShow.similar && tvShow.similar.length > 0 && (
+  <Grid item xs={12}>
+    <Typography variant="h4" sx={{ marginTop: '1em'}}>
+      Similar Shows
+    </Typography>
+    <Divider sx={{ marginBottom: '1em' }} />
+    <Container 
+      sx={{ 
+        maxHeight: '45em', 
+        overflow: 'auto', 
+        margin: '1em 0',
+            }}
+      style={{ maxWidth: '100%' }}
+    >
+      <Grid 
+        container 
+        spacing={2} 
+      >
+        {tvShow.similar.map((movie, index) => (
+          <Grid item xs={6} sm={3} md={2} key={index}>
+            <TVCard tv={movie}/>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
+  </Grid>
+)}
+        {tvShow.images && tvShow.videos &&
+        <Grid item xs={12}>
+        <Typography variant="h4" sx={{ marginTop: '1em' }}>
+                    Media
+            </Typography>
+        <Divider sx={{ marginBottom: '1em' }} />
+        <Container sx={{maxHeight: '45em', overflow: 'auto', margin: '1em 0'}}
+        style={{ maxWidth: '100%' }}>
+        <MediaDisplay videos={tvShow.videos.results} images={tvShow.images.backdrops}/>
+        </Container>
+        </Grid>
+        }
           <Grid item xs={12}>
           <Typography variant="h4" sx={{ marginTop: '1em' }}>
                     Reviews 

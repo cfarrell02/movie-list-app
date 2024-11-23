@@ -18,9 +18,10 @@ import {
   ButtonGroup,
   InputLabel,
   useMediaQuery,
-  Stack
+  Stack,
+  Box
 } from '@mui/material';
-import { getMovie,getMovieCredits , getMovieSearchResults } from '../../api/TMDBAPI';
+import { getMovie,getMovieCredits , getMovieImages, getMovieVideos, getSimilarMovies } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -33,6 +34,8 @@ import { getUserById } from '../../api/userDataStorage';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import { Navigate } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
+import MediaDisplay from '../../components/mediaDisplay';
+import MovieCard from '../../components/MovieComponents/movieCard';
 
 
 const MovieDetailsPage = (props) => {
@@ -69,6 +72,10 @@ const MovieDetailsPage = (props) => {
         setLoading(true);
         const fetchedMovie = await getMovie(id);
         const fetchedCredits = await getMovieCredits(id);
+        const fetchedImages = await getMovieImages(id);
+        const fetchedVideos = await getMovieVideos(id);
+        const similarMovies = await getSimilarMovies(id);
+
         if(fetchedMovie.imdb_id){
           setStremioLinkEnding(
             fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
@@ -77,7 +84,7 @@ const MovieDetailsPage = (props) => {
           );
         }
 
-        const localMovie = { ...fetchedMovie, credits: fetchedCredits };
+        const localMovie = { ...fetchedMovie, credits: fetchedCredits , images: fetchedImages, videos: fetchedVideos, similar: similarMovies};
 
         if(!adultContent && localMovie.adult){
           navigate('/')
@@ -140,13 +147,13 @@ const MovieDetailsPage = (props) => {
   
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
+    <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%', alignContent: 'center'}}>
       {loading ? <CircularProgress align='center'/> : <>
       <Grid container spacing={2}>
         <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-start', justifyContent: isMobile ? 'center' : 'flex-start'}} >
       <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{formattedTitle}</Typography>
       </Grid>
-      <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-end'}}>
+      <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-end' }}>
         <Stack> 
         <FormControl sx={{ m: 1, minWidth: '15em' }} size='small'>
         <InputLabel> Add to list</InputLabel>
@@ -188,7 +195,52 @@ const MovieDetailsPage = (props) => {
             <MovieDetailCard movie={movie}/>
           </Grid>
         </>)}
+
+{movie.similar && movie.similar.length > 0 && (
+  <Grid item xs={12}>
+    <Typography variant="h4" sx={{ marginTop: '1em'}}>
+      Similar Movies
+    </Typography>
+    <Divider sx={{ marginBottom: '1em' }} />
+    <Container 
+      sx={{ 
+        maxHeight: '45em', 
+        overflow: 'auto', 
+        margin: '1em 0',
+            }}
+      style={{ maxWidth: '100%' }}
+    >
+      <Grid 
+        container 
+        spacing={2} 
+      >
+        {movie.similar.map((movie, index) => (
+          <Grid item xs={6} sm={3} md={2} key={index}>
+            <MovieCard movie={movie} />
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
+  </Grid>
+)}
+
+
+        {movie.images && movie.videos &&
+        <Grid item xs={12}>
+        <Typography variant="h4" sx={{ marginTop: '1em' }}>
+                    Media
+            </Typography>
+        <Divider sx={{ marginBottom: '1em' }} />
+        <Container sx={{maxHeight: '45em', overflow: 'auto', margin: '1em 0'}}
+        style={{ maxWidth: '100%' }}>
+        <MediaDisplay videos={movie.videos.results} images={movie.images.backdrops}/>
+        </Container>
+        </Grid>
+        }
+
+        
           <Grid item xs={12}>
+            
           <Typography variant="h4" sx={{ marginTop: '1em' }}>
                     Reviews 
             </Typography>

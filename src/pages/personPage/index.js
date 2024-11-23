@@ -19,7 +19,7 @@ import {
   Stack,
   useMediaQuery
 } from '@mui/material';
-import { getPerson, getPersonMovies, getPersonTV } from '../../api/TMDBAPI';
+import { getPerson, getPersonMovies, getPersonTV , getPersonImages, getPersonTaggedImages} from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -31,6 +31,7 @@ import { AlertContext } from '../../contexts/alertContext';
 import { getUserById } from '../../api/userDataStorage';
 import { useNavigate } from 'react-router-dom';
 import { SiteDataContext } from '../../contexts/siteDataContext';
+import MediaDisplay from '../../components/mediaDisplay';
 
 const PersonPage = (props) => {
     const {id} = useParams();
@@ -48,12 +49,16 @@ const PersonPage = (props) => {
                 const fetchedPerson = await getPerson(id);
                 const fetchedMovieCredits = await getPersonMovies(id);
                 const fetchedTVCredits = await getPersonTV(id);
+                const fetchedImages = await getPersonImages(id);
+                const fetchedTaggedImages = await getPersonTaggedImages(id);
                 
                 if(!adultContent && fetchedPerson.adult){
                     navigate('/');
                 }
 
-                setPerson({...fetchedPerson, credits: fetchedMovieCredits, tvCredits: fetchedTVCredits});
+                const combinedImages = fetchedImages.profiles.concat(fetchedTaggedImages.results);
+
+                setPerson({...fetchedPerson, credits: fetchedMovieCredits, tvCredits: fetchedTVCredits, images : {profiles: combinedImages}});
                 setTmdbId(fetchedPerson.id + fetchedPerson.name.replace(/\s/g, '-'));
             } catch (error) {
                 console.log(error);
@@ -99,6 +104,17 @@ const PersonPage = (props) => {
               <PersonDetailsCard person={person}/>
             </Grid> 
             </>}
+            {person.images && 
+        <Grid item xs={12}>
+        <Typography variant="h4" sx={{ marginTop: '1em' }}>
+                    Media
+            </Typography>
+        <Divider sx={{ marginBottom: '1em' }} />
+        <Container sx={{maxHeight: '45em', overflow: 'auto', margin: '1em 0'}}>
+        <MediaDisplay images={person.images.profiles}/>
+        </Container>
+        </Grid>
+        }
             <Grid item xs={12}>
             <Typography variant="h4" sx={{ marginTop: '1em' }}>
                       Credits 
@@ -107,6 +123,7 @@ const PersonPage = (props) => {
               <PersonCreditsSection person={person}/>
               </Grid>
             </Grid>
+
           </>}
       </Card>
     )
