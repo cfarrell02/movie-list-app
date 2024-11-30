@@ -21,7 +21,7 @@ import {
   Stack,
   Box
 } from '@mui/material';
-import { getMovie,getMovieCredits , getMovieImages, getMovieVideos, getSimilarMovies } from '../../api/TMDBAPI';
+import { getMovie,getMovieCredits , getMovieImages, getMovieVideos, getMovieRecommendations } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -75,7 +75,7 @@ const MovieDetailsPage = (props) => {
         const fetchedCredits = await getMovieCredits(id);
         const fetchedImages = await getMovieImages(id);
         const fetchedVideos = await getMovieVideos(id);
-        const similarMovies = await getSimilarMovies(id);
+        const recommendations = await getMovieRecommendations(id);
 
         if(fetchedMovie.imdb_id){
           setStremioLinkEnding(
@@ -85,7 +85,7 @@ const MovieDetailsPage = (props) => {
           );
         }
 
-        const localMovie = { ...fetchedMovie, credits: fetchedCredits , images: fetchedImages, videos: fetchedVideos, similar: similarMovies};
+        const localMovie = { ...fetchedMovie, credits: fetchedCredits , images: fetchedImages, videos: fetchedVideos, recommendations: recommendations};
 
         if(!adultContent && localMovie.adult){
           navigate('/')
@@ -197,10 +197,10 @@ const MovieDetailsPage = (props) => {
           </Grid>
         </>)}
 
-{movie.similar && movie.similar.length > 0 && (
+{movie.recommendations && movie.recommendations.length > 0 && (
   <Grid item xs={12}>
     <Typography variant="h4" sx={{ marginTop: '1em'}}>
-      Similar Movies
+      Recommendations
     </Typography>
     <Divider sx={{ marginBottom: '1em' }} />
     <ShowMoreWrapper initialHeight={350}>
@@ -208,7 +208,7 @@ const MovieDetailsPage = (props) => {
         container 
         spacing={2} 
       >
-        {movie.similar.map((movie, index) => (
+        {movie.recommendations.map((movie, index) => (
           <Grid item xs={6} sm={3} md={2} key={index}>
             <MovieCard movie={movie} />
           </Grid>
@@ -219,7 +219,7 @@ const MovieDetailsPage = (props) => {
 )}
 
 
-        {movie.images && movie.videos &&
+        {movie.images && movie.videos && movie.images.backdrops.length > 0 && movie.videos.results.length > 0 &&
         <Grid item xs={12}>
         <Typography variant="h4" sx={{ marginTop: '1em' }}>
                     Media

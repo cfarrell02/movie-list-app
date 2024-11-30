@@ -20,7 +20,7 @@ import {
   Stack,
   useMediaQuery
 } from '@mui/material';
-import { getTVShow,getTVCredits , getTVImages,getTVVideos, getSimilarTVShows } from '../../api/TMDBAPI';
+import { getTVShow,getTVCredits , getTVImages,getTVVideos, getTVRecommendations } from '../../api/TMDBAPI';
 import { getMovieListById, addTVShowToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -69,7 +69,7 @@ const TVDetailsPage = (props) => {
         const fetchedCredits = await getTVCredits(id);
         const fetchedImages = await getTVImages(id);
         const fetchedVideos = await getTVVideos(id);
-        const fetchedSimilar = await getSimilarTVShows(id);
+        const recommendations = await getTVRecommendations(id);
         if(fetchedMovie.imdb_id){
           setStremioLinkEnding(
             fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
@@ -78,7 +78,7 @@ const TVDetailsPage = (props) => {
           );
         }
 
-        const tvShow = {...fetchedMovie, credits: fetchedCredits, images: fetchedImages, videos: fetchedVideos, similar: fetchedSimilar};
+        const tvShow = {...fetchedMovie, credits: fetchedCredits, images: fetchedImages, videos: fetchedVideos, recommendations: recommendations};
         setMovie(tvShow);
         console.log(tvShow);
       } catch (error) {
@@ -186,10 +186,10 @@ const TVDetailsPage = (props) => {
           </Grid>
           </>}
 
-          {tvShow.similar && tvShow.similar.length > 0 && (
+          {tvShow.recommendations && tvShow.recommendations.length > 0 && (
   <Grid item xs={12}>
     <Typography variant="h4" sx={{ marginTop: '1em'}}>
-      Similar Shows
+      Recommendations
     </Typography>
     <Divider sx={{ marginBottom: '1em' }} />
     <ShowMoreWrapper initialHeight={350}>
@@ -197,7 +197,7 @@ const TVDetailsPage = (props) => {
         container 
         spacing={2} 
       >
-        {tvShow.similar.map((movie, index) => (
+        {tvShow.recommendations.map((movie, index) => (
           <Grid item xs={6} sm={3} md={2} key={index}>
             <TVCard tv={movie}/>
           </Grid>

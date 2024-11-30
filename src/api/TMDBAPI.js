@@ -279,6 +279,22 @@ export const getSimilarTVShows = async (id) => {
   return json.results;
 };
 
+export const getMovieRecommendations = async (id) => {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
+  );
+  const json = await response.json();
+  return json.results;
+};
+
+export const getTVRecommendations = async (id) => {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
+  );
+  const json = await response.json();
+  return json.results;
+}
+
 export const getSearchResults = async (pageNum, searchTerm) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
   const response = await fetch(
