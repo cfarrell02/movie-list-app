@@ -58,7 +58,12 @@ const Homepage = () => {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const page = parseInt(urlParams.get('page')) || 1;
+    let page = parseInt(urlParams.get('page')) || 1;
+
+    if(page < 1 || page > 500){
+      page = 1;
+    }
+
     setCurrentPage(page);
     fetchData(page, tab, searchTerm);
   }, [tab, currentPage]);
