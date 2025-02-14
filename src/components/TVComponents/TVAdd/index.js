@@ -58,7 +58,7 @@ const TVAdd = ({title, tvshows, listId, setTvShows, disabled, currentUserID, onR
     try {
       if (tvshow.id === undefined) throw new Error('No tv show selected.');
       if (tvshows.find((m) => m.id === tvshow.id)) throw new Error('Tv Show already added.');
-      tvshow.watched = false;
+      tvshow.watched = 0;
       
     //   const listID = await addMovie(ownerID, tvshow);
       tvshow.addedDate = new Date().toISOString();

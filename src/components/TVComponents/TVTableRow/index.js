@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Rating, Tooltip, Button, useMediaQuery, Link} from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Rating, Tooltip, Button, useMediaQuery, Link, Select, MenuItem, Container} from '@mui/material';
 import { dateFormatter, timeFormatter, dateReadableFormatter} from '../../../utils';
 import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { getUserById } from '../../../api/userDataStorage';
 import { useNavigate } from 'react-router-dom';
 import defaultImage from '../../../images/default.jpg';
+import { Margin } from '@mui/icons-material';
 
 
 
@@ -24,7 +26,10 @@ const TVTableRow = ({tv, handleDelete, handleEdit, accessType}) => {
       const imageSrc = tv.poster_path ? `https://image.tmdb.org/t/p/w500${tv.poster_path}` : defaultImage;
       setImageSrc(imageSrc);
 
-      const runtime = (tv.first_air_date ? new Date(tv.first_air_date).getFullYear() : '') +  (tv.last_air_date ? ` - ${new Date(tv.last_air_date).getFullYear()}` : '');
+      const first_air_year = tv.first_air_date && new Date(tv.first_air_date).getFullYear();
+      const last_air_year = tv.in_production ? 'Present' : tv.last_air_date && new Date(tv.last_air_date).getFullYear();
+      
+      const runtime = first_air_year !== last_air_year ? `${first_air_year} - ${last_air_year}` : first_air_year;
       setRuntime(runtime);
     }, []);
 
@@ -40,10 +45,11 @@ const TVTableRow = ({tv, handleDelete, handleEdit, accessType}) => {
       fetchUser();
     }, []);
 
-    const handleCheckboxChange = (event) => {
-      setWatched(event.target.checked); 
+
+    const handleWatchedSelectChange = (event) => {
+      setWatched(event.target.value);
       let newTV = {...tv};
-      newTV.watched = event.target.checked;
+      newTV.watched = event.target.value;
         handleEdit(newTV);
     };
 
@@ -68,15 +74,66 @@ const TVTableRow = ({tv, handleDelete, handleEdit, accessType}) => {
           </>)}
           <TableCell align="right">
           {accessType === 0 ? null : (
-            <>
-          <Checkbox checked={watched} 
-          icon={<VisibilityOutlinedIcon />}
-          checkedIcon={<VisibilityIcon />}
-          onChange={handleCheckboxChange} title='Watched?' /> 
-          <IconButton aria-label="delete" onClick={() => handleDelete(tv)} title='Delete?' >
-          <DeleteIcon/>
-          </IconButton>
-          </>
+            <Container
+  sx={{
+    display: 'flex',
+    alignItems: 'end',
+    gap: 1, // Adds a small space between buttons
+  }}
+>
+  <Select
+    value={watched}
+    onChange={handleWatchedSelectChange}
+    variant="standard"
+    disableUnderline
+    IconComponent={() => null}
+    displayEmpty
+    title='Watched?'
+    sx={{
+      width: 'auto',
+      height: 'auto',
+      minWidth: 'unset',
+      border: 'none',
+      p: 0,
+      m: 0,
+      pr: 0,
+      '& .MuiSelect-select': {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        p: 0,
+        m: 0,
+        pr: '0 !important',
+      },
+    }}
+  >
+    <MenuItem value={0} sx={{ p: 0, m: '.5em' }} title="Not watched">
+      <VisibilityOffIcon sx={{ color: 'error.main' }} />
+    </MenuItem>
+    <MenuItem value={1} sx={{ p: 0, m: '.5em' }} title="Watching">
+      <PlayCircleIcon sx={{ color: 'primary.main' }} />
+    </MenuItem>
+    <MenuItem value={2} sx={{ p: 0, m: '.5em' }} title="Watched">
+      <VisibilityIcon sx={{ color: 'primary.main' }} />
+    </MenuItem>
+  </Select>
+
+  <IconButton
+    aria-label="delete"
+    onClick={() => handleDelete(tv)}
+    title="Delete?"
+    sx={{
+      p: 0, // Remove padding to match icon-only select
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    <DeleteIcon />
+  </IconButton>
+</Container>
+
           )}
           </TableCell>
         </TableRow>
