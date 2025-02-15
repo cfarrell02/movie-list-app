@@ -18,6 +18,7 @@ import UserActionPage from './pages/userActionPage';
 import Header from './components/siteHeader';
 import AlertNotice from './components/alertNotice';
 import LoginPage from './pages/loginPage';
+import UserManagementPage from './pages/userManagementPage';
 import './index.css';
 import PersonPage from './pages/personPage';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -32,7 +33,6 @@ const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
-
     // Check if isAuthenticated is false and loadedUser is true
     if (!isAuthenticated && loadedUser) {
       setShouldRedirect(true);
@@ -57,10 +57,11 @@ const App = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoadedUser(true);
-    }
-    );
+      getUserById(user.uid).then((userData) => {
+        setUser(userData);
+        setLoadedUser(true);
+      });
+    });
 
 
 
@@ -116,7 +117,8 @@ const App = () => {
         firstName: firstName,
         lastName: lastName,
         id: user.user.uid,
-        adultAllowed: false
+        adultAllowed: false,
+        admin: false
       };
       await addUser(userObject);
     } catch (error) {
@@ -151,10 +153,10 @@ const App = () => {
             path="/usermgmt"
             element={<LoginPage handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} isAuthenticated={user !==null} updateThemeProvider={updateThemeProvider} />}
           />
-          <Route
+          {/* <Route
             path="/weather"
             element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><WeatherPage /></PrivateRoute>}
-          />
+          /> */}
           <Route
             path="/home"
             element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><HomePage /></PrivateRoute>}
@@ -186,6 +188,10 @@ const App = () => {
           <Route
             path="/404"
             element={<NotFoundPage />}
+          />
+          <Route
+            path="/admin"
+            element={<PrivateRoute isAuthenticated={user !== null && user.admin} loadedUser={loadedUser}><UserManagementPage /></PrivateRoute>}
           />
           <Route
             path="/"

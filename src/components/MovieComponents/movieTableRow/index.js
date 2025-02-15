@@ -11,7 +11,7 @@ import defaultImage from '../../../images/default.jpg';
 import { useNavigate } from 'react-router-dom';
 
 
-const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
+const MovieTableRow = ({movie, handleDelete, handleEdit, accessType, isSelected, handleSelectedChange}) => {
 
     const [watched, setWatched] = useState(movie.watched);
     const [addedByUser, setAddedByUser] = useState({});
@@ -45,6 +45,9 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
 
     return (
         <TableRow key={movie.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+          <TableCell align='center'>
+            <Checkbox checked={isSelected} onChange={(e) => {handleSelectedChange(e.target.checked, movie.id)}} />
+          </TableCell>
               <TableCell>
                 <img src={imageSrc} alt={movie.title} style={{maxHeight:"120px" }}/>
               </TableCell>

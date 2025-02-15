@@ -9,6 +9,7 @@ import { getUserById, updateUser } from '../../api/userDataStorage';
 import UpdateProfile from '../../components/Onboarding/updateProfile';
 import { AlertContext } from '../../contexts/alertContext';
 import Login from '../../components/Onboarding/login';
+import { Link } from 'react-router-dom';
 
 const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvider }) => {
   const [user, setUser] = useState(null);
@@ -86,7 +87,7 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
         margin: '1em 5%',
       }}
     >
-      <Typography variant={isMobile ? 'h5':'h2'} component="h1" align="center" sx={{ mb: '1em', color: 'text.primary' }}>
+      <Typography variant={isMobile ? 'h5':'h2'} component="h1" align="center" sx={{ color: 'text.primary' }}>
         Welcome {user && user.firstName}!
       </Typography>
 
@@ -120,9 +121,12 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
               <UpdateProfile updateEmail={updateEmail} deleteUserAuth={deleteUser} reAuthenticate={handleLogin} />
             </Container>
 
+
             <Button variant="contained" size="large" color="primary" onClick={() => handleLogout()}>
               Logout
             </Button>
+
+
           </>
         )}
 
@@ -151,6 +155,13 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
         
         <Typography variant="h6" component="p" sx={{ marginBottom: '.2em' }}>Toggle Theme</Typography>
         <Switch onChange={toggleTheme} checked={darkMode} />
+        {user && user.admin && (
+              <Link to="/admin" style={{ textDecoration: 'none' }}>
+                <Button variant="contained" size="large" color="primary" sx={{ mt: 2 }}>
+                  Admin
+                </Button>
+              </Link>
+            )}
 
         {user && (<>
           {/*Logged in specific settings*/}

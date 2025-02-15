@@ -35,12 +35,11 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [field, setField] = useState('release_date');
-  const [operator, setOperator] = useState('=');
-  const [value, setValue] = useState('');
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [filters, setFilters] = useState([]);
   const {addAlert} = React.useContext(AlertContext);
   const isMobile = useMediaQuery('(max-width:600px)');
+  const [rows, setRows] = useState([]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -98,6 +97,23 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
     }
   }, [filters]);
 
+  useEffect(() => {
+    setRows(movies.map((movie) => {
+      return {id: movie.id , isSelected: false};
+    }));
+  }, [movies]);
+
+ const handleAllSelection = (event) => {
+    rows.forEach((row) => row.isSelected = event.target.checked);
+    //Ensure original movies array is updated
+    
+ };
+
+ const handleRowSelection = (isSelected, movieId) => {
+    rows.find((row) => row.id === movieId).isSelected = isSelected;	
+  };
+
+
   const handleSearch = (event) => {
     const term = event.target.value;
     setSearchTerm(term);
@@ -117,87 +133,8 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const endRowIndex = startRowIndex + rowsPerPage;
   const paginatedMovies = sortedMovies.slice(startRowIndex, endRowIndex);
 
-  useEffect(() => {
-    if(field === 'watched'){
-    setOperator('=');
-    }
-  }, [field]);
 
-  const renderOperatorOptions = () => {
-    if (field === 'watched') {
-      return (
-        <>
-          <option value="=">=</option>
-        </>
-      );
-    } else {
-      return (
-        <>
-          <option value="=">=</option>
-          <option value="<">&lt;</option>
-          <option value=">">&gt;</option>
-        </>
-      );
-    }
-  };
 
-  const renderFilterValueInput = () => {
-    console.log(field);
-    if (field === 'watched') {
-        return (
-          <Switch onChange={(e) => setValue(e.target.checked)}
-          size='large'/>
-        );
-        }else if(field === 'release_date' || field === 'addedDate'){
-          return (
-            <TextField onChange={(e) => setValue(e.target.value)}
-            label='Year'
-            />
-          );
-        }else if(field === 'runtime'){
-      
-          return (
-            <div style={{ marginTop: '16px' }}>
-              <Slider
-                onChange={(e, newValue) => setValue(newValue)}
-                min={1}
-                max={240}
-                valueLabelDisplay="on"
-              />
-            </div>
-          );
-        }else {
-          return (
-            <TextField onChange={(e) => setValue(e.target.value)}
-            label='Rating'
-            InputProps={{
-              endAdornment: <InputAdornment position="start">/10</InputAdornment>,
-            }}
-            />
-          );
-        }
-  };
-        
-  
-  
-  
-  const handleFilter = () => {
-    if(filters.length >=6){
-      addAlert('error', 'You can only have 6 filters at a time.');
-      return;
-    }
-      const newFilter = {field: field, operator: operator, value: value, label: `${field} ${operator} ${value}`};
-      
-      setFilters([...filters, newFilter]);
-  };
-
-  const handleDelete = (index) => {
-    const newFilters = [...filters];
-    newFilters.splice(index, 1);
-    setFilters(newFilters);
-  }
-  
-  
 
   return (
     <TableContainer component={Paper}>
@@ -244,6 +181,9 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
       <Table sx={{ minWidth: isMobile ? 0 : 650 }} aria-label="simple table">
       <TableHead>
           <TableRow align="left">
+            <TableCell align="center">
+              <Checkbox title = "Select All (Selects all regardless of pagination)" checked={rows.every(r => r.isSelected)} onChange={handleAllSelection} />  
+            </TableCell>
           <TableCell >
               <Typography align="center" variant="subtitle2" component="div">
                 Poster
@@ -288,31 +228,35 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
             </TableRow>
           ) : (
             filters.length!== 0 && filteredMovies ?
-            filteredMovies.map((movie) => (
+            filteredMovies.map((movie, index) => (
               <MovieTableRow
                 handleDelete={deleteMovie}
                 handleEdit={editMovie}        //Filtered Movies
                 key={movie.id}
                 movie={movie}
                 accessType={accessType}
+                isSelected = {rows[index] && rows[index].isSelected}
+                handleSelectedChange={handleRowSelection}
               />
             ))
             
             :(
             searchTerm.length===0 ?
 
-            paginatedMovies.map((movie) => (
+            paginatedMovies.map((movie, index) => (
               <MovieTableRow
                 handleDelete={deleteMovie}
                 handleEdit={editMovie}   // Non Filtered Movies
                 key={movie.id}
                 movie={movie}
                 accessType={accessType}
+                isSelected = {rows[index] && rows[index].isSelected}
+                handleSelectedChange={handleRowSelection}
               />
             ))
             : searchResults.length!==0 ? 
             (
-            searchResults.map((movie) => (
+            searchResults.map((movie, index) => (
               <MovieTableRow
               handleDelete={(movie) => {      // Search Results
                 deleteMovie(movie);
@@ -324,7 +268,9 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
               key={movie.id}
               movie={movie}
               accessType={accessType}
-            />
+              isSelected = {rows[index] && rows[index].isSelected}
+              handleSelectedChange={handleRowSelection}
+              />
             
             )) 
             ) : 
