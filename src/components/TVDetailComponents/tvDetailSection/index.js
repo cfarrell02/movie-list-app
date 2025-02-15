@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, Stack, Chip, Divider, List, ListItem, ListItemText, Paper, Rating, ListItemButton, Avatar, ListItemAvatar} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import TVEpisodesSummary from '../tvEpisodesSummary';
 
 
 const TVDetailSection = ({ tvShow }) => {
@@ -94,6 +95,11 @@ const TVDetailSection = ({ tvShow }) => {
                     
                 </Grid>
             </List>
+            <Typography variant="h4" sx={{ marginTop: '1em' }}>
+                Episodes
+            </Typography>
+            <Divider sx={{ marginBottom: '1em' }} />
+            <TVEpisodesSummary tvShow={tvShow} />
             <Typography variant="h4" sx={{ marginTop: '1em' }}>
                 Cast
             </Typography>

@@ -205,6 +205,20 @@ export const getTVImages = async (id) => {
   }
 };
 
+export const getTVSeason = async (id, seasonNumber) => {
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}/season/${seasonNumber}?api_key=${process.env.REACT_APP_TMDB_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error((await response.json()).message);
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getTVVideos = async (id) => {
   try {
     const response = await fetch(

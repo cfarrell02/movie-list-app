@@ -92,7 +92,6 @@ const MovieDetailsPage = (props) => {
         }
 
         setMovie(localMovie);
-        console.log(movie);
       } catch (error) {
         console.error(error);
         // Handle the error, show an error message, or take appropriate action.
