@@ -80,6 +80,7 @@ const TVDetailsPage = (props) => {
 
         const tvShow = {...fetchedMovie, credits: fetchedCredits, images: fetchedImages, videos: fetchedVideos, recommendations: recommendations};
         setMovie(tvShow);
+        console.log(tvShow);
       } catch (error) {
         console.error(error);
         // Handle the error, show an error message, or take appropriate action.
@@ -112,7 +113,7 @@ const TVDetailsPage = (props) => {
     let year = tvShow.first_air_date ? new Date(tvShow.first_air_date).getFullYear() : '';
     let endYear = tvShow.last_air_date ? new Date(tvShow.last_air_date).getFullYear() : '';
 
-    const shouldShowEndYear = !tvShow.in_production || endYear && endYear !== year;
+    const shouldShowEndYear = endYear !== year;
 
     if(tvShow.in_production && shouldShowEndYear){
       endYear = 'Present';
