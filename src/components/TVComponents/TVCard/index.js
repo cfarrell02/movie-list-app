@@ -88,6 +88,7 @@ export default function TVCard({ tv }) {
     try {
       tv.addedDate = new Date().toISOString();
       tv.addedBy = user.uid;
+      tv.watched = 0;
       const tvList = await getMovieListById(event.target.value);
       if (tvList.tvs.find((t) => t.id === tv.id))
         throw new Error("TV show already in list");
