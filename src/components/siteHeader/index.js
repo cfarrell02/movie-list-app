@@ -99,8 +99,15 @@ const Header = ({ handleLogout }) => {
       <Toolbar sx={{ flexDirection: isMobile ? "column" : "row" }}>
         {user !== null ? (
           <>
-          <Container sx={{ display: isMobile? 'block':'flex', justifyContent: 'center', width: isMobile ? '100%' : '50em', flexGrow: 1, alignItems: 'center'}}>
-
+            <Container sx={{ 
+              display: isMobile ? 'block' : 'flex', 
+              justifyContent: 'flex-start', 
+              width: isMobile ? '100%' : '50em', 
+              flexGrow: 1, 
+              alignItems: 'flex-start',
+              alignContent: 'flex-start',
+              marginLeft: '0 !important',
+            }}>
             <Typography variant="h6" component="div" sx={{ marginTop: isMobile ? '.5em' : 0, width: isMobile ? '100%' : '18em', display: 'flex', justifyContent: isMobile ? 'center' : 'flex-start'}}>
               <Button color="inherit" onClick={() => navigate("/home")}>
                 Movie App - {user.firstName} {user.lastName}{"  "}
@@ -179,7 +186,7 @@ const Header = ({ handleLogout }) => {
                 )}
               />
             </Container>
-            <Container sx={{ display: "flex", marginBottom: isMobile ? '.5em' : 0 , justifyContent: isMobile ? 'center' : 'flex-end', width: isMobile ? '100%' : '18em'}}>
+            <Container sx={{ display: "flex", marginBottom: isMobile ? '.5em' : 0 , justifyContent: isMobile ? 'center' : 'flex-end', width: isMobile ? '100%' : '18em', marginRight: '0 !important'}}>
               <Button color="inherit" sx={{ marginTop: isMobile ? "0.5em" : 0, marginRight: isMobile ? '.5em' : 0 }} onClick={() => navigate("/movielist")}>
                 Watch Lists
               </Button>
