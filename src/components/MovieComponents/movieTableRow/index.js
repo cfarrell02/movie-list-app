@@ -11,7 +11,7 @@ import defaultImage from '../../../images/default.jpg';
 import { useNavigate } from 'react-router-dom';
 
 
-const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
+const MovieTableRow = ({movie, handleDelete, handleEdit, accessType, isSelected, handleSelectedChange}) => {
 
     const [watched, setWatched] = useState(movie.watched);
     const [addedByUser, setAddedByUser] = useState({});

@@ -100,7 +100,7 @@ const Header = ({ handleLogout }) => {
               }}
     >
       <Toolbar sx={{ flexDirection: isMobile ? "column" : "row" }}>
-        {user !== null ? (
+        {user && user.active ? (
           <>
             <Container sx={{ 
               display: isMobile ? 'block' : 'flex', 
