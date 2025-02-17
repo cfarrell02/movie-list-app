@@ -148,7 +148,11 @@ const MovieDetailsPage = (props) => {
 
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%', alignContent: 'center'}}>
-      {loading ? <CircularProgress align='center'/> : <>
+      {loading ? 
+      <Container sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
+        <CircularProgress/>
+      </Container>
+      : <>
       <Grid container spacing={2}>
         <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-start', justifyContent: isMobile ? 'center' : 'flex-start'}} >
       <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{formattedTitle}</Typography>

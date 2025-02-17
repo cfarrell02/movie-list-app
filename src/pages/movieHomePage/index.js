@@ -64,7 +64,7 @@ const MovieHomePage = () => {
           });
 
           if(newMovieLists.length < movieListCount){
-            setHiddenContentMessage('Some watch lists contain adult content. Please enable adult content to view all lists.');
+            setHiddenContentMessage('Some watch lists have been hidden due to adult content settings.');
           }else{
             setHiddenContentMessage('');
           }
@@ -136,7 +136,9 @@ const MovieHomePage = () => {
       </Typography>}
 
       {loading ? (
-        <CircularProgress /> // Show loading indicator while fetching data
+        <Container sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
+          <CircularProgress/>
+        </Container>
       ) : (
         <Grid container spacing={2} alignItems="center">
           {movieLists.map((movieList) => (
