@@ -127,6 +127,7 @@ const TVDetailsPage = (props) => {
     try{
       tvShow.addedDate = new Date().toISOString();
       tvShow.addedBy = user.uid;
+      tvShow.watched = 0;
       const movieList = await getMovieListById(event.target.value);
       if(movieList.tvShows.find(m => m.id === tvShow.id)) throw new Error('tvShow already in list');
       try{
