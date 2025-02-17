@@ -75,38 +75,12 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
     setPage(0);
   };
 
-  useEffect(() => {
-    if (filters && filters.length > 0) {
-      let filteredMovies = [...sortedMovies];
-      filters.forEach((filter) => {
-        filteredMovies = filteredMovies.filter((movie) => {
-          let value = filter.field === 'release_date' || field === 'addedDate' ? movie[filter.field].substring(0,4) :  movie[filter.field];
-          if (filter.operator === '=') {
-            return  value == filter.value;
-          } else if (filter.operator === '<') {
-            return value < filter.value;
-          } else if (filter.operator === '>') {
-            return value > filter.value;
-          }
-          return true;
-        });
-      });
-      setFilteredMovies(filteredMovies);
-    } else {
-      setFilteredMovies([]);
-    }
-  }, [filters]);
+const handleRowSelection = (index) => {
+  let newRows = [...rows];
+  newRows[index].isSelected = !newRows[index].isSelected;
+  setRows(newRows);
+}
 
-  useEffect(() => {
-    setRows(movies.map((movie) => {
-      return {id: movie.id , isSelected: false};
-    }));
-  }, [movies]);
-
-
- const handleRowSelection = (isSelected, movieId) => {
-    rows.find((row) => row.id === movieId).isSelected = isSelected;	
-  };
 
 
   const handleSearch = (event) => {
@@ -223,22 +197,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
               </TableCell>
             </TableRow>
           ) : (
-            filters.length!== 0 && filteredMovies ?
-            filteredMovies.map((movie, index) => (
-              <MovieTableRow
-                handleDelete={deleteMovie}
-                handleEdit={editMovie}        //Filtered Movies
-                key={movie.id}
-                movie={movie}
-                accessType={accessType}
-                isSelected = {rows[index] && rows[index].isSelected}
-                handleSelectedChange={handleRowSelection}
-              />
-            ))
-            
-            :(
             searchTerm.length===0 ?
-
             paginatedMovies.map((movie, index) => (
               <MovieTableRow
                 handleDelete={deleteMovie}
@@ -275,7 +234,7 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
             No results found
           </Typography>
           </TableCell>
-            )
+            
 
           )}
         </TableBody>
