@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography, Button, Container , useMediaQuery, Grid, Icon} from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Container , useMediaQuery, Grid, Icon, CircularProgress} from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box"; // Required for rendering options with images
@@ -24,6 +24,7 @@ const Header = ({ handleLogout }) => {
   const isMobile = useMediaQuery('(max-width:600px)');
   const [canGoForward, setCanGoForward] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -47,9 +48,11 @@ const Header = ({ handleLogout }) => {
   // Fetch search results based on input value
   useEffect(() => {
     if (inputValue) {
+      setLoadingSearch(true);
       getSearchResults(inputValue).then((results) => {
         //filter out tv shows and movies
         setSearchResults(results);
+        setLoadingSearch(false);
       });
     } else {
       setSearchResults([]);
@@ -97,7 +100,7 @@ const Header = ({ handleLogout }) => {
               }}
     >
       <Toolbar sx={{ flexDirection: isMobile ? "column" : "row" }}>
-        {user !== null ? (
+        {user && user.active ? (
           <>
             <Container sx={{ 
               display: isMobile ? 'block' : 'flex', 
@@ -134,6 +137,9 @@ const Header = ({ handleLogout }) => {
               }}
               id="search-container"
             >
+              {loadingSearch ? (
+                <CircularProgress />
+              ) : (
               <Autocomplete
                 id="search-bar"
                 sx={{
@@ -185,6 +191,7 @@ const Header = ({ handleLogout }) => {
                   />
                 )}
               />
+              )}
             </Container>
             <Container sx={{ display: "flex", marginBottom: isMobile ? '.5em' : 0 , justifyContent: isMobile ? 'center' : 'flex-end', width: isMobile ? '100%' : '18em', marginRight: '0 !important'}}>
               <Button color="inherit" sx={{ marginTop: isMobile ? "0.5em" : 0, marginRight: isMobile ? '.5em' : 0 }} onClick={() => navigate("/movielist")}>

@@ -34,7 +34,7 @@ import { auth } from '../../../firebase-config';
 import { getUserById } from '../../../api/userDataStorage';
 import ConfirmationModal from '../../Modals/confirmationModal';
 
-const UserManagementList = ({ users, handleDelete, handleUpdate }) => {
+const UserManagementList = ({ users, handleUpdate }) => {
     const [currentUser, setUser] = useState({});
     const [confirmationOpen, setConfirmationOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState({});
@@ -60,15 +60,15 @@ const UserManagementList = ({ users, handleDelete, handleUpdate }) => {
         const updatedUser = { ...user, admin: event.target.checked };
         handleUpdate(updatedUser, userId);
     }
+    const handleActiveChange = (event) => {
+        const userId = event.target.value;
+        const user = users.find((user) => user.id === userId);
+        const updatedUser = { ...user, active: event.target.checked };
+        handleUpdate(updatedUser, userId);
+    }
 
     return (
         <Card sx={{ p: 2, maxWidth: '50em', margin: 'auto', mt: 2 }}>
-        <ConfirmationModal header='Delete User?' subHeader = 'Are you sure you want to delete this user? ' body='This will also delete any lists owned by this user.' 
-        open = {confirmationOpen} onClose = {() => setConfirmationOpen(false)} onConfirm = {() => {
-            handleDelete(selectedUser.id);
-            setConfirmationOpen(false);
-        }
-        }/>
             <Typography variant="h5" sx={{ mb: 2 }}>Manage Users</Typography>
             <Divider />
             <List>
@@ -87,11 +87,13 @@ const UserManagementList = ({ users, handleDelete, handleUpdate }) => {
                                 value={user.id}
                                 disabled = {user.id === currentUser.id}
                             />
-                            <Button onClick={() => {
-                                setSelectedUser(user);
-                                setConfirmationOpen(true);
-                            }}
-                             disabled = {user.id === currentUser.id}>Delete</Button>
+                            <Typography sx={{ mr: 1 }}>Active</Typography>
+                            <Checkbox
+                                checked={user.active}
+                                disabled = {user.id === currentUser.id}
+                                value={user.id}
+                                onChange={handleActiveChange}
+                            />
                         </div>
                     </ListItem>
                     </>

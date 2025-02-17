@@ -7,7 +7,7 @@ import { getUserById, updateUser, getAllUsers, deleteUser } from '../../api/user
 import { getMovieListsByUserId, updateMovieList, deleteMovieList } from '../../api/movieStorage';
 
 import UserManagementList from '../../components/Admin/userManagementList';
-import { onAuthStateChanged, deleteUser as deleteUserAuth , getAuth, getUserById as getAuthUser} from 'firebase/auth';
+import { onAuthStateChanged, deleteUser as deleteUserAuth , getAuth} from 'firebase/auth';
 import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
 
@@ -75,29 +75,7 @@ const UserManagementPage = () => {
     } 
 
     const handleDelete = async (userId) => {
-        const updatedUsers = users.filter((user) => user.id !== userId);
-        const auth = getAuth();
-        //get auth user object matching userId
-        const authUser = await getAuthUser(auth, userId);
-        setUsers(updatedUsers);
-        //Clean up any movie lists that may be orphaned by the deletion of this user
-        const movieLists = await getMovieListsByUserId(userId);
-        movieLists.forEach(async (list) => {
-            list.userIds = list.userIds.filter(id => id !== userId);
-            list.users = list.users.filter(user => user.id !== userId);
-            const hasOwner = list.users.find(user => user.accessType == '3');
-            if(list.userIds.length === 0 || !hasOwner){
-                await deleteMovieList(list.id);
-            }else{
-                await updateMovieList(list.id, list);
-            }
-        });
-
-        //Delete the firebase user
-        await deleteUserAuth(authUser);
-        //Delete the user object in db
-        await deleteUser(userId);
-        addAlert('info', 'User deleted successfully');
+      
 
     }
 

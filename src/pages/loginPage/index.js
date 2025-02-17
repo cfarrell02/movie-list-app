@@ -87,6 +87,13 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
         margin: '1em 5%',
       }}
     >
+
+      {user && !user.active && (
+        <Alert severity="warning" sx={{ width: '100%', marginBottom: '1em' }}>
+          Your account is not active. Please contact an admin for assistance.
+        </Alert>
+      )}
+
       <Typography variant={isMobile ? 'h5':'h2'} component="h1" align="center" sx={{ color: 'text.primary' }}>
         Welcome {user && user.firstName}!
       </Typography>
@@ -130,7 +137,7 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
           </>
         )}
 
-        {user === null && (
+        {!user && (
           <>
             <Button onClick={handleToggle} sx={{ mt: 2 }}>
               {pageState === 'login' ? 'Register' : 'Login'}
