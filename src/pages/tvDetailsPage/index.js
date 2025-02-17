@@ -45,6 +45,20 @@ const TVDetailsPage = (props) => {
   const [loading, setLoading] = useState(false);
   const [formattedTitle, setFormattedTitle] = useState('');
   const isMobile = useMediaQuery('(max-width:600px)');
+  const [wrapperCount, setWrapperCount] = useState(getInitialCount());
+
+  function getInitialCount() {
+      const width = window.innerWidth;
+      if (width < 900) return 4;    
+      if (width < 1200) return 6 
+      return 6;                    
+  }
+
+  useEffect(() => {
+      const handleResize = () => setWrapperCount(getInitialCount());
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -203,7 +217,7 @@ const TVDetailsPage = (props) => {
       Recommendations
     </Typography>
     <Divider sx={{ marginBottom: '1em' }} />
-    <ShowMoreWrapper initialCount={isMobile ? 4:6} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
+    <ShowMoreWrapper initialCount={wrapperCount} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
         {tvShow.recommendations.map((movie, index) => (
           <Grid item xs={6} sm={3} md={2} key={index}>
             <TVCard tv={movie}/>
