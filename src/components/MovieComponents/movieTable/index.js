@@ -103,11 +103,6 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
     }));
   }, [movies]);
 
- const handleAllSelection = (event) => {
-    rows.forEach((row) => row.isSelected = event.target.checked);
-    //Ensure original movies array is updated
-    
- };
 
  const handleRowSelection = (isSelected, movieId) => {
     rows.find((row) => row.id === movieId).isSelected = isSelected;	
@@ -181,9 +176,6 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
       <Table sx={{ minWidth: isMobile ? 0 : 650 }} aria-label="simple table">
       <TableHead>
           <TableRow align="left">
-            <TableCell align="center">
-              <Checkbox title = "Select All (Selects all regardless of pagination)" checked={rows.every(r => r.isSelected)} onChange={handleAllSelection} />  
-            </TableCell>
           <TableCell >
               <Typography align="center" variant="subtitle2" component="div">
                 Poster

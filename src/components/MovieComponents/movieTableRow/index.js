@@ -45,9 +45,6 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType, isSelected,
 
     return (
         <TableRow key={movie.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-          <TableCell align='center'>
-            <Checkbox checked={isSelected} onChange={(e) => {handleSelectedChange(e.target.checked, movie.id)}} />
-          </TableCell>
               <TableCell>
                 <img src={imageSrc} alt={movie.title} style={{maxHeight:"120px" }}/>
               </TableCell>
