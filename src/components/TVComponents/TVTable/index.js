@@ -276,7 +276,11 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
               </Typography>
             </TableCell>
             </>)}
-            <TableCell align="center"></TableCell>
+            <TableCell align="center" onClick={() => handleSort('watched')} style={{ cursor: 'pointer' }}>
+              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
+                Watched {getSortIcon('watched')}
+              </Typography>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

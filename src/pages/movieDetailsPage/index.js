@@ -144,6 +144,7 @@ const MovieDetailsPage = (props) => {
     try{
       movie.addedDate = new Date().toISOString();
       movie.addedBy = user.uid;
+      movie.watched = false;
       const movieList = await getMovieListById(event.target.value);
       if(movieList.movies.find(m => m.id === movie.id)) throw new Error('Movie already in list');
       try{
