@@ -1,9 +1,12 @@
 import React from 'react';
 import { Box, Typography, Grid, Card, CardMedia } from '@mui/material';
 import ShowMoreWrapper from '../showMoreWrapper';
+import { useMediaQuery } from '@mui/material';
 
 
 const MediaDisplay = ({ videos, images }) => {
+
+    const isMobile = useMediaQuery('(max-width:600px)');
 
 
     const getVideoSrc = (video) => {
@@ -27,8 +30,8 @@ const MediaDisplay = ({ videos, images }) => {
                 <Typography variant="h4" gutterBottom>
                     Videos
                 </Typography>
-                <ShowMoreWrapper initialHeight={315}>
-                <Grid container spacing={2}>
+                
+                <ShowMoreWrapper initialCount={isMobile ? 4:6} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
                     {videos.map((video, index) => (
                         <Grid item xs={12} sm={6} md={4} key={index}>
                             <Card>
@@ -44,8 +47,7 @@ const MediaDisplay = ({ videos, images }) => {
                             </Card>
                         </Grid>
                     ))}
-                </Grid>
-                </ShowMoreWrapper>
+                  </ShowMoreWrapper>
             </Box>
             )}
             {images && images.length > 0 && (
@@ -53,8 +55,7 @@ const MediaDisplay = ({ videos, images }) => {
                 <Typography variant="h4" gutterBottom>
                     Images
                 </Typography>
-                <ShowMoreWrapper initialHeight={300}>
-                <Grid container spacing={2}>
+                <ShowMoreWrapper initialCount={isMobile ? 4:6} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
                     {images.map((image, index) => (
                         <Grid item xs={12} sm={6} md={4} key={index}>
                             <Card>
@@ -66,8 +67,7 @@ const MediaDisplay = ({ videos, images }) => {
                             </Card>
                         </Grid>
                     ))}
-                </Grid>
-                </ShowMoreWrapper>
+                    </ShowMoreWrapper>
             </Box>
             )}
         </Box>

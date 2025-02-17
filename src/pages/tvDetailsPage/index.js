@@ -199,17 +199,12 @@ const TVDetailsPage = (props) => {
       Recommendations
     </Typography>
     <Divider sx={{ marginBottom: '1em' }} />
-    <ShowMoreWrapper initialHeight={350}>
-      <Grid 
-        container 
-        spacing={2} 
-      >
+    <ShowMoreWrapper initialCount={isMobile ? 4:6} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
         {tvShow.recommendations.map((movie, index) => (
           <Grid item xs={6} sm={3} md={2} key={index}>
             <TVCard tv={movie}/>
           </Grid>
         ))}
-      </Grid>
     </ShowMoreWrapper>
   </Grid>
 )}

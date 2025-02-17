@@ -9,6 +9,7 @@ import {
   Tooltip,
   TableContainer,
   Paper,
+  Typography,
 } from "@mui/material";
 import { getTVSeason } from "../../../api/TMDBAPI";
 import { hover } from "@testing-library/user-event/dist/hover";
@@ -16,6 +17,7 @@ import { hover } from "@testing-library/user-event/dist/hover";
 const TVEpisodesSummary = ({ tvShow }) => {
   const [seasons, setSeasons] = useState([]);
   const [longest, setLongest] = useState({});
+  const [selectedEpisode, setSelectedEpisode] = useState(null);
 
   useEffect(() => {
     const fetchSeasons = async () => {
@@ -70,11 +72,12 @@ return (
                         <TableRow key={season.id}>
                             <TableCell sx={bodyCellStyle}>{season.name}</TableCell>
                             {season.episodes.map((episode, index) => (
-                                <Tooltip title={episode.name} key={index}>
-                                    <TableCell
+                                <Tooltip title={episode.name} key={index} onClick={() => setSelectedEpisode(episode)}>
+                                    <TableCell 
                                         sx={{
                                             ...bodyCellStyle,
                                             backgroundColor: getColor(episode.vote_average),
+                                            outline: episode === selectedEpisode ? "2px solid #1976d2" : "none",
                                             "&:hover": {
                                                 backgroundColor: (theme) =>
                                                     theme.palette.augmentColor({
@@ -92,6 +95,13 @@ return (
                 </TableBody>
             </Table>
         </TableContainer>
+
+        {selectedEpisode && (
+            <Container sx={{ p: 2, borderRadius: 3, border: "1px solid #1976d2", marginTop: "1em" }}>
+                <Typography variant="h6">{selectedEpisode.name}</Typography>
+                <Typography variant="body1">{selectedEpisode.overview}</Typography>
+            </Container>
+        )}
     </Container>
 );
 };
