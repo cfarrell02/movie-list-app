@@ -127,13 +127,14 @@ const TVDetailsPage = (props) => {
     let year = tvShow.first_air_date ? new Date(tvShow.first_air_date).getFullYear() : '';
     let endYear = tvShow.last_air_date ? new Date(tvShow.last_air_date).getFullYear() : '';
 
-    const shouldShowEndYear = endYear !== year;
+    let shouldShowEndYear = endYear !== year;
 
-    if(tvShow.in_production && shouldShowEndYear){
+    if(tvShow.in_production){
+      shouldShowEndYear = true;
       endYear = 'Present';
     }
     
-    setFormattedTitle(`${name} (${year}${shouldShowEndYear ? `-${endYear}` : ''})`);
+    setFormattedTitle(`${name} (${year}${shouldShowEndYear ? ` - ${endYear}` : ''})`);
   }, [tvShow]);
 
   const handleChange = async (event) => {
