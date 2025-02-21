@@ -233,7 +233,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
                         fullWidth
                         variant="contained"
                         color="error"
-                        disabled={true} //Disabled until i fix the delete account function
+                        disabled={true} //Disabled until i fix the delete account function s
                         sx={{ mt: 3 }}
                         onClick={() => setOpen(true)}
                     >
