@@ -102,7 +102,15 @@ export default function TVCard({ tv }) {
   return (
     <Card
       onClick={() => navigate(`/tvShow/${tv.id}`)}
-      sx={{ cursor: "pointer" }}
+      sx={{
+        cursor: "pointer",
+        transition: "all 0.3s ease-in-out",
+        boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.2)",
+        '&:hover': {
+          boxShadow: "0 0 20px 0 rgba(0, 0, 0, 0.5)",
+          transform: "translateY(-5px)",
+        }
+      }}
     >
       <CardMedia
         sx={{ height: "auto", paddingTop: "150%", position: "relative" }}
