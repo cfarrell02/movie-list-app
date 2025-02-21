@@ -124,8 +124,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
                 list.userIds = list.userIds.filter(id => id !== user.id);
                 list.users = list.users.filter(us => us.id !== user.id);
                 const isOwnedByUser = list.users.find(us => us.accessType == '3');
-                const hasOwner = list.users.find(us => us.accessType == '3');
-                if(!isOwnedByUser && hasOwner || list.userIds.length === 0){
+                if(isOwnedByUser || list.userIds.length === 0){
                     await deleteMovieList(list.id);
                 }else{
                     await updateMovieList(list.id, list);
@@ -233,7 +232,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
                         fullWidth
                         variant="contained"
                         color="error"
-                        disabled={true} //Disabled until i fix the delete account function s
+                        
                         sx={{ mt: 3 }}
                         onClick={() => setOpen(true)}
                     >
