@@ -18,9 +18,10 @@ import {
   ButtonGroup,
   InputLabel,
   useMediaQuery,
-  Stack
+  Stack,
+  Box
 } from '@mui/material';
-import { getMovie,getMovieCredits , getMovieSearchResults } from '../../api/TMDBAPI';
+import { getMovie,getMovieCredits , getMovieImages, getMovieVideos, getMovieRecommendations } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -33,6 +34,9 @@ import { getUserById } from '../../api/userDataStorage';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import { Navigate } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
+import MediaDisplay from '../../components/mediaDisplay';
+import MovieCard from '../../components/MovieComponents/movieCard';
+import ShowMoreWrapper from '../../components/showMoreWrapper';
 
 
 const MovieDetailsPage = (props) => {
@@ -47,6 +51,20 @@ const MovieDetailsPage = (props) => {
   const {adultContent} = React.useContext(SiteDataContext);
   const isMobile = useMediaQuery('(max-width:600px)');
   const navigate = useNavigate();
+  const [wrapperCount, setWrapperCount] = useState(getInitialCount());
+
+  function getInitialCount() {
+      const width = window.innerWidth;
+      if (width < 900) return 4;    
+      if (width < 1200) return 6 
+      return 6;                    
+  }
+
+  useEffect(() => {
+      const handleResize = () => setWrapperCount(getInitialCount());
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -69,6 +87,10 @@ const MovieDetailsPage = (props) => {
         setLoading(true);
         const fetchedMovie = await getMovie(id);
         const fetchedCredits = await getMovieCredits(id);
+        const fetchedImages = await getMovieImages(id);
+        const fetchedVideos = await getMovieVideos(id);
+        const recommendations = await getMovieRecommendations(id);
+
         if(fetchedMovie.imdb_id){
           setStremioLinkEnding(
             fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
@@ -77,14 +99,13 @@ const MovieDetailsPage = (props) => {
           );
         }
 
-        const localMovie = { ...fetchedMovie, credits: fetchedCredits };
+        const localMovie = { ...fetchedMovie, credits: fetchedCredits , images: fetchedImages, videos: fetchedVideos, recommendations: recommendations};
 
         if(!adultContent && localMovie.adult){
           navigate('/')
         }
 
         setMovie(localMovie);
-        console.log(movie);
       } catch (error) {
         console.error(error);
         // Handle the error, show an error message, or take appropriate action.
@@ -97,7 +118,7 @@ const MovieDetailsPage = (props) => {
 
   
     fetchData();
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,7 +136,7 @@ const MovieDetailsPage = (props) => {
     if(!movie) return;
     const title = movie.title ? movie.title.length > 50 ? movie.title.substring(0, 50) + '...' : movie.title : '';
     const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
-    setFormattedTitle(`${title} (${year})`);
+    setFormattedTitle('' + title + (year ? ' (' + year + ')' : ''));
   }, [movie]);
 
   const handleChange = async (event) => {
@@ -123,6 +144,7 @@ const MovieDetailsPage = (props) => {
     try{
       movie.addedDate = new Date().toISOString();
       movie.addedBy = user.uid;
+      movie.watched = false;
       const movieList = await getMovieListById(event.target.value);
       if(movieList.movies.find(m => m.id === movie.id)) throw new Error('Movie already in list');
       try{
@@ -140,13 +162,17 @@ const MovieDetailsPage = (props) => {
   
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
-      {loading ? <CircularProgress align='center'/> : <>
+    <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%', alignContent: 'center'}}>
+      {loading ? 
+      <Container sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
+        <CircularProgress/>
+      </Container>
+      : <>
       <Grid container spacing={2}>
         <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-start', justifyContent: isMobile ? 'center' : 'flex-start'}} >
       <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{formattedTitle}</Typography>
       </Grid>
-      <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-end'}}>
+      <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-end' }}>
         <Stack> 
         <FormControl sx={{ m: 1, minWidth: '15em' }} size='small'>
         <InputLabel> Add to list</InputLabel>
@@ -188,7 +214,38 @@ const MovieDetailsPage = (props) => {
             <MovieDetailCard movie={movie}/>
           </Grid>
         </>)}
+
+{movie.recommendations && movie.recommendations.length > 0 && (
+  <Grid item xs={12}>
+    <Typography variant="h4" sx={{ marginTop: '1em'}}>
+      Recommendations
+    </Typography>
+    <Divider sx={{ marginBottom: '1em' }} />
+
+            <ShowMoreWrapper initialCount={wrapperCount} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
+        {movie.recommendations.map((movie, index) => (
+          <Grid item xs={6} sm={3} md={2} key={index}>
+            <MovieCard movie={movie} />
+          </Grid>
+        ))}
+            </ShowMoreWrapper>
+  </Grid>
+)}
+
+
+        {movie.images && movie.videos && movie.images.backdrops.length > 0 && movie.videos.results.length > 0 &&
+        <Grid item xs={12}>
+        <Typography variant="h4" sx={{ marginTop: '1em' }}>
+                    Media
+            </Typography>
+        <Divider sx={{ marginBottom: '1em' }} />
+        <MediaDisplay videos={movie.videos.results} images={movie.images.backdrops}/>
+        </Grid>
+        }
+
+        
           <Grid item xs={12}>
+            
           <Typography variant="h4" sx={{ marginTop: '1em' }}>
                     Reviews 
             </Typography>

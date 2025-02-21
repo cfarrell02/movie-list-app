@@ -19,7 +19,7 @@ import {
   Stack,
   useMediaQuery
 } from '@mui/material';
-import { getPerson, getPersonMovies, getPersonTV } from '../../api/TMDBAPI';
+import { getPerson, getPersonMovies, getPersonTV , getPersonImages, getPersonTaggedImages} from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -31,6 +31,7 @@ import { AlertContext } from '../../contexts/alertContext';
 import { getUserById } from '../../api/userDataStorage';
 import { useNavigate } from 'react-router-dom';
 import { SiteDataContext } from '../../contexts/siteDataContext';
+import MediaDisplay from '../../components/mediaDisplay';
 
 const PersonPage = (props) => {
     const {id} = useParams();
@@ -48,12 +49,17 @@ const PersonPage = (props) => {
                 const fetchedPerson = await getPerson(id);
                 const fetchedMovieCredits = await getPersonMovies(id);
                 const fetchedTVCredits = await getPersonTV(id);
+                const fetchedImages = await getPersonImages(id);
+                const fetchedTaggedImages = await getPersonTaggedImages(id);
                 
+                // If the person is adult only and the user has adult content disabled, redirect to home
                 if(!adultContent && fetchedPerson.adult){
                     navigate('/');
                 }
 
-                setPerson({...fetchedPerson, credits: fetchedMovieCredits, tvCredits: fetchedTVCredits});
+                const combinedImages = fetchedImages.profiles.concat(fetchedTaggedImages.results);
+
+                setPerson({...fetchedPerson, credits: fetchedMovieCredits, tvCredits: fetchedTVCredits, images : {profiles: combinedImages}});
                 setTmdbId(fetchedPerson.id + fetchedPerson.name.replace(/\s/g, '-'));
             } catch (error) {
                 console.log(error);
@@ -62,12 +68,16 @@ const PersonPage = (props) => {
             }
         }
         fetchData();
-    }, [id]);
+    }, [id, adultContent, navigate]);
 
 
     return (
       <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
-        {loading ? <CircularProgress align='center'/> : <>
+        {loading ? 
+      <Container sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
+        <CircularProgress/>
+      </Container>
+        : <>
         <Grid container spacing={2}>
           <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-start' }}>
         <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{person.name}</Typography>
@@ -99,6 +109,17 @@ const PersonPage = (props) => {
               <PersonDetailsCard person={person}/>
             </Grid> 
             </>}
+            {person.images && 
+        <Grid item xs={12}>
+        <Typography variant="h4" sx={{ marginTop: '1em' }}>
+                    Media
+            </Typography>
+        <Divider sx={{ marginBottom: '1em' }} />
+        <Container sx={{ maxHeight: '45em', overflow: 'auto', margin: '1em 0', width: '100%', maxWidth: 'none !important' }}>
+        <MediaDisplay images={person.images.profiles}/>
+        </Container>
+        </Grid>
+        }
             <Grid item xs={12}>
             <Typography variant="h4" sx={{ marginTop: '1em' }}>
                       Credits 
@@ -107,6 +128,7 @@ const PersonPage = (props) => {
               <PersonCreditsSection person={person}/>
               </Grid>
             </Grid>
+
           </>}
       </Card>
     )

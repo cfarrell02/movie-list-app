@@ -14,10 +14,10 @@ import CalendarIcon from "@mui/icons-material/CalendarTodayTwoTone";
 import StarRateIcon from "@mui/icons-material/StarRate";
 import Grid from "@mui/material/Grid";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import Avatar from "@mui/material/Avatar";
 import {
   getMovieListsByUserId,
-  addMovieToList,
+  addTVShowToList,
   getMovieListById,
 } from "../../../api/movieStorage";
 import { AlertContext } from "../../../contexts/alertContext";
@@ -27,21 +27,22 @@ import { onAuthStateChanged } from "firebase/auth";
 import Stack from "@mui/material/Stack";
 import { NativeSelect, FormControl } from "@mui/material";
 import defaultImage from "../../../images/default.jpg";
+import { useNavigate } from "react-router-dom";
 
-export default function MovieCard({ movie }) {
+export default function TVCard({ tv }) {
   const [user, setUser] = React.useState(null);
-  const [movieLists, setMovieLists] = React.useState([]);
+  const [tvLists, setTVLists] = React.useState([]);
   const { addAlert } = React.useContext(AlertContext);
   const [posterUrl, setPosterUrl] = React.useState("");
   const navigate = useNavigate();
+
   React.useEffect(() => {
     const fetchData = async () => {
       try {
         if (user) {
-          const fetchedMovieLists = await getMovieListsByUserId(user.uid);
-
-          setMovieLists(
-            fetchedMovieLists.filter((list) => {
+          const fetchedTVLists = await getMovieListsByUserId(user.uid);
+          setTVLists(
+            fetchedTVLists.filter((list) => {
               return (
                 list.users.find((userObj) => userObj.uid === user.uid)
                   .accessType > 0
@@ -51,12 +52,12 @@ export default function MovieCard({ movie }) {
         }
       } catch (error) {
         console.error(error);
-        // Handle the error, show an error message, or take appropriate action.
       }
     };
 
     fetchData();
   }, [user]);
+
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -72,26 +73,27 @@ export default function MovieCard({ movie }) {
   }, []);
 
   React.useEffect(() => {
-    if (movie) {
-      const localURL = movie.poster_path
-        ? `https://image.tmdb.org/t/p/w500/${movie.poster_path}`
-        : movie.backdrop_path
-        ? `https://image.tmdb.org/t/p/w500/${movie.backdrop_path}`
+    if (tv) {
+      const localURL = tv.poster_path
+        ? `https://image.tmdb.org/t/p/w500/${tv.poster_path}`
+        : tv.backdrop_path
+        ? `https://image.tmdb.org/t/p/w500/${tv.backdrop_path}`
         : defaultImage;
       setPosterUrl(localURL);
     }
-  }, [movie]);
+  }, [tv]);
 
   const handleChange = async (event) => {
     const userData = await getUserById(user.uid);
     try {
-      movie.addedDate = new Date().toISOString();
-      movie.addedBy = user.uid;
-      const movieList = await getMovieListById(event.target.value);
-      if (movieList.movies.find((m) => m.id === movie.id))
-        throw new Error("Movie already in list");
-      addMovieToList(event.target.value, movie);
-      addAlert("success", `${movie.title} added to ${movieList.title}`);
+      tv.addedDate = new Date().toISOString();
+      tv.addedBy = user.uid;
+      tv.watched = 0;
+      const tvList = await getMovieListById(event.target.value);
+      if (tvList.tvs.find((t) => t.id === tv.id))
+        throw new Error("TV show already in list");
+      addTVShowToList(event.target.value, tv);
+      addAlert("success", `${tv.name} added to ${tvList.title}`);
     } catch (error) {
       addAlert("error", error.message);
     }
@@ -99,7 +101,7 @@ export default function MovieCard({ movie }) {
 
   return (
     <Card
-      onClick={() => navigate(`/movie/${movie.id}`)}
+      onClick={() => navigate(`/tvShow/${tv.id}`)}
       sx={{
         cursor: "pointer",
         transition: "all 0.3s ease-in-out",
@@ -110,10 +112,9 @@ export default function MovieCard({ movie }) {
         }
       }}
     >
-
       <CardMedia
         sx={{ height: "auto", paddingTop: "150%", position: "relative" }}
-        title={movie.title}
+        title={tv.name}
         image={posterUrl}
       >
         <Grid
@@ -125,19 +126,19 @@ export default function MovieCard({ movie }) {
             padding: "0 .3em .1em .3em",
           }}
         >
-          {movie.release_date ? (
+          {tv.first_air_date ? (
             <>
               <Grid item xs={6} sx={{ display: "flex", alignItems: "center" }}>
                 <CalendarIcon fontSize="small" sx={{ marginRight: "4px" }} />
                 <Typography variant="h6" component="p">
-                  {new Date(movie.release_date).getFullYear()}
+                  {new Date(tv.first_air_date).getFullYear()}
                 </Typography>
               </Grid>
             </>
           ) : (
             ""
           )}
-          {movie.vote_average ? (
+          {tv.vote_average ? (
             <>
               <Grid
                 item
@@ -150,9 +151,7 @@ export default function MovieCard({ movie }) {
               >
                 <Typography variant="h6" component="p">
                   <StarRateIcon fontSize="small" sx={{ marginRight: "4px" }} />
-                  {movie.vote_average
-                    ? Math.round(movie.vote_average * 10) / 10
-                    : ""}
+                  {tv.vote_average ? Math.round(tv.vote_average * 10) / 10 : ""}
                 </Typography>
               </Grid>
             </>

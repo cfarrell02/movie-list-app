@@ -12,6 +12,21 @@ const MovieListCard = ({ movieList, onDelete }) => {
     const [user, setUser] = useState({});
     const [accessType, setAccessType] = useState(0)
 
+    const getUserType = () => {
+      switch (accessType) {
+        case 0:
+          return 'Viewer';
+        case 1:
+          return 'Contributor';
+        case 2:
+          return 'Admin';
+        case 3:
+          return 'Owner';
+        default:
+          return 'Viewer';
+      }
+    };
+
     useEffect(() => {
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -53,6 +68,9 @@ const MovieListCard = ({ movieList, onDelete }) => {
     <Card sx={{ padding: '2em', height: '30em' }} align="center">
       <Typography variant="h5" component="h1" align="center" sx={{ mb: 2 }}>
         {movieList.title}
+      </Typography>
+      <Typography variant="subtitle1" align="center" sx={{ mb: 2 }}>
+        {getUserType()}
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>
         

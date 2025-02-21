@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Input } from '@mui/material';
+import { Box, TextField, Button, Typography, Input, Container,useMediaQuery, Alert } from '@mui/material';
 
 const Register = ({ handleRegister, addAlert }) => {
   const [username, setUsername] = useState('');
@@ -8,18 +8,17 @@ const Register = ({ handleRegister, addAlert }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const isMobile = useMediaQuery('(max-width:600px)');
 
-  useEffect(() => {
-    if (password && secondPassword && password !== secondPassword) {
-      addAlert('error', 'Passwords do not match');
-    }
-  }, [password, secondPassword, addAlert]);
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      if (password !== secondPassword || !firstName || !lastName || !dateOfBirth) {
+      if (!password || !secondPassword ||  !firstName || !lastName || !dateOfBirth) {
         throw new Error('Please fill out all fields');
+      }else if(password !== secondPassword){
+        throw new Error('Passwords do not match');
       }
       await handleRegister(username, password, firstName, lastName, new Date(dateOfBirth));
       addAlert('success', 'User registered');
@@ -41,7 +40,7 @@ const Register = ({ handleRegister, addAlert }) => {
   };
 
   return (
-    <>
+    <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
       <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
         Register
       </Typography>
@@ -70,6 +69,11 @@ const Register = ({ handleRegister, addAlert }) => {
           value={secondPassword}
           onChange={(event) => setSecondPassword(event.target.value)}
         />
+        {(password !== secondPassword || !password || !secondPassword) && (
+          <Alert severity="info" sx={{ width: '100%' }}>
+            Please ensure password matches the confirm password field
+          </Alert>
+        )}
         <TextField
           label="First Name"
           variant="outlined"
@@ -93,7 +97,7 @@ const Register = ({ handleRegister, addAlert }) => {
           Register
         </Button>
       </Box>
-    </>
+      </Container>
   );
 };
 

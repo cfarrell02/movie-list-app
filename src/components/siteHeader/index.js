@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Toolbar, Typography, Button, Container , useMediaQuery, Grid} from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Container , useMediaQuery, Grid, Icon, CircularProgress} from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box"; // Required for rendering options with images
@@ -10,7 +10,8 @@ import { getUserById } from "../../api/userDataStorage";
 import { SiteDataContext } from "../../contexts/siteDataContext";
 import { getSearchResults } from "../../api/TMDBAPI"; // Assuming this API call fetches search results
 import defaultImage from "../../images/default.jpg";
-import chilli from "../../images/chilli.png";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import './index.css';
 
 const Header = ({ handleLogout }) => {
@@ -21,6 +22,9 @@ const Header = ({ handleLogout }) => {
   const [searchHistory, setSearchHistory] = useState([]); // State for storing search history
   const [inputValue, setInputValue] = useState(""); // State for storing user input
   const isMobile = useMediaQuery('(max-width:600px)');
+  const [canGoForward, setCanGoForward] = useState(false);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -38,12 +42,17 @@ const Header = ({ handleLogout }) => {
     };
   }, []);
 
+
+
+
   // Fetch search results based on input value
   useEffect(() => {
     if (inputValue) {
+      setLoadingSearch(true);
       getSearchResults(inputValue).then((results) => {
         //filter out tv shows and movies
         setSearchResults(results);
+        setLoadingSearch(false);
       });
     } else {
       setSearchResults([]);
@@ -60,9 +69,6 @@ const Header = ({ handleLogout }) => {
     } else {
       navigate(`/person/${value.id}`);
     }
-
-    //reload
-    window.location.reload();
   };
 
   const handleAutoFill = (event, value) => {
@@ -90,17 +96,37 @@ const Header = ({ handleLogout }) => {
         margin: isMobile ? ".1em 0.1em 1em 0.1em" : ".25em 1em 1em 1em",
         borderRadius: "1em",
         width: isMobile ? "calc(100% - .1em)" : "calc(100% - 2em)",
-      }}
+        justifyContent: "center",
+              }}
     >
       <Toolbar sx={{ flexDirection: isMobile ? "column" : "row" }}>
-        {user !== null ? (
+        {user && user.active ? (
           <>
-            <Typography variant="h6" component="div" sx={{ flexGrow: isMobile ? 0 : 1 , marginTop: isMobile ? '.5em' : 0}}>
+            <Container sx={{ 
+              display: isMobile ? 'block' : 'flex', 
+              justifyContent: 'flex-start', 
+              width: isMobile ? '100%' : '50em', 
+              flexGrow: 1, 
+              alignItems: 'flex-start',
+              alignContent: 'flex-start',
+              marginLeft: '0 !important',
+            }}>
+            <Typography variant="h6" component="div" sx={{ marginTop: isMobile ? '.5em' : 0, width: isMobile ? '100%' : '18em', display: 'flex', justifyContent: isMobile ? 'center' : 'flex-start'}}>
               <Button color="inherit" onClick={() => navigate("/home")}>
                 Movie App - {user.firstName} {user.lastName}{"  "}
                 {adultContent ? '🌶️' : ''}
               </Button>
             </Typography>
+            
+              <Grid container spacing={2} sx = {{display: isMobile ? 'flex' : null, justifyContent: isMobile ? 'center' : 'flex-start', width: '100%'}}>
+                <Grid item>
+                  <Button variant="contained" color="primary" onClick={() => navigate(-1)}><ArrowBackIcon/></Button>
+                </Grid>
+                <Grid item>
+                  <Button variant="contained" color="primary" onClick={() => navigate(1)}><ArrowForwardIcon/></Button>
+                </Grid>
+              </Grid>
+            </Container>
             <Container
               sx={{
                 display: "flex",
@@ -111,6 +137,9 @@ const Header = ({ handleLogout }) => {
               }}
               id="search-container"
             >
+              {loadingSearch ? (
+                <CircularProgress />
+              ) : (
               <Autocomplete
                 id="search-bar"
                 sx={{
@@ -162,8 +191,9 @@ const Header = ({ handleLogout }) => {
                   />
                 )}
               />
+              )}
             </Container>
-            <Container sx={{ display: "flex", marginBottom: isMobile ? '.5em' : 0 , justifyContent: isMobile ? 'center' : 'flex-end', width: isMobile ? '100%' : '18em'}}>
+            <Container sx={{ display: "flex", marginBottom: isMobile ? '.5em' : 0 , justifyContent: isMobile ? 'center' : 'flex-end', width: isMobile ? '100%' : '18em', marginRight: '0 !important'}}>
               <Button color="inherit" sx={{ marginTop: isMobile ? "0.5em" : 0, marginRight: isMobile ? '.5em' : 0 }} onClick={() => navigate("/movielist")}>
                 Watch Lists
               </Button>
@@ -173,7 +203,7 @@ const Header = ({ handleLogout }) => {
             </Container>
           </>
         ) : (
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 , marginTop: isMobile ? '.5em' : 0}}>
             Movie App
           </Typography>
         )}

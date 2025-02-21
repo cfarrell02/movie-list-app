@@ -1,84 +1,141 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, CardContent, Grid, Box, Input, Card, Stack, CircularProgress, Tab, Paper, TableContainer, useMediaQuery} from '@mui/material';
-import { getMovies, getMovieSearchResults } from '../../api/TMDBAPI';
+import {
+  Tabs,
+  Typography,
+  CardContent,
+  Grid,
+  Box,
+  Input,
+  Card,
+  Stack,
+  CircularProgress,
+  Tab,
+  Paper,
+  TableContainer,
+  useMediaQuery,
+  Pagination,
+} from '@mui/material';
+import { 
+  getMovies, 
+  getMovieSearchResults, 
+  getTVShows, 
+  getTVShowSearchResults 
+} from '../../api/TMDBAPI';
 import MovieCard from '../../components/MovieComponents/movieCard';
+import TVCard from '../../components/TVComponents/TVCard';
 
 const Homepage = () => {
-    const navigate = useNavigate();
-    const [movies, setMovies] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const isMobile = useMediaQuery('(max-width:600px)');
-    const fetchMovies = async () => {
-      try {
-          setLoading(true);
-          const fetchedMovies = await getMovies(1);
-          setMovies(fetchedMovies.results.slice(0, 18));
-          console.log(fetchedMovies)
-      } catch (error) {
-          console.error('Error getting movies:', error);
-      } finally {
-          setLoading(false);
+  const navigate = useNavigate();
+  const [movies, setMovies] = useState([]);
+  const [shows, setShows] = useState([]);
+  const [tab, setTab] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const isMobile = useMediaQuery('(max-width:600px)');
+
+  const fetchData = async (page, selectedTab, query = '') => {
+    setLoading(true);
+    try {
+      if (selectedTab === 0) {
+        const results = query
+          ? await getMovieSearchResults(page, query)
+          : (await getMovies(page)).results;
+        setMovies(results.slice(0, 18));
+      } else {
+        const results = query
+          ? await getTVShowSearchResults(page, query)
+          : (await getTVShows(page)).results;
+        setShows(results.slice(0, 18));
       }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
-    useEffect(() => {
-        fetchMovies();
-    }, []);
-    const onChange = async (event) => {
-        const  value  = event.target.value;
-        if(value === '') return fetchMovies();
-        try {
-            setLoading(true);
-            const fetchedMovies = await getMovieSearchResults(1, value);
-            console.log(fetchedMovies);
-            setMovies(fetchedMovies.slice(0, 18));
-        } catch (error) {
-            console.error('Error getting movies:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    let page = parseInt(urlParams.get('page')) || 1;
 
+    if(page < 1 || page > 500){
+      page = 1;
+    }
+
+    setCurrentPage(page);
+    fetchData(page, tab, searchTerm);
+  }, [tab, currentPage]);
+
+  useEffect(() => {
+    // Trigger new fetch whenever search term changes
+    if (searchTerm !== '') {
+      fetchData(1, tab, searchTerm); // Fetch from page 1 when searching
+      setCurrentPage(1);
+    } else {
+      fetchData(currentPage, tab); // Fetch based on current page if search term is cleared
+    }
+  }, [searchTerm]);
+
+  const handleTabChange = (event, newValue) => {
+    setTab(newValue);
+    setCurrentPage(1);
+    navigate(`?page=1`, { replace: true });
+    setSearchTerm(''); // Clear search on tab change
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    navigate(`?page=${value}`, { replace: true });
+    fetchData(value, tab, searchTerm);
+  };
 
   return (
-    <Box  sx={{paddingLeft: isMobile ? '2%': '10%', paddingRight: isMobile ? '2%': '10%', paddingBottom:'4em'}}>
- <Card
-    sx={{
-      marginTop: '20px', // Move card 20px away from siblings
-      padding: '16px', // Adjust padding for more space
-      marginBottom: '20px', // Wider spacing
-      borderRadius: '12px', // Rounded corners
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Subtle shadow
-    }}
-  >
-    <CardContent>
-      <Stack spacing={2}>
-        <Typography variant="h4" align="center" sx={{ mb: 2, fontWeight: 'bold' }}>
-          Browse Movies
-        </Typography>
-        <Input
-          onChange={onChange}
-          placeholder="Search for a movie"
-        />
-      </Stack>
-    </CardContent>
-  </Card>
-      {loading ? ( 
-        <CircularProgress align='center'/>
+    <Box sx={{ padding: isMobile ? '2%' : '0% 10%', paddingBottom: '4em' }}>
+      <Card sx={{ mt: 2, mb: 2, p: 2, borderRadius: 2, boxShadow: 1 }}>
+        <Tabs value={tab} onChange={handleTabChange}>
+          <Tab label="Movies" />
+          <Tab label="TV Shows" />
+        </Tabs>
+        <CardContent>
+          <Stack spacing={2}>
+            <Typography variant="h4" align="center" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Browse {tab === 0 ? 'Movies' : 'TV Shows'}
+            </Typography>
+            <Input 
+              value={searchTerm} 
+              onChange={handleSearchChange} 
+              placeholder={`Search for ${tab === 0 ? 'movies' : 'TV shows'}`} 
+            />
+          </Stack>
+        </CardContent>
+      </Card>
+      {loading ? (
+        <CircularProgress sx={{ display: 'block', margin: 'auto' }} />
       ) : (
         <TableContainer component={Paper}>
-          <Tab label="Movies">
-          </Tab>
-        <Grid container spacing={2} sx={{padding: '0 1em 1em 1em'}}>
-        {!movies ? null : movies.map((movie) => (
-        <Grid item xs={6} md={2}>
-        <MovieCard  movie={movie} />
-        </Grid>
-      ))}</Grid>
-      </TableContainer>
+          <Grid container spacing={2} sx={{ p: 2 }}>
+            {(tab === 0 ? movies : shows).map((item, index) => (
+              <Grid item xs={6} md={2} key={index}>
+                {tab === 0 ? <MovieCard movie={item} /> : <TVCard tv={item} />}
+              </Grid>
+            ))}
+          </Grid>
+          {searchTerm === '' && (
+          <Pagination
+            count={500}
+            color="primary"
+            sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}
+            onChange={handlePageChange}
+            page={currentPage}
+          />)}
+        </TableContainer>
       )}
-      
     </Box>
   );
 };

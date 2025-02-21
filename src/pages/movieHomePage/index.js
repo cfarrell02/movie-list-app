@@ -11,6 +11,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getUserById } from '../../api/userDataStorage';
 import ConfirmationModal from '../../components/Modals/confirmationModal';
 import { SiteDataContext } from '../../contexts/siteDataContext';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const MovieHomePage = () => {
   const [movieLists, setMovieLists] = useState([]);
@@ -59,8 +60,12 @@ const MovieHomePage = () => {
             });
           }
 
+          newMovieLists = newMovieLists.sort((a, b) => {
+            return new Date(a.createdOn.seconds) - new Date(b.createdOn.seconds);
+          });
+
           if(newMovieLists.length < movieListCount){
-            setHiddenContentMessage('Some watch lists contain adult content. Please enable adult content to view all lists.');
+            setHiddenContentMessage('Some watch lists have been hidden due to adult content settings.');
           }else{
             setHiddenContentMessage('');
           }
@@ -77,12 +82,25 @@ const MovieHomePage = () => {
     fetchMovieLists();
   }, [user]);
 
-
+  const refreshPage = async () => {
+    setLoading(true);
+    setMovieLists([]);
+    try {
+      if (user) {
+        let newMovieLists = await getMovieListsByUserId(user.uid); // Replace with the desired owner ID
+        setMovieLists([...newMovieLists]);
+      }
+    } catch (error) {
+      console.error('Error getting watch lists:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNewMovieList = async (name) => {
     try {
       const movieList = { title: name, userIds: [user.uid], users: [{accessType: 3, email:user.email, uid:user.uid}]
-        , id: uid(), movies: [] , tvShows : []};
+        , id: uid(), movies: [] , tvShows : [], createdOn : new Date()};
       await addMovieList(movieList);
       setMovieLists((prevMovieLists) => [...prevMovieLists, movieList]);
       setModalOpen(false);
@@ -122,9 +140,19 @@ const MovieHomePage = () => {
     >
       <NewMovieListModal title="New Watch List" body="Enter a name for your new watch list." open={modalOpen} onClose={handleNewMovieList} onCancel={() => setModalOpen(false)} />
       <ConfirmationModal header="Delete Watch List" body={deleteModalBody} open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={() => handleDeleteMovieList()} />
-      <Typography variant="h2" align="center" sx={{ mb: 4, color: 'text.primary' }}>
+      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, marginBottom: '2em' }}>
+      <Typography variant="h2" align="center" sx={{ color: 'text.primary' }}>
         {user && user.firstName ? `${user.firstName}'s Watch Lists` : 'Watch Lists'}
       </Typography>
+      <Button 
+        variant="contained" 
+        onClick={refreshPage} 
+        sx={{ display: 'flex', alignItems: 'center', minHeight: '100%' }}
+      >
+        <RefreshIcon />
+      </Button>
+    </Container>
+
       {hiddenContentMessage && <Typography variant="h6" align="center" sx={{ mb: 4, color: 'text.primary' }}>
         <em>
         {hiddenContentMessage}
@@ -132,7 +160,9 @@ const MovieHomePage = () => {
       </Typography>}
 
       {loading ? (
-        <CircularProgress /> // Show loading indicator while fetching data
+        <Container sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
+          <CircularProgress/>
+        </Container>
       ) : (
         <Grid container spacing={2} alignItems="center">
           {movieLists.map((movieList) => (

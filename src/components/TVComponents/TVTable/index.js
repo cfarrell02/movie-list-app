@@ -31,7 +31,7 @@ import Checkbox from '@mui/material/Checkbox';
 
 const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [field, setField] = useState('first_air_date');
@@ -276,7 +276,11 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
               </Typography>
             </TableCell>
             </>)}
-            <TableCell align="center"></TableCell>
+            <TableCell align="center" onClick={() => handleSort('watched')} style={{ cursor: 'pointer' }}>
+              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
+                Watched {getSortIcon('watched')}
+              </Typography>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -340,7 +344,7 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
       </Table>
      {searchTerm.length===0 && filters.length === 0 ? (
       <TablePagination
-        rowsPerPageOptions={[10, 25, 50, { label: 'All', value: tvShows.length }]}
+        rowsPerPageOptions={[50, 75, 100, { label: 'All', value: tvShows.length }]}
         component="div"
         count={tvShows.length}
         rowsPerPage={rowsPerPage}

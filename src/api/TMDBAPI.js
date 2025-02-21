@@ -13,9 +13,7 @@ export const getMovies = async (pageNum) => {
   }
 };
 
-export const getTVShows = async (args) => {
-  const [, pageNumPart] = args.queryKey;
-  const { pageNum } = pageNumPart;
+export const getTVShows = async (pageNum) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
   try {
     const response = await fetch(
@@ -165,9 +163,7 @@ export const getGenres = async () => {
   }
 };
 
-export const getMovieImages = async ({ queryKey }) => {
-  const [, idPart] = queryKey;
-  const { id } = idPart;
+export const getMovieImages = async (id) => {
   try {
     const response = await fetch(
       `https://api.themoviedb.org/3/movie/${id}/images?api_key=${process.env.REACT_APP_TMDB_KEY}`
@@ -181,9 +177,21 @@ export const getMovieImages = async ({ queryKey }) => {
   }
 };
 
-export const getTVImages = async ({ queryKey }) => {
-  const [, idPart] = queryKey;
-  const { id } = idPart;
+export const getMovieVideos = async (id) => {
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${process.env.REACT_APP_TMDB_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error((await response.json()).message);
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getTVImages = async (id) => {
   try {
     const response = await fetch(
       `https://api.themoviedb.org/3/tv/${id}/images?api_key=${process.env.REACT_APP_TMDB_KEY}`
@@ -196,6 +204,62 @@ export const getTVImages = async ({ queryKey }) => {
     throw error;
   }
 };
+
+export const getTVSeason = async (id, seasonNumber) => {
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}/season/${seasonNumber}?api_key=${process.env.REACT_APP_TMDB_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error((await response.json()).message);
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTVVideos = async (id) => {
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}/videos?api_key=${process.env.REACT_APP_TMDB_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error((await response.json()).message);
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getPersonImages = async (id) => {
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/person/${id}/images?api_key=${process.env.REACT_APP_TMDB_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error((await response.json()).message);
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getPersonTaggedImages = async (id) => {
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/person/${id}/tagged_images?api_key=${process.env.REACT_APP_TMDB_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error((await response.json()).message);
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+}
 
 export const getMovieReviews = async (id, pageNum) => {
   const response = await fetch(
@@ -228,6 +292,22 @@ export const getSimilarTVShows = async (id) => {
   const json = await response.json();
   return json.results;
 };
+
+export const getMovieRecommendations = async (id) => {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
+  );
+  const json = await response.json();
+  return json.results;
+};
+
+export const getTVRecommendations = async (id) => {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
+  );
+  const json = await response.json();
+  return json.results;
+}
 
 export const getSearchResults = async (pageNum, searchTerm) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';

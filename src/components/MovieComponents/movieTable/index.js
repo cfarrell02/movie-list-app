@@ -31,16 +31,15 @@ import Checkbox from '@mui/material/Checkbox';
 
 const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [field, setField] = useState('release_date');
-  const [operator, setOperator] = useState('=');
-  const [value, setValue] = useState('');
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [filters, setFilters] = useState([]);
   const {addAlert} = React.useContext(AlertContext);
   const isMobile = useMediaQuery('(max-width:600px)');
+  const [rows, setRows] = useState([]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -76,27 +75,13 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
     setPage(0);
   };
 
-  useEffect(() => {
-    if (filters && filters.length > 0) {
-      let filteredMovies = [...sortedMovies];
-      filters.forEach((filter) => {
-        filteredMovies = filteredMovies.filter((movie) => {
-          let value = filter.field === 'release_date' || field === 'addedDate' ? movie[filter.field].substring(0,4) :  movie[filter.field];
-          if (filter.operator === '=') {
-            return  value == filter.value;
-          } else if (filter.operator === '<') {
-            return value < filter.value;
-          } else if (filter.operator === '>') {
-            return value > filter.value;
-          }
-          return true;
-        });
-      });
-      setFilteredMovies(filteredMovies);
-    } else {
-      setFilteredMovies([]);
-    }
-  }, [filters]);
+const handleRowSelection = (index) => {
+  let newRows = [...rows];
+  newRows[index].isSelected = !newRows[index].isSelected;
+  setRows(newRows);
+}
+
+
 
   const handleSearch = (event) => {
     const term = event.target.value;
@@ -117,87 +102,8 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
   const endRowIndex = startRowIndex + rowsPerPage;
   const paginatedMovies = sortedMovies.slice(startRowIndex, endRowIndex);
 
-  useEffect(() => {
-    if(field === 'watched'){
-    setOperator('=');
-    }
-  }, [field]);
 
-  const renderOperatorOptions = () => {
-    if (field === 'watched') {
-      return (
-        <>
-          <option value="=">=</option>
-        </>
-      );
-    } else {
-      return (
-        <>
-          <option value="=">=</option>
-          <option value="<">&lt;</option>
-          <option value=">">&gt;</option>
-        </>
-      );
-    }
-  };
 
-  const renderFilterValueInput = () => {
-    console.log(field);
-    if (field === 'watched') {
-        return (
-          <Switch onChange={(e) => setValue(e.target.checked)}
-          size='large'/>
-        );
-        }else if(field === 'release_date' || field === 'addedDate'){
-          return (
-            <TextField onChange={(e) => setValue(e.target.value)}
-            label='Year'
-            />
-          );
-        }else if(field === 'runtime'){
-      
-          return (
-            <div style={{ marginTop: '16px' }}>
-              <Slider
-                onChange={(e, newValue) => setValue(newValue)}
-                min={1}
-                max={240}
-                valueLabelDisplay="on"
-              />
-            </div>
-          );
-        }else {
-          return (
-            <TextField onChange={(e) => setValue(e.target.value)}
-            label='Rating'
-            InputProps={{
-              endAdornment: <InputAdornment position="start">/10</InputAdornment>,
-            }}
-            />
-          );
-        }
-  };
-        
-  
-  
-  
-  const handleFilter = () => {
-    if(filters.length >=6){
-      addAlert('error', 'You can only have 6 filters at a time.');
-      return;
-    }
-      const newFilter = {field: field, operator: operator, value: value, label: `${field} ${operator} ${value}`};
-      
-      setFilters([...filters, newFilter]);
-  };
-
-  const handleDelete = (index) => {
-    const newFilters = [...filters];
-    newFilters.splice(index, 1);
-    setFilters(newFilters);
-  }
-  
-  
 
   return (
     <TableContainer component={Paper}>
@@ -276,7 +182,11 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
               </Typography>
             </TableCell>
             </>)}
-            <TableCell align="center"></TableCell>
+            <TableCell align="center" onClick={() => handleSort('watched')} style={{ cursor: 'pointer' }}>
+              <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
+                Watched {getSortIcon('watched')}
+              </Typography>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -287,32 +197,21 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
               </TableCell>
             </TableRow>
           ) : (
-            filters.length!== 0 && filteredMovies ?
-            filteredMovies.map((movie) => (
-              <MovieTableRow
-                handleDelete={deleteMovie}
-                handleEdit={editMovie}        //Filtered Movies
-                key={movie.id}
-                movie={movie}
-                accessType={accessType}
-              />
-            ))
-            
-            :(
             searchTerm.length===0 ?
-
-            paginatedMovies.map((movie) => (
+            paginatedMovies.map((movie, index) => (
               <MovieTableRow
                 handleDelete={deleteMovie}
                 handleEdit={editMovie}   // Non Filtered Movies
                 key={movie.id}
                 movie={movie}
                 accessType={accessType}
+                isSelected = {rows[index] && rows[index].isSelected}
+                handleSelectedChange={handleRowSelection}
               />
             ))
             : searchResults.length!==0 ? 
             (
-            searchResults.map((movie) => (
+            searchResults.map((movie, index) => (
               <MovieTableRow
               handleDelete={(movie) => {      // Search Results
                 deleteMovie(movie);
@@ -324,7 +223,9 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
               key={movie.id}
               movie={movie}
               accessType={accessType}
-            />
+              isSelected = {rows[index] && rows[index].isSelected}
+              handleSelectedChange={handleRowSelection}
+              />
             
             )) 
             ) : 
@@ -333,14 +234,14 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType}) => {
             No results found
           </Typography>
           </TableCell>
-            )
+            
 
           )}
         </TableBody>
       </Table>
      {searchTerm.length===0 && filters.length === 0 ? (
       <TablePagination
-        rowsPerPageOptions={[10, 25, 50, { label: 'All', value: movies.length }]}
+        rowsPerPageOptions={[50, 75, 100, { label: 'All', value: movies.length }]}
         component="div"
         count={movies.length}
         rowsPerPage={rowsPerPage}

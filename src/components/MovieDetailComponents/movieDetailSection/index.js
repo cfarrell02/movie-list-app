@@ -1,10 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, Stack, Chip, Divider, List, ListItem, ListItemText, Paper, Rating, ListItemButton, Avatar, ListItemAvatar} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import ShowMoreWrapper from '../../showMoreWrapper';
 
 const MovieDetailSection = ({ movie }) => {
     const [genres, setGenres] = useState([]);
     const [cast, setCast] = useState([]);
     const [crew, setCrew] = useState([]);
+    const navigate = useNavigate();
+    const [wrapperCount, setWrapperCount] = useState(getInitialCount());
+
+    function getInitialCount() {
+        const width = window.innerWidth;
+        if (width < 900) return 4;    
+        if (width < 1200) return 6 
+        return 12;                    
+    }
+  
+    useEffect(() => {
+        const handleResize = () => setWrapperCount(getInitialCount());
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if(!movie || !movie.genres ) return;
@@ -98,10 +115,10 @@ const MovieDetailSection = ({ movie }) => {
             <Divider sx={{ marginBottom: '1em' }} />
             <Paper elevation={1} sx={{ width: '100%', bgcolor: 'background.paper', maxHeight: '30em', overflowY: 'scroll' }}>
                 <List sx={{ width: '100%', overflowY: 'scroll' }}>
-                    <Grid container spacing={2}>
+                    <ShowMoreWrapper initialCount={wrapperCount} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
                         {cast.map((castMember) => (
                             <Grid item xs={12} sm={6} md={4} key={castMember.id}>
-                                <ListItemButton to={"/person/" + castMember.id} component="a">
+                                <ListItemButton onClick={() => navigate("/person/" + castMember.id)}>
                                     <ListItem key={castMember.id}>
                                         <ListItemAvatar>
                                             <Avatar alt={castMember.name} src={"https://image.tmdb.org/t/p/w200" + castMember.profile_path} />
@@ -111,7 +128,7 @@ const MovieDetailSection = ({ movie }) => {
                                 </ListItemButton>
                             </Grid>	
                         ))}
-                    </Grid>
+                    </ShowMoreWrapper>
                 </List>
             </Paper>
             <Typography variant="h4" sx={{ marginTop: '1em' }}>
@@ -120,10 +137,10 @@ const MovieDetailSection = ({ movie }) => {
             <Divider sx={{ marginBottom: '1em' }} />
             <Paper elevation={1} sx={{ width: '100%', bgcolor: 'background.paper', maxHeight: '30em', overflowY: 'scroll' }}>
                 <List sx={{ width: '100%', overflowY: 'scroll' }}>
-                    <Grid container spacing={2}>
+                    <ShowMoreWrapper initialCount={wrapperCount} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
                         {crew.map((crewMember) => (
                             <Grid item xs={12} sm={6} md={4} key={crewMember.id}>
-                                <ListItemButton to={"/person/" + crewMember.id} component="a">
+                                <ListItemButton onClick={() => navigate("/person/" + crewMember.id)}>
                                     <ListItem key={crewMember.id}>
                                         <ListItemAvatar>
                                             <Avatar alt={crewMember.name} src={"https://image.tmdb.org/t/p/w200" + crewMember.profile_path} />
@@ -133,7 +150,7 @@ const MovieDetailSection = ({ movie }) => {
                                 </ListItemButton>
                             </Grid>	
                         ))}
-                    </Grid>
+                    </ShowMoreWrapper>
                 </List>
             </Paper>
         </Container>

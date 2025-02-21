@@ -8,15 +8,16 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { getUserById } from '../../../api/userDataStorage';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import defaultImage from '../../../images/default.jpg';
+import { useNavigate } from 'react-router-dom';
 
 
-const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
+const MovieTableRow = ({movie, handleDelete, handleEdit, accessType, isSelected, handleSelectedChange}) => {
 
     const [watched, setWatched] = useState(movie.watched);
     const [addedByUser, setAddedByUser] = useState({});
     const [imageSrc, setImageSrc] = useState('');
     const isMobile = useMediaQuery('(max-width:600px)');
-
+    const navigate = useNavigate();
 
     useEffect(() => {
       const imageSrc = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : defaultImage;
@@ -48,7 +49,7 @@ const MovieTableRow = ({movie, handleDelete, handleEdit, accessType}) => {
                 <img src={imageSrc} alt={movie.title} style={{maxHeight:"120px" }}/>
               </TableCell>
               <TableCell align='center' component="th" scope="row" >
-                <Link href={`/movie/${movie.id}`} >{movie.title}</Link><br/>
+              <Link href={`/movie/${movie.id}`} onClick={(e) => {e.preventDefault(); navigate(`/movie/${movie.id}`);}}>{movie.title}</Link>
               </TableCell>
               {isMobile ? null : (<>
               <TableCell align="center">{movie.release_date ? new Date(movie.release_date).getFullYear():''} </TableCell>

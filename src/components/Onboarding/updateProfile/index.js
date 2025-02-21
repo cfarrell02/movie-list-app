@@ -1,5 +1,5 @@
 import React, { useEffect, useNav } from 'react';
-import { Container, Typography, TextField, Button, Box, Input } from '@mui/material';
+import { Container, Typography, TextField, Button, Box, Input, useMediaQuery } from '@mui/material';
 import { getUserById, updateUser, deleteUser } from '../../../api/userDataStorage';
 import { getMovieListsByUserId, updateMovieList, deleteMovieList } from '../../../api/movieStorage';
 import { onAuthStateChanged, getAuth , } from 'firebase/auth';
@@ -19,6 +19,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
     const [password, setPassword] = React.useState('');
     const [open, setOpen] = React.useState(false);
     const { addAlert } = React.useContext(AlertContext);
+    const isMobile = useMediaQuery('(max-width:600px)');
     const navigate = useNavigate();
     
     useEffect(() => {
@@ -48,11 +49,10 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
 
       const handleUpdateProfile = async () => {
         try{
-            if(firstName === user.firstName && lastName === user.lastName && email === user.email && dob === user.dateOfBirth){
+            if(firstName === user.firstName && lastName === user.lastName && email === user.email && new Date(dob).toISOString().split('T')[0] === parseDate(user.dateOfBirth)){
                 addAlert('info', 'Please make some changes before attempting to update your profile');
                 return;
             }
-
 
             if(!password) throw new Error('Please enter your password to update your profile');
 
@@ -107,13 +107,24 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
         const handleDeleteAccount = async () => {
             const auth = getAuth();
             const authUser = auth.currentUser;
+
+            if (!password) {
+                addAlert('error', 'Please enter your password to delete your account');
+                return;
+            }
+
+            //Reauthenticate the user
+            await reAuthenticate(authUser.email, password);
+
+
             //Clean up any movie lists that may be orphaned by the deletion of this user
             const movieLists = await getMovieListsByUserId(user.id);
             movieLists.forEach(async (list) => {
                 list.userIds = list.userIds.filter(id => id !== user.id);
-                list.users = list.users.filter(user => user.id !== user.id);
-                const hasOwner = list.users.find(user => user.accessType == '3');
-                if(list.userIds.length === 0 || !hasOwner){
+                list.users = list.users.filter(us => us.id !== user.id);
+                const isOwnedByUser = list.users.find(us => us.accessType == '3');
+                const hasOwner = list.users.find(us => us.accessType == '3');
+                if(!isOwnedByUser && hasOwner || list.userIds.length === 0){
                     await deleteMovieList(list.id);
                 }else{
                     await updateMovieList(list.id, list);
@@ -143,7 +154,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
         
             
     return (
-        <Container maxWidth="sm">
+        <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
             <ConfirmationModal header='Delete Account?' subHeader = 'Are you sure you want to delete your account? ' body='This will also delete any lists you own and cannot be undone.' open={open} onClose={() => setOpen(false)} onConfirm = {handleDeleteAccount}/>
             <Box sx={{ mt: 4 }}>
                 <Typography variant="h4" component="h1" gutterBottom>

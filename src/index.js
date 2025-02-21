@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNa } from 'react-router-dom';
 import WeatherProvider from './contexts/weatherContext';
 import  SiteDataProvider  from './contexts/siteDataContext';
 import { AlertProvider } from './contexts/alertContext';
@@ -18,6 +18,7 @@ import UserActionPage from './pages/userActionPage';
 import Header from './components/siteHeader';
 import AlertNotice from './components/alertNotice';
 import LoginPage from './pages/loginPage';
+import UserManagementPage from './pages/userManagementPage';
 import './index.css';
 import PersonPage from './pages/personPage';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -32,7 +33,6 @@ const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
-
     // Check if isAuthenticated is false and loadedUser is true
     if (!isAuthenticated && loadedUser) {
       setShouldRedirect(true);
@@ -52,15 +52,22 @@ const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
 
 const App = () => {
   const [user, setUser] = useState(null);
+
   const [loadedUser, setLoadedUser] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoadedUser(true);
-    }
-    );
+      if (!user) {
+        setUser(null);
+        setLoadedUser(true);
+        return;
+      }
+      getUserById(user.uid).then((userData) => {
+        setUser(userData);
+        setLoadedUser(true);
+      });
+    });
 
 
 
@@ -99,7 +106,6 @@ const App = () => {
             }
             await updateMovieList(movieList.id, movieList);
         }
-        window.location.reload();
       }
       return res;
     } catch (error) {
@@ -117,7 +123,9 @@ const App = () => {
         firstName: firstName,
         lastName: lastName,
         id: user.user.uid,
-        adultAllowed: false
+        adultAllowed: false,
+        admin: false,
+        active: true
       };
       await addUser(userObject);
     } catch (error) {
@@ -146,39 +154,39 @@ const App = () => {
         <AlertProvider>
         <SiteDataProvider>
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
-        {window.location.pathname !== '/usermgmt/action' && <Header authenticated={user !== null} />}
+        {window.location.pathname !== '/usermgmt/action' && <Header authenticated={user != null && user.active} />}
         <Routes>
           <Route
             path="/usermgmt"
             element={<LoginPage handleLogin={handleLogin} handleRegister={handleRegister} handleLogout={handleLogout} isAuthenticated={user !==null} updateThemeProvider={updateThemeProvider} />}
           />
-          <Route
+          {/* <Route
             path="/weather"
-            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><WeatherPage /></PrivateRoute>}
-          />
+            element={<PrivateRoute isAuthenticated={user != null && user.active} loadedUser={loadedUser}><WeatherPage /></PrivateRoute>}
+          /> */}
           <Route
             path="/home"
-            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><HomePage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user != null && user.active} loadedUser={loadedUser}><HomePage /></PrivateRoute>}
           />
           <Route
             path="/movielist/:listId"
-            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><MovieTrackingPage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user != null && user.active} loadedUser={loadedUser}><MovieTrackingPage /></PrivateRoute>}
           />
           <Route
             path="/movie/:id"
-            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><MovieDetailsPage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user != null && user.active} loadedUser={loadedUser}><MovieDetailsPage /></PrivateRoute>}
           />
           <Route
             path="/tvshow/:id"
-            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><TVDetailsPage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user != null && user.active} loadedUser={loadedUser}><TVDetailsPage /></PrivateRoute>}
           />
           <Route
             path="/movielist"
-            element={<PrivateRoute isAuthenticated={user !== null} loadedUser={loadedUser}><MovieHomePage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user != null && user.active} loadedUser={loadedUser}><MovieHomePage /></PrivateRoute>}
           />
           <Route
             path="/person/:id"
-            element={<PrivateRoute isAuthenticated={user !== null}><PersonPage /></PrivateRoute>}
+            element={<PrivateRoute isAuthenticated={user != null && user.active}><PersonPage /></PrivateRoute>}
           />
           <Route 
             path="/usermgmt/action"
@@ -187,6 +195,14 @@ const App = () => {
           <Route
             path="/404"
             element={<NotFoundPage />}
+          />
+          <Route
+            path="/admin"
+            element={<PrivateRoute isAuthenticated={user != null && user.active && user.admin} loadedUser={loadedUser}><UserManagementPage /></PrivateRoute>}
+          />
+          <Route
+            path="/"
+            element={<Navigate to="/home" replace />}
           />
           <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>

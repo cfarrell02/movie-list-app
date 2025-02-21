@@ -20,7 +20,7 @@ import {
   Stack,
   useMediaQuery
 } from '@mui/material';
-import { getTVShow,getTVCredits , getMovieSearchResults } from '../../api/TMDBAPI';
+import { getTVShow,getTVCredits , getTVImages,getTVVideos, getTVRecommendations } from '../../api/TMDBAPI';
 import { getMovieListById, addTVShowToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { useParams } from 'react-router-dom';
 import {auth} from '../../firebase-config';
@@ -30,6 +30,9 @@ import TVDetailSection from '../../components/TVDetailComponents/tvDetailSection
 import TVReviewSection from '../../components/TVDetailComponents/tvReviewsSection';
 import { AlertContext } from '../../contexts/alertContext';
 import { getUserById } from '../../api/userDataStorage';
+import MediaDisplay from '../../components/mediaDisplay';
+import TVCard from '../../components/TVComponents/TVCard';
+import ShowMoreWrapper from '../../components/showMoreWrapper';
 
 
 const TVDetailsPage = (props) => {
@@ -42,6 +45,20 @@ const TVDetailsPage = (props) => {
   const [loading, setLoading] = useState(false);
   const [formattedTitle, setFormattedTitle] = useState('');
   const isMobile = useMediaQuery('(max-width:600px)');
+  const [wrapperCount, setWrapperCount] = useState(getInitialCount());
+
+  function getInitialCount() {
+      const width = window.innerWidth;
+      if (width < 900) return 4;    
+      if (width < 1200) return 6 
+      return 6;                    
+  }
+
+  useEffect(() => {
+      const handleResize = () => setWrapperCount(getInitialCount());
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -64,6 +81,9 @@ const TVDetailsPage = (props) => {
         setLoading(true);
         const fetchedMovie = await getTVShow(id);
         const fetchedCredits = await getTVCredits(id);
+        const fetchedImages = await getTVImages(id);
+        const fetchedVideos = await getTVVideos(id);
+        const recommendations = await getTVRecommendations(id);
         if(fetchedMovie.imdb_id){
           setStremioLinkEnding(
             fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
@@ -72,7 +92,7 @@ const TVDetailsPage = (props) => {
           );
         }
 
-        const tvShow = {...fetchedMovie, credits: fetchedCredits};
+        const tvShow = {...fetchedMovie, credits: fetchedCredits, images: fetchedImages, videos: fetchedVideos, recommendations: recommendations};
         setMovie(tvShow);
         console.log(tvShow);
       } catch (error) {
@@ -87,7 +107,7 @@ const TVDetailsPage = (props) => {
 
   
     fetchData();
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -104,10 +124,17 @@ const TVDetailsPage = (props) => {
   useEffect(() => {
     if(!tvShow) return;
     const name = tvShow.name ? tvShow.name.length > 30 ? tvShow.name.substring(0, 30) + '...' : tvShow.name : '';
-    const year = tvShow.first_air_date ? new Date(tvShow.first_air_date).getFullYear() : '';
-    const endYear = tvShow.last_air_date ? new Date(tvShow.last_air_date).getFullYear() : '';
-    const yearString = '(' + (year ? year : '') + (endYear && year !== endYear ? ' - ' + endYear : '') + ')';
-    setFormattedTitle(`${name} ${yearString}`);
+    let year = tvShow.first_air_date ? new Date(tvShow.first_air_date).getFullYear() : '';
+    let endYear = tvShow.last_air_date ? new Date(tvShow.last_air_date).getFullYear() : '';
+
+    let shouldShowEndYear = endYear !== year;
+
+    if(tvShow.in_production){
+      shouldShowEndYear = true;
+      endYear = 'Present';
+    }
+    
+    setFormattedTitle(`${name} (${year}${shouldShowEndYear ? ` - ${endYear}` : ''})`);
   }, [tvShow]);
 
   const handleChange = async (event) => {
@@ -115,6 +142,7 @@ const TVDetailsPage = (props) => {
     try{
       tvShow.addedDate = new Date().toISOString();
       tvShow.addedBy = user.uid;
+      tvShow.watched = 0;
       const movieList = await getMovieListById(event.target.value);
       if(movieList.tvShows.find(m => m.id === tvShow.id)) throw new Error('tvShow already in list');
       try{
@@ -133,8 +161,12 @@ const TVDetailsPage = (props) => {
 
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
-      {loading ? <CircularProgress align='center'/> : <>
-      <Grid container spacing={2}>
+      {loading ?
+      <Container sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
+        <CircularProgress/>
+      </Container>
+      :<>
+      <Grid container spacing={2} >
       <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-start', justifyContent: isMobile ? 'center' : 'flex-start'}} >
       <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{formattedTitle}</Typography>
       </Grid>
@@ -179,6 +211,31 @@ const TVDetailsPage = (props) => {
             <TVDetailCard tvShow={tvShow}/>
           </Grid>
           </>}
+
+          {tvShow.recommendations && tvShow.recommendations.length > 0 && (
+  <Grid item xs={12}>
+    <Typography variant="h4" sx={{ marginTop: '1em'}}>
+      Recommendations
+    </Typography>
+    <Divider sx={{ marginBottom: '1em' }} />
+    <ShowMoreWrapper initialCount={wrapperCount} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
+        {tvShow.recommendations.map((movie, index) => (
+          <Grid item xs={6} sm={3} md={2} key={index}>
+            <TVCard tv={movie}/>
+          </Grid>
+        ))}
+    </ShowMoreWrapper>
+  </Grid>
+)}
+        {tvShow.images && tvShow.videos &&
+        <Grid item xs={12}>
+        <Typography variant="h4" sx={{ marginTop: '1em' }}>
+                    Media
+            </Typography>
+        <Divider sx={{ marginBottom: '1em' }} />
+        <MediaDisplay videos={tvShow.videos.results} images={tvShow.images.backdrops}/>
+        </Grid>
+        }
           <Grid item xs={12}>
           <Typography variant="h4" sx={{ marginTop: '1em' }}>
                     Reviews 
