@@ -9,7 +9,8 @@ const MediaDisplay = ({ videos, images }) => {
         const width = window.innerWidth;
         if (width < 900) return 2;    
         if (width < 1200) return 3 
-        return 4;                    
+        if (width < 1536) return 4;
+        return 6;                
     }
 
     useEffect(() => {
@@ -31,7 +32,7 @@ const MediaDisplay = ({ videos, images }) => {
                     <Typography variant="h4" gutterBottom>Videos</Typography>
                     <ShowMoreWrapper initialCount={wrapperCount} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
                         {videos.map((video, index) => (
-                            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                            <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={index}>
                                 <Card>
                                     <CardMedia
                                         component="iframe"
@@ -53,7 +54,7 @@ const MediaDisplay = ({ videos, images }) => {
                     <Typography variant="h4" gutterBottom>Images</Typography>
                     <ShowMoreWrapper initialCount={wrapperCount} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
                         {images.map((image, index) => (
-                            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                            <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={index}>
                                 <Card>
                                     <CardMedia
                                         component="img"
