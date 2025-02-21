@@ -39,6 +39,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { convertArrayOfObjectsToCSV } from "../../../utils";
 import { AlertContext } from "../../../contexts/alertContext";
 import { BorderBottom } from "@mui/icons-material";
+import ConfimationModal from "../../Modals/confirmationModal";
 
 const MovieListSettings = ({ movieList, setMovieList }) => {
   const [users, setUsers] = useState([]);
@@ -52,6 +53,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width:600px)");
   const [creationDate, setCreationDate] = useState('' );
+  const [warningModalDetails, setWarningModalDetails] = useState({show: false});
 
   useEffect(() => {
     try {
@@ -151,11 +153,19 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
 
   const handleUpdateUserAccessType = async (userID, accessType) => {
     try {
-      if (accessType < 0 || accessType >= 3) {
+      if (accessType < 0 || accessType > 3) {
         throw new Error("Invalid access type.");
       }
       const user = users.find((u) => u.uid === userID);
       const userIndex = movieList.userIds.indexOf(userID);
+
+      if (accessType === 3){
+        setWarningModalDetails({show: true, title: 'Change Ownership', body: `Are you sure you want to change the ownership of this watch list to ${user.email}? You will be demoted to an admin.`,
+        userId: userID});
+        return;
+      }
+
+
       const updatedUsers = users.map((user, index) => {
         if (index === userIndex) {
           return { ...user, accessType: accessType };
@@ -174,6 +184,40 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       addAlert(
         "success",
         `User ${user.email} access type updated to ${getUserRoles(accessType)}.`
+      );
+    } catch (error) {
+      addAlert("error", error.message);
+    }
+  };
+
+  const changeOwnership = async (userID) => {
+    try {
+      const user = users.find((u) => u.uid === userID);
+      const userIndex = movieList.userIds.indexOf(userID);
+      const updatedUsers = users.map((user, index) => {
+        if (index === userIndex) {
+          return { ...user, accessType: 3 };
+        }else {
+          if (user.accessType === 3){
+            return { ...user, accessType: 2 };
+          }
+        }
+        return user;
+      });
+      setUsers(updatedUsers);
+      const updatedMovieList = {
+        ...movieList,
+        users: updatedUsers,
+        userIds: movieList.userIds,
+      };
+      setMovieList(updatedMovieList);
+      setWarningModalDetails({show: false, title: '', body
+        : ''});
+
+      await updateMovieList(movieList.id, updatedMovieList);
+      addAlert(
+        "success",
+        `User ${user.email} is now the owner of the watch list. You have been demoted to an admin.`
       );
     } catch (error) {
       addAlert("error", error.message);
@@ -254,8 +298,40 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
     }
   };
 
+  const shouldShowPromote = (user) => {
+    if (accessType === 3) return user.accessType !== 3; // Owner can promote anyone except other owners, and not beyond 3
+    if (accessType === 2) return user.accessType === 0 || user.accessType === 1; // Admin can promote users and viewers to admin
+    return false; // Users and viewers can't promote anyone
+  };
+  
+  const shouldShowDemote = (user) => {
+    if (accessType === 3) return user.accessType !== 3 && user.accessType > 0; // Owner can demote anyone except themselves, and not below 0
+    if (accessType === 2) return user.accessType === 1; // Admin can demote users and viewers, but not themselves or other admins
+    return false; // Users and viewers can't demote anyone
+  };
+  
+  const shouldShowDelete = (user1) => {
+    const isSelf = user1.uid === user.uid;
+    if (accessType === 3) return user1.accessType !== 3; // Owner can delete anyone except themselves
+    if (accessType === 2){ 
+      return user1.accessType === 0 || user1.accessType === 1 || isSelf; // Admin can delete users, viewers, and themselves only
+      }
+    return isSelf; // Users and viewers can only delete themselves
+  };
+  
+
   return (
     <Container>
+      <ConfimationModal
+        open={warningModalDetails.show}
+        onClose={() => setWarningModalDetails({show: false})}
+        onConfirm={() => changeOwnership(warningModalDetails.userId)}
+        header={warningModalDetails.title}
+        body={warningModalDetails.body}
+      />
+
+
+
       <Typography variant="h5" component="h2" gutterBottom>
         Watch List Settings
       </Typography>
@@ -365,11 +441,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                             primary={getUserRoles(user1.accessType)}
                             sx={{ width: "100%" }}
                           />
-                          {user1.accessType === 3 ||
-                          accessType < 2 ||
-                          (accessType === 2 &&
-                            user1.accessType === 2 &&
-                            user.uid !== user1.uid) ? null : (
+                          
                             <Container
                               sx={{
                                 display: "flex",
@@ -381,7 +453,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                               <IconButton
                                 edge="end"
                                 aria-label="upgrade"
-                                disabled={user1.accessType === 2}
+                                disabled={!shouldShowPromote(user1)}
                                 onClick={() =>
                                   handleUpdateUserAccessType(
                                     user1.uid,
@@ -394,7 +466,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                               <IconButton
                                 edge="end"
                                 aria-label="downgrade"
-                                disabled={user1.accessType === 0}
+                                disabled={!shouldShowDemote(user1)}
                                 onClick={() =>
                                   handleUpdateUserAccessType(
                                     user1.uid,
@@ -405,22 +477,18 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                                 <ArrowDropDownIcon />
                               </IconButton>
                             </Container>
-                          )}
-                          {user1.accessType === 3 ||
-                          accessType < 2 ||
-                          (accessType === 2 &&
-                            user1.accessType === 2 &&
-                            user.uid !== user1.uid) ? null : (
+                       
                             <IconButton
                               edge="end"
                               aria-label="delete"
+                              disabled={!shouldShowDelete(user1)}
                               onClick={() =>
                                 handleRemoveUserFromMovieList(user1.uid)
                               }
                             >
                               <DeleteIcon />
                             </IconButton>
-                          )}
+                          
                         </ListItem>
                         {index < users.length - 1 ? <Divider /> : null}
                       </>
@@ -451,18 +519,12 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                             {getUserRoles(user1.accessType)}
                           </TableCell>
                           <TableCell align="center">
-                            {!(
-                              user1.accessType === 3 ||
-                              accessType < 2 ||
-                              (accessType === 2 &&
-                                user1.accessType === 2 &&
-                                user.uid !== user1.uid)
-                            ) && (
+                          
                               <>
                                 <IconButton
                                   edge="end"
                                   aria-label="upgrade"
-                                  disabled={user1.accessType === 2}
+                                  disabled={!shouldShowPromote(user1)}
                                   onClick={() =>
                                     handleUpdateUserAccessType(
                                       user1.uid,
@@ -475,7 +537,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                                 <IconButton
                                   edge="end"
                                   aria-label="downgrade"
-                                  disabled={user1.accessType === 0}
+                                  disabled={!shouldShowDemote(user1)}
                                   onClick={() =>
                                     handleUpdateUserAccessType(
                                       user1.uid,
@@ -486,24 +548,20 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                                   <ArrowDropDownIcon />
                                 </IconButton>
                               </>
-                            )}
-                            {!(
-                              user1.accessType === 3 ||
-                              accessType < 2 ||
-                              (accessType === 2 &&
-                                user1.accessType === 2 &&
-                                user.uid !== user1.uid)
-                            ) && (
+                            
+                            
+                       
                               <IconButton
                                 edge="end"
                                 aria-label="delete"
+                                disabled={!shouldShowDelete(user1)}
                                 onClick={() =>
                                   handleRemoveUserFromMovieList(user1.uid)
                                 }
                               >
                                 <DeleteIcon />
                               </IconButton>
-                            )}
+                            
                           </TableCell>
                         </TableRow>
                       ))

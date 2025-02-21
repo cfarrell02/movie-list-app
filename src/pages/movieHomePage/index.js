@@ -11,6 +11,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { getUserById } from '../../api/userDataStorage';
 import ConfirmationModal from '../../components/Modals/confirmationModal';
 import { SiteDataContext } from '../../contexts/siteDataContext';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const MovieHomePage = () => {
   const [movieLists, setMovieLists] = useState([]);
@@ -81,7 +82,20 @@ const MovieHomePage = () => {
     fetchMovieLists();
   }, [user]);
 
-
+  const refreshPage = async () => {
+    setLoading(true);
+    setMovieLists([]);
+    try {
+      if (user) {
+        let newMovieLists = await getMovieListsByUserId(user.uid); // Replace with the desired owner ID
+        setMovieLists([...newMovieLists]);
+      }
+    } catch (error) {
+      console.error('Error getting watch lists:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNewMovieList = async (name) => {
     try {
@@ -126,9 +140,19 @@ const MovieHomePage = () => {
     >
       <NewMovieListModal title="New Watch List" body="Enter a name for your new watch list." open={modalOpen} onClose={handleNewMovieList} onCancel={() => setModalOpen(false)} />
       <ConfirmationModal header="Delete Watch List" body={deleteModalBody} open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={() => handleDeleteMovieList()} />
-      <Typography variant="h2" align="center" sx={{ mb: 4, color: 'text.primary' }}>
+      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, marginBottom: '2em' }}>
+      <Typography variant="h2" align="center" sx={{ color: 'text.primary' }}>
         {user && user.firstName ? `${user.firstName}'s Watch Lists` : 'Watch Lists'}
       </Typography>
+      <Button 
+        variant="contained" 
+        onClick={refreshPage} 
+        sx={{ display: 'flex', alignItems: 'center', minHeight: '100%' }}
+      >
+        <RefreshIcon />
+      </Button>
+    </Container>
+
       {hiddenContentMessage && <Typography variant="h6" align="center" sx={{ mb: 4, color: 'text.primary' }}>
         <em>
         {hiddenContentMessage}

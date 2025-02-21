@@ -105,15 +105,27 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
 
 
         const handleDeleteAccount = async () => {
+
             const auth = getAuth();
             const authUser = auth.currentUser;
+
+            if (!password) {
+                addAlert('error', 'Please enter your password to delete your account');
+                return;
+            }
+
+            //Reauthenticate the user
+            await reAuthenticate(authUser.email, password);
+
+
             //Clean up any movie lists that may be orphaned by the deletion of this user
             const movieLists = await getMovieListsByUserId(user.id);
             movieLists.forEach(async (list) => {
                 list.userIds = list.userIds.filter(id => id !== user.id);
-                list.users = list.users.filter(user => user.id !== user.id);
-                const hasOwner = list.users.find(user => user.accessType == '3');
-                if(list.userIds.length === 0 || !hasOwner){
+                list.users = list.users.filter(us => us.id !== user.id);
+                const isOwnedByUser = list.users.find(us => us.accessType == '3');
+                const hasOwner = list.users.find(us => us.accessType == '3');
+                if(!isOwnedByUser && hasOwner || list.userIds.length === 0){
                     await deleteMovieList(list.id);
                 }else{
                     await updateMovieList(list.id, list);
@@ -221,6 +233,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
                         fullWidth
                         variant="contained"
                         color="error"
+                        disabled={true} //Disabled until i fix the delete account function
                         sx={{ mt: 3 }}
                         onClick={() => setOpen(true)}
                     >

@@ -96,7 +96,7 @@ const TVAdd = ({title, tvshows, listId, setTvShows, disabled, currentUserID, onR
           </Typography>
         </Grid>
         <Grid item xs={isMobile ? 12 : 2} sx={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end' }}>
-          <Button variant="contained" onClick={onRefresh} disabled={disabled}>
+          <Button variant="contained" onClick={onRefresh}>
             <RefreshIcon />
           </Button>
         </Grid>
