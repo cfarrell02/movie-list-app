@@ -52,11 +52,17 @@ const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
 
 const App = () => {
   const [user, setUser] = useState(null);
+
   const [loadedUser, setLoadedUser] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        setUser(null);
+        setLoadedUser(true);
+        return;
+      }
       getUserById(user.uid).then((userData) => {
         setUser(userData);
         setLoadedUser(true);
