@@ -154,6 +154,12 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       if (accessType < 0 || accessType >= 3) {
         throw new Error("Invalid access type.");
       }
+
+      const movieUser = movieList.users.find((u) => u.uid === user.uid);
+      if (movieUser.accessType === 3){
+        throw new Error("You cannot change the access type of the owner.");
+      }
+
       const user = users.find((u) => u.uid === userID);
       const userIndex = movieList.userIds.indexOf(userID);
       const updatedUsers = users.map((user, index) => {
@@ -252,6 +258,24 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
     } catch (error) {
       console.error("Error exporting watch list:", error);
     }
+  };
+
+  const shouldShowPromote = (user) => {
+    if(user.accessType == 3) return false;
+    if(accessType == 3) return true;
+
+    return false;
+  };
+
+  const shouldShowDemote = (user) => {
+    if(user.accessType == 0) return false;
+    if(accessType == 3) return true;
+    return false;
+  };
+
+  const shouldShowDelete = (user) => {
+    if(accessType == 3) return true;
+    return false
   };
 
   return (
@@ -365,11 +389,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                             primary={getUserRoles(user1.accessType)}
                             sx={{ width: "100%" }}
                           />
-                          {user1.accessType === 3 ||
-                          accessType < 2 ||
-                          (accessType === 2 &&
-                            user1.accessType === 2 &&
-                            user.uid !== user1.uid) ? null : (
+                          
                             <Container
                               sx={{
                                 display: "flex",
@@ -381,7 +401,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                               <IconButton
                                 edge="end"
                                 aria-label="upgrade"
-                                disabled={user1.accessType === 2}
+                                disabled={!shouldShowPromote(user1)}
                                 onClick={() =>
                                   handleUpdateUserAccessType(
                                     user1.uid,
@@ -394,7 +414,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                               <IconButton
                                 edge="end"
                                 aria-label="downgrade"
-                                disabled={user1.accessType === 0}
+                                disabled={!shouldShowDemote(user1)}
                                 onClick={() =>
                                   handleUpdateUserAccessType(
                                     user1.uid,
@@ -405,22 +425,18 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                                 <ArrowDropDownIcon />
                               </IconButton>
                             </Container>
-                          )}
-                          {user1.accessType === 3 ||
-                          accessType < 2 ||
-                          (accessType === 2 &&
-                            user1.accessType === 2 &&
-                            user.uid !== user1.uid) ? null : (
+                       
                             <IconButton
                               edge="end"
                               aria-label="delete"
+                              disabled={!shouldShowDelete(user1)}
                               onClick={() =>
                                 handleRemoveUserFromMovieList(user1.uid)
                               }
                             >
                               <DeleteIcon />
                             </IconButton>
-                          )}
+                          
                         </ListItem>
                         {index < users.length - 1 ? <Divider /> : null}
                       </>
@@ -451,18 +467,12 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                             {getUserRoles(user1.accessType)}
                           </TableCell>
                           <TableCell align="center">
-                            {!(
-                              user1.accessType === 3 ||
-                              accessType < 2 ||
-                              (accessType === 2 &&
-                                user1.accessType === 2 &&
-                                user.uid !== user1.uid)
-                            ) && (
+                          
                               <>
                                 <IconButton
                                   edge="end"
                                   aria-label="upgrade"
-                                  disabled={user1.accessType === 2}
+                                  disabled={!shouldShowPromote(user1)}
                                   onClick={() =>
                                     handleUpdateUserAccessType(
                                       user1.uid,
@@ -475,7 +485,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                                 <IconButton
                                   edge="end"
                                   aria-label="downgrade"
-                                  disabled={user1.accessType === 0}
+                                  disabled={!shouldShowDemote(user1)}
                                   onClick={() =>
                                     handleUpdateUserAccessType(
                                       user1.uid,
@@ -486,24 +496,20 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                                   <ArrowDropDownIcon />
                                 </IconButton>
                               </>
-                            )}
-                            {!(
-                              user1.accessType === 3 ||
-                              accessType < 2 ||
-                              (accessType === 2 &&
-                                user1.accessType === 2 &&
-                                user.uid !== user1.uid)
-                            ) && (
+                            
+                            
+                       
                               <IconButton
                                 edge="end"
                                 aria-label="delete"
+                                disabled={!shouldShowDelete(user1)}
                                 onClick={() =>
                                   handleRemoveUserFromMovieList(user1.uid)
                                 }
                               >
                                 <DeleteIcon />
                               </IconButton>
-                            )}
+                            
                           </TableCell>
                         </TableRow>
                       ))
