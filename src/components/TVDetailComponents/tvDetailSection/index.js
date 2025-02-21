@@ -72,7 +72,7 @@ const TVDetailSection = ({ tvShow }) => {
                     {tvShow.seasons ? (
                     <Grid item sm={6} md={3}>
                         <ListItem>
-                            <ListItemText primary="Seasons" secondary={tvShow.seasons.length} />
+                            <ListItemText primary="Seasons" secondary={tvShow.seasons.filter(season => season.name !== 'Specials').length} />
                         </ListItem> 
                     </Grid> ):''}
                     {episodeCount ? (
