@@ -115,7 +115,7 @@ const PersonPage = (props) => {
                     Media
             </Typography>
         <Divider sx={{ marginBottom: '1em' }} />
-        <Container sx={{maxHeight: '45em', overflow: 'auto', margin: '1em 0'}}>
+        <Container sx={{ maxHeight: '45em', overflow: 'auto', margin: '1em 0', width: '100%', maxWidth: 'none !important' }}>
         <MediaDisplay images={person.images.profiles}/>
         </Container>
         </Grid>
