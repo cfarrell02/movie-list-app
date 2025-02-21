@@ -105,6 +105,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
 
 
         const handleDeleteAccount = async () => {
+
             const auth = getAuth();
             const authUser = auth.currentUser;
 
@@ -232,6 +233,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
                         fullWidth
                         variant="contained"
                         color="error"
+                        disabled={true} //Disabled until i fix the delete account function
                         sx={{ mt: 3 }}
                         onClick={() => setOpen(true)}
                     >
