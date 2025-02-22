@@ -23,7 +23,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
         case 3:
           return 'Owner';
         default:
-          return 'Viewer';
+          return '';
       }
     };
 
@@ -65,7 +65,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
   }, [user]);
 
   return (
-    <Card sx={{ padding: '2em', height: '30em' }} align="center">
+    <Card sx={{ padding: '2em', height: '31em' }} align="center">
       <Typography variant="h5" component="h1" align="center" sx={{ mb: 2 }}>
         {movieList.title}
       </Typography>
