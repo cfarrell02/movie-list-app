@@ -49,7 +49,7 @@ const MovieDetailsPage = (props) => {
   const [loading, setLoading] = useState(false);
   const [formattedTitle, setFormattedTitle] = useState('');
   const {adultContent} = React.useContext(SiteDataContext);
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const isMobile = useMediaQuery('(max-width:900px)');
   const navigate = useNavigate();
   const [wrapperCount, setWrapperCount] = useState(getInitialCount());
 

@@ -40,7 +40,7 @@ const PersonPage = (props) => {
     const [tmdbId, setTmdbId] = useState(null);
     const {adultContent} = React.useContext(SiteDataContext);
     const navigate = useNavigate();
-    const isMobile = useMediaQuery  ('(max-width:600px)');
+    const isMobile = useMediaQuery  ('(max-width:900px)');
 
     useEffect(() => {
         const fetchData = async () => {

@@ -20,6 +20,7 @@ const TVTableRow = ({tv, handleDelete, handleEdit, accessType}) => {
     const [imageSrc, setImageSrc] = useState('');
     const [runtime, setRuntime] = useState('');
     const isMobile = useMediaQuery('(max-width:600px)');
+    const isTablet = useMediaQuery('(min-width:601px) and (max-width:900px)');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -66,10 +67,11 @@ const TVTableRow = ({tv, handleDelete, handleEdit, accessType}) => {
           {tv.vote_average ?
           <Tooltip title={tv.vote_average+'/10'} placement="top"><TableCell align="center"><Rating precision={0.25} name="read-only" value={tv.vote_average/2} readOnly /></TableCell></Tooltip>
           : <TableCell align="center">-</TableCell>}
-
+          {!isTablet && 
           <TableCell align="center" >
           {tv.seasons ? tv.seasons.length : '-'}  
           </TableCell>
+          }
           <TableCell align="center">{addedByUser.firstName}<br/>{dateReadableFormatter(tv.addedDate)}</TableCell>
           </>)}
           <TableCell align="right">

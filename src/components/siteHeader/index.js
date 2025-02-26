@@ -21,7 +21,7 @@ const Header = ({ handleLogout }) => {
   const [searchHistory, setSearchHistory] = useState([]); // State for storing search history
   const [inputValue, setInputValue] = useState(""); // State for storing user input
   const isMobile = useMediaQuery('(max-width:600px)');
-  const isTablet = useMediaQuery('(min-width:601px) and (max-width:850px)');
+  const isTablet = useMediaQuery('(min-width:601px) and (max-width:900px)');
   const [canGoForward, setCanGoForward] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
   const [loadingSearch, setLoadingSearch] = useState(false);
@@ -121,11 +121,11 @@ const Header = ({ handleLogout }) => {
                   </Button>
                 </Typography>
 
-                <Grid container spacing={2} sx={{ display: isMobile ? 'flex' : null, justifyContent: isMobile || isTablet  ? 'center' : 'flex-start', width: '100%' }}>
-                  <Grid item>
+                <Grid container spacing={2} sx={{ display: isMobile ? 'flex' : null, justifyContent: isMobile || isTablet  ? 'center' : 'flex-start', width: 'auto'}}>
+                  <Grid item xs={6} sx={{ display: 'flex' , justifyContent: 'flex-end' }}>
                     <Button variant="contained" color="primary" onClick={() => navigate(-1)}><ArrowBackIcon /></Button>
                   </Grid>
-                  <Grid item>
+                  <Grid item xs={6} sx={{ display: 'flex', justifyContent: 'flex-start' }}>
                     <Button variant="contained" color="primary" onClick={() => navigate(1)}><ArrowForwardIcon /></Button>
                   </Grid>
                 </Grid>
@@ -134,18 +134,17 @@ const Header = ({ handleLogout }) => {
                 sx={{
                   display: "flex",
                   justifyContent: "center",
-                  flexDirection: isTablet ? 'column' : 'row',
-                  width: isMobile ? "100%" : "25em",
-                  marginTop: isMobile ? ".5em" : 0, // Adds space on mobile view
+                  flexDirection: isMobile || isTablet ? 'column' : 'row',
+                  width: isMobile ? "100%" : isTablet ?  "35em" : 'auto',
                 }}
                 >
               <Container
                 sx={{
                   display: "flex",
                   justifyContent: "center",
-                  width: isMobile ? "100%" : isTablet ? '20em' :"25em",
+                  width: isMobile ? "100%" : "20em",
                   height: "75%",
-                  marginTop: isMobile || isTablet ? ".5em" : 0, // Adds space on mobile view
+                  marginTop: '.5em'
                 }} 
                 id="search-container"
               >
@@ -158,6 +157,7 @@ const Header = ({ handleLogout }) => {
                       backgroundColor: darkMode ? "#333333" : "#f0f0f0",
                       borderRadius: 2,
                       width: "100%",
+                      height: isMobile ? '3.5em':'3em',
                     }}
                     options={searchResults ? searchResults : searchHistory}
                     autoHighlight
@@ -205,7 +205,8 @@ const Header = ({ handleLogout }) => {
                   />
                 )}
               </Container>
-              <Container sx={{ display: "flex", marginBottom: isMobile ? '.5em' : 0, justifyContent: isMobile || isTablet ? 'center' : 'flex-end', width: isMobile ? '100%' : '18em', marginRight: '0 !important' }}>
+              <Container sx={{ display: "flex", marginBottom: isMobile ? '.5em' : 0, justifyContent: isMobile || isTablet ? 'center' : 'flex-end', 
+                width: isMobile ? '100%' : 'auto', marginRight: isTablet? 'auto': '0 !important' }}>
                 <Button color="inherit" sx={{ marginTop: isMobile ? "0.5em" : 0, marginRight: isMobile ? '.5em' : 0 }} onClick={() => navigate("/movielist")}>
                   Watch Lists
                 </Button>

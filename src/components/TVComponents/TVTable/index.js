@@ -40,6 +40,7 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
   const [filteredTVShows, setFilteredTVShows] = useState([]);
   const [filters, setFilters] = useState([]);
   const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(min-width:601px) and (max-width:900px)');
   const {addAlert} = React.useContext(AlertContext);
 
   const handleChangePage = (event, newPage) => {
@@ -265,12 +266,14 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType}) => {
                 Rating {getSortIcon('vote_average')}
               </Typography>
             </TableCell>
+            {!isTablet &&
             <TableCell align="center" onClick={() => handleSort('episode_run_time')} style={{ cursor: 'pointer' }}>
               <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Seasons {getSortIcon('episode_run_time')}
               </Typography>
             </TableCell>
-            <TableCell align="center" onClick={() => handleSort('addedDate')} style={{ cursor: 'pointer' }}>
+              }
+              <TableCell align="center" onClick={() => handleSort('addedDate')} style={{ cursor: 'pointer' }}>
               <Typography variant="subtitle2" component="div" sx={{ whiteSpace: 'nowrap' }}>
                 Added {getSortIcon('addedDate')}
               </Typography>

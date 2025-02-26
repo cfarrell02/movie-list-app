@@ -44,7 +44,7 @@ const TVDetailsPage = (props) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formattedTitle, setFormattedTitle] = useState('');
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const isMobile = useMediaQuery('(max-width:900px)');
   const [wrapperCount, setWrapperCount] = useState(getInitialCount());
 
   function getInitialCount() {
