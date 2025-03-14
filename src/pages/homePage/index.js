@@ -59,13 +59,16 @@ const Homepage = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     let page = parseInt(urlParams.get('page')) || 1;
+    let tab = parseInt(urlParams.get('tab')) || 0;
 
     if(page < 1 || page > 500){
       page = 1;
     }
 
+    setTab(tab);
     setCurrentPage(page);
     fetchData(page, tab, searchTerm);
+    navigate(`?tab=${tab}&page=${page}`, { replace: true });
   }, [tab, currentPage]);
 
   useEffect(() => {
@@ -81,7 +84,7 @@ const Homepage = () => {
   const handleTabChange = (event, newValue) => {
     setTab(newValue);
     setCurrentPage(1);
-    navigate(`?page=1`, { replace: true });
+    navigate(`?tab=${newValue}&page=1`, { replace: true });
     setSearchTerm(''); // Clear search on tab change
   };
 
@@ -91,7 +94,7 @@ const Homepage = () => {
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
-    navigate(`?page=${value}`, { replace: true });
+    navigate(`?tab=${tab}&page=${value}`, { replace: true });
     fetchData(value, tab, searchTerm);
   };
 
