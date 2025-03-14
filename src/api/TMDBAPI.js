@@ -2,7 +2,7 @@ export const getMovies = async (pageNum) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
   try {
     const response = await fetch(
-      `https://api.themoviedb.org/3/discover/movie?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&include_adult=${allowAdult}&include_video=false&page=${pageNum}`
+      `https://api.themoviedb.org/3/discover/movie?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&include_adult=${allowAdult}&include_video=false&page=${pageNum}&sort_by=popularity.desc`
     );
     if (!response.ok) {
       throw new Error((await response.json()).message);
@@ -17,7 +17,7 @@ export const getTVShows = async (pageNum) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
   try {
     const response = await fetch(
-      `https://api.themoviedb.org/3/discover/tv?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&include_adult=${allowAdult}&include_video=false&page=${pageNum}`
+      `https://api.themoviedb.org/3/discover/tv?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&include_adult=${allowAdult}&include_video=false&page=${pageNum}&sort_by=popularity.desc`
     );
     if (!response.ok) {
       throw new Error((await response.json()).message);
@@ -27,6 +27,36 @@ export const getTVShows = async (pageNum) => {
     throw error;
   }
 };
+
+export const getTrendingMovies = async (pageNum) => {
+  try {
+    const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
+    const response = await fetch(
+      `https://api.themoviedb.org/3/trending/movie/day?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&include_adult=${allowAdult}&page=${pageNum}`
+    );
+    if (!response.ok) {
+      throw new Error((await response.json()).message);
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getTrendingTVShows = async (pageNum) => {
+  try {
+    const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
+    const response = await fetch(
+      `https://api.themoviedb.org/3/trending/tv/day?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&include_adult=${allowAdult}&page=${pageNum}`
+    );
+    if (!response.ok) {
+      throw new Error((await response.json()).message);
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+}
 
 export const getTVShow = async (id) => {
 

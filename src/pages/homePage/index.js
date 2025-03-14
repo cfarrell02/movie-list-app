@@ -17,9 +17,9 @@ import {
   Pagination,
 } from '@mui/material';
 import { 
-  getMovies, 
+  getTrendingMovies, 
   getMovieSearchResults, 
-  getTVShows, 
+  getTrendingTVShows, 
   getTVShowSearchResults 
 } from '../../api/TMDBAPI';
 import MovieCard from '../../components/MovieComponents/movieCard';
@@ -41,12 +41,12 @@ const Homepage = () => {
       if (selectedTab === 0) {
         const results = query
           ? await getMovieSearchResults(page, query)
-          : (await getMovies(page)).results;
+          : (await getTrendingMovies(page)).results;
         setMovies(results.slice(0, 18));
       } else {
         const results = query
           ? await getTVShowSearchResults(page, query)
-          : (await getTVShows(page)).results;
+          : (await getTrendingTVShows(page)).results;
         setShows(results.slice(0, 18));
       }
     } catch (error) {
