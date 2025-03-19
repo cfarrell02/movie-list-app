@@ -28,12 +28,11 @@ import Stack from "@mui/material/Stack";
 import { NativeSelect, FormControl } from "@mui/material";
 import defaultImage from "../../../images/default.jpg";
 
-export default function MovieCard({ movie }) {
+export default function BookCard({ book }) {
   const [user, setUser] = React.useState(null);
   const { addAlert } = React.useContext(AlertContext);
   const [posterUrl, setPosterUrl] = React.useState("");
   const navigate = useNavigate();
-
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -49,19 +48,15 @@ export default function MovieCard({ movie }) {
   }, []);
 
   React.useEffect(() => {
-    if (movie) {
-      const localURL = movie.poster_path
-        ? `https://image.tmdb.org/t/p/w500/${movie.poster_path}`
-        : movie.backdrop_path
-        ? `https://image.tmdb.org/t/p/w500/${movie.backdrop_path}`
-        : defaultImage;
+    if (book) {
+      const localURL = book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` : defaultImage;
       setPosterUrl(localURL);
     }
-  }, [movie]);
+  }, [book]);
 
   return (
     <Card
-      onClick={() => navigate(`/movie/${movie.id}`)}
+      onClick={() => navigate(`/book/${book.title}`, { state: { book } })}
       sx={{
         cursor: "pointer",
         transition: "all 0.3s ease-in-out",
@@ -75,7 +70,7 @@ export default function MovieCard({ movie }) {
 
       <CardMedia
         sx={{ height: "auto", paddingTop: "150%", position: "relative" }}
-        title={movie.title}
+        title={book.title}
         image={posterUrl}
       >
         <Grid
@@ -87,19 +82,19 @@ export default function MovieCard({ movie }) {
             padding: "0 .3em .1em .3em",
           }}
         >
-          {movie.release_date ? (
+          {book.first_publish_year ? (
             <>
               <Grid item xs={6} sx={{ display: "flex", alignItems: "center" }}>
                 <CalendarIcon fontSize="small" sx={{ marginRight: "4px" }} />
                 <Typography variant="h6" component="p">
-                  {new Date(movie.release_date).getFullYear()}
+                  {book.first_publish_year}
                 </Typography>
               </Grid>
             </>
           ) : (
             ""
           )}
-          {movie.vote_average ? (
+          {book.author_name ? (
             <>
               <Grid
                 item
@@ -112,9 +107,7 @@ export default function MovieCard({ movie }) {
               >
                 <Typography variant="h6" component="p">
                   <StarRateIcon fontSize="small" sx={{ marginRight: "4px" }} />
-                  {movie.vote_average
-                    ? Math.round(movie.vote_average * 10) / 10
-                    : ""}
+                  {book.author_name.join(", ")}
                 </Typography>
               </Grid>
             </>

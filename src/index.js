@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNa } from 'react-router-dom';
 import WeatherProvider from './contexts/weatherContext';
 import  SiteDataProvider  from './contexts/siteDataContext';
+import FeatureFlagProvider from './contexts/featureFlagContext';
 import { AlertProvider } from './contexts/alertContext';
 import WeatherPage from './pages/weatherPage';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
@@ -153,6 +154,7 @@ const App = () => {
         <WeatherProvider>
         <AlertProvider>
         <SiteDataProvider>
+        <FeatureFlagProvider>
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
         {window.location.pathname !== '/usermgmt/action' && <Header authenticated={user != null && user.active} />}
         <Routes>
@@ -209,6 +211,7 @@ const App = () => {
         {/* <SiteFooter /> */}
         <AlertNotice/>
         </ThemeProvider>
+        </FeatureFlagProvider>
         </SiteDataProvider>
         </AlertProvider>
         </WeatherProvider>

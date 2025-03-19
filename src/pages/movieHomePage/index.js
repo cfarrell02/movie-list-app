@@ -166,12 +166,12 @@ const MovieHomePage = () => {
       ) : (
         <Grid container spacing={2} alignItems="center">
           {movieLists.map((movieList) => (
-            <Grid item xs={6} sm={4} md={3} lg={2} xl={1}  key={movieList.id}>
+            <Grid item xs={6} sm={4}   key={movieList.id}>
               <MovieListCard movieList={movieList} onDelete={handleDeleteMovieListSelected} />
             </Grid>
           ))}
 
-        <Grid item xs={6} sm={4} md={3} lg={2} xl={1}alignContent="center" alignItems="center" justifyContent="center">
+        <Grid item xs={6} sm={4}   alignContent="center" alignItems="center" justifyContent="center">
           <Link onClick={() => setModalOpen(true)}>
             <Card
               sx={{
