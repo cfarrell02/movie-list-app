@@ -1,8 +1,8 @@
 const BASE_URL = 'https://openlibrary.org';
 
-export const getBooks = async () => {
+export const getBooks = async (page,limit = 10) => {
     try {
-        const response = await fetch(`${BASE_URL}/trending/weekly.json`);
+        const response = await fetch(`${BASE_URL}/trending/weekly.json?limit=${limit}&page=${page}`);
         const data = await response.json();
         return data;
     } catch (error) {
@@ -10,7 +10,7 @@ export const getBooks = async () => {
     }   
 }
 
-export const getBookSearchResults = async (page, query) => {
+export const getBookSearchResults = async (page, query, limit = 10) => {
     try {
         const response = await fetch(`${BASE_URL}/search.json?title=${query}&page=${page}`);
         const data = await response.json();

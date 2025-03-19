@@ -61,6 +61,7 @@ export default function BookCard({ book }) {
         cursor: "pointer",
         transition: "all 0.3s ease-in-out",
         boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.2)",
+        height: "25em",
         '&:hover': {
           boxShadow: "0 0 20px 0 rgba(0, 0, 0, 0.5)",
           transform: "translateY(-5px)",
@@ -69,7 +70,7 @@ export default function BookCard({ book }) {
     >
 
       <CardMedia
-        sx={{ height: "auto", paddingTop: "150%", position: "relative" }}
+        sx={{ height: "100%", position: "relative" }}
         title={book.title}
         image={posterUrl}
       >
@@ -80,6 +81,9 @@ export default function BookCard({ book }) {
               "linear-gradient(to bottom, transparent, rgba(0, 0, 0, 1))",
             color: "white",
             padding: "0 .3em .1em .3em",
+            position: "absolute",
+            bottom: 0,
+            width: "100%",
           }}
         >
           {book.first_publish_year ? (

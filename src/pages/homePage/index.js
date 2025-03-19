@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Tabs,
@@ -15,6 +15,7 @@ import {
   TableContainer,
   useMediaQuery,
   Pagination,
+  Button,
 } from '@mui/material';
 import { 
   getTrendingMovies, 
@@ -50,65 +51,61 @@ const Homepage = () => {
 
   const fetchData = async (page, selectedTab, query = '') => {
     setLoading(true);
-    try {
+    const cacheKey = `${selectedTab}-${page}-${query}`;
+    const cachedData = localStorage.getItem(cacheKey);
+
+    if (cachedData) {
+      const parsedData = JSON.parse(cachedData);
       if (selectedTab === 0) {
-        const results = query
+        setMovies(parsedData);
+      } else if (selectedTab === 2) {
+        setBooks(parsedData);
+      } else {
+        setShows(parsedData);
+      }
+      setLoading(false);
+      return;
+    }
+
+    try {
+      let results;
+      if (selectedTab === 0) {
+        results = query
           ? await getMovieSearchResults(page, query)
           : (await getTrendingMovies(page)).results;
         setMovies(results.slice(0, 18));
       } else if (selectedTab === 2) {
-        const results = query ? await getBookSearchResults(page, query) : (await getBooks(page)).works;
-        setBooks(results.slice(0, 18));
+        results = query ? (await getBookSearchResults(page, query, 18)).docs : (await getBooks(page, 18)).works;
+        setBooks(results);
       } else {
-        const results = query
+        results = query
           ? await getTVShowSearchResults(page, query)
           : (await getTrendingTVShows(page)).results;
         setShows(results.slice(0, 18));
       }
+      localStorage.setItem(cacheKey, JSON.stringify(results.slice(0, 18)));
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
-    } 
+    }
   };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     let page = parseInt(urlParams.get('page')) || 1;
-    let tab = parseInt(urlParams.get('tab')) || 0;
-
-    if (page < 1 || page > 500) {
-      page = 1;
-    }
-
-    if (tab < 0 || tab > (getFeatureFlag('Books').enabled ? 2 : 1)) {
-      tab = 0;
-    }
-
-
-    setTab(tab);
-    setCurrentPage(page);
-    fetchData(page, tab, searchTerm);
-    navigate(`?tab=${tab}&page=${page}`, { replace: true });
-  }, [tab, currentPage]);
-
-  useEffect(() => {
     if (searchTerm !== '') {
       fetchData(1, tab, searchTerm);
       setCurrentPage(1);
     } else {
       fetchData(currentPage, tab);
     }
-  }, [searchTerm]);
+  }, [tab]);
 
   const handleTabChange = (event, newValue) => {
     setTab(newValue);
     setCurrentPage(1);
     navigate(`?tab=${newValue}&page=1`, { replace: true });
     setSearchTerm('');
-  };
-
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
   };
 
   const handlePageChange = (event, value) => {
@@ -123,7 +120,7 @@ const Homepage = () => {
         <Tabs value={tab} onChange={handleTabChange}>
           <Tab label="Movies" />
           <Tab label="TV Shows" />
-        
+          
           {getFeatureFlag('Books').enabled && <Tab label="Books" />}
         </Tabs>
         <CardContent>
@@ -131,11 +128,18 @@ const Homepage = () => {
             <Typography variant="h4" align="center" sx={{ mb: 2, fontWeight: 'bold' }}>
               Browse {tab === 0 ? 'Movies' : tab === 1 ? 'TV Shows' : 'Books'}
             </Typography>
-            <Input 
-              value={searchTerm} 
-              onChange={handleSearchChange} 
-              placeholder={`Search for ${tab === 0 ? 'movies' : tab === 1 ? 'TV shows' : 'books'}`}
-            />
+            <Box component="form" onSubmit={(e) => { e.preventDefault(); fetchData(1, tab, searchTerm); setCurrentPage(1); }}>
+              <Stack direction="row" spacing={2}>
+                <Input 
+                  value={searchTerm} 
+                  onSubmit={(e) => { e.preventDefault(); fetchData(1, tab, searchTerm); setCurrentPage(1); }}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={`Search for ${tab === 0 ? 'movies' : tab === 1 ? 'TV shows' : 'books'}`}
+                  fullWidth
+                />
+                <Button type="submit" variant="contained" onClick = {() => fetchData(1, tab, searchTerm)}>Search</Button>
+              </Stack>
+            </Box>
           </Stack>
         </CardContent>
       </Card>
