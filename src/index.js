@@ -12,6 +12,7 @@ import { auth } from './firebase-config';
 import MovieTrackingPage from './pages/movieTrackingPage';
 import MovieHomePage from './pages/movieHomePage';
 import SiteFooter from './components/siteFooter';
+import BookDetailsPage from './pages/bookDetailsPage';
 import MovieDetailsPage from './pages/movieDetailsPage';
 import TVDetailsPage from './pages/tvDetailsPage';
 import HomePage from './pages/homePage';
@@ -177,6 +178,11 @@ const App = () => {
           <Route
             path="/movie/:id"
             element={<PrivateRoute isAuthenticated={user != null && user.active} loadedUser={loadedUser}><MovieDetailsPage /></PrivateRoute>}
+          />
+          
+          <Route
+            path="/book/:id"
+            element={<PrivateRoute isAuthenticated={user != null && user.active} loadedUser={loadedUser}><BookDetailsPage /></PrivateRoute>}
           />
           <Route
             path="/tvshow/:id"

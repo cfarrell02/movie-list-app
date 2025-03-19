@@ -12,10 +12,20 @@ export const getBooks = async (page,limit = 10) => {
 
 export const getBookSearchResults = async (page, query, limit = 10) => {
     try {
-        const response = await fetch(`${BASE_URL}/search.json?title=${query}&page=${page}`);
+        const response = await fetch(`${BASE_URL}/search.json?title=${query}&page=${page}&limit=${limit}`);	
         const data = await response.json();
         return data;
     } catch (error) {
         console.error('Error fetching book search results:', error);
+    }
+}
+
+export const getBook = async (id) => {
+    try {
+        const response = await fetch(`${BASE_URL}/works/${id}.json`);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching book:', error);
     }
 }

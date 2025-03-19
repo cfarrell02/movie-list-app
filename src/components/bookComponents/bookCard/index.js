@@ -32,6 +32,7 @@ export default function BookCard({ book }) {
   const [user, setUser] = React.useState(null);
   const { addAlert } = React.useContext(AlertContext);
   const [posterUrl, setPosterUrl] = React.useState("");
+  const [navURL, setNavURL] = React.useState("");
   const navigate = useNavigate();
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -51,12 +52,14 @@ export default function BookCard({ book }) {
     if (book) {
       const localURL = book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg` : defaultImage;
       setPosterUrl(localURL);
+      const keyEnd = book.key.split("/").pop();
+      setNavURL(`/book/${keyEnd}`);
     }
   }, [book]);
 
   return (
     <Card
-      onClick={() => navigate(`/book/${book.title}`, { state: { book } })}
+      onClick={() => navigate(navURL)}
       sx={{
         cursor: "pointer",
         transition: "all 0.3s ease-in-out",
