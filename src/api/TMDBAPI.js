@@ -115,6 +115,20 @@ export const getPersonTV = async (id) => {
   }
 };
 
+export const getPersonExternalIDs = async (id) => {
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/person/${id}/external_ids?api_key=${process.env.REACT_APP_TMDB_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error((await response.json()).status_message);
+    }
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+}
+
 export const getMovie = async (id) => {
   try {
     const response = await fetch(
@@ -347,6 +361,15 @@ export const getSearchResults = async (pageNum, searchTerm) => {
   const json = await response.json();
   return json.results;
 };
+
+export const getPersonSearchResults = async (pageNum, searchTerm) => {
+  const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
+  const response = await fetch(
+    `https://api.themoviedb.org/3/search/person?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&query=${searchTerm}&include_adult=${allowAdult}`
+  );
+  const json = await response.json();
+  return json.results;
+}
 
 export const getMovieSearchResults = async (pageNum, searchTerm) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';

@@ -29,3 +29,13 @@ export const getBook = async (id) => {
         console.error('Error fetching book:', error);
     }
 }
+
+export const getAuthor = async (id) => {
+    try {
+        const response = await fetch(`${BASE_URL}/authors/${id}.json`);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching author:', error);
+    }
+}

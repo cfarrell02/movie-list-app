@@ -21,9 +21,11 @@ import {
   Stack,
   Box
 } from '@mui/material';
-import { getBook } from '../../api/bookAPI';
+import { getBook, getAuthor } from '../../api/bookAPI';
+import { getPersonExternalIDs, getPersonSearchResults } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { auth } from '../../firebase-config';
 
 
 
@@ -42,14 +44,43 @@ const BookDetailsPage = (props) => {
     , [book.title]);
 
     useEffect(() => {
-        setLoading(true);
-        getBook(id).then((data) => {
-            setBook(data || {});
+        const fetchBook = async () => {
+            setLoading(true);
+            const bookData = await getBook(id);
+            const authorData = await Promise.all(bookData.authors.map(async (a) => {
+                const id = a.author.key.split('/').pop();
+                const authorData = await getAuthor(id);
+                return authorData;
+            }));
+            let tmdbAuthoData = await Promise.all(authorData.map(async (author) => {
+                const authorData = await getPersonSearchResults(1,author.name);
+                return authorData;
+            }));
+            tmdbAuthoData = await Promise.all(tmdbAuthoData.map(async (authors) => {
+                authors.forEach(async (author) => {
+                    const externalIDs = await getPersonExternalIDs(author.id);
+                    author.imdb_id = externalIDs.imdb_id;
+                });
+                return authors;
+            }));
+
+            authorData.forEach((author) => {
+                tmdbAuthoData.forEach((authors) => {
+                    authors.forEach((a) => {
+                        if (a.name === author.name) {
+                            author.tmdbData = a;
+                        }
+                    });
+                });
+            });
+            bookData.authors = authorData;
+
+            setBook(bookData);
+            
             setLoading(false);
-        }).catch((error) => {
-            console.error('Error fetching book:', error);
-            setLoading(false);
-        });
+        }
+        fetchBook();
+        
         }, [id]);
 
 
@@ -89,10 +120,15 @@ const BookDetailsPage = (props) => {
       </Grid>
       <Grid item xs={9}>
           <Typography variant="h6" component="p">
-            {book.description}
+            {book.description && book.description.value ? book.description.value : book.description}
             </Typography>
           </Grid>
           <Grid item xs={3}>
+            {book.authors && book.authors.map((author) => (
+              <Typography variant="h6" component="p">
+                {author.tmdbData ? <Link to={`/person/${author.tmdbData.id}`}>{author.name}</Link> : author.name}
+              </Typography>
+            ))}
    
           </Grid>
     </Grid> 
