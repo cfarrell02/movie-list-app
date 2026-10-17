@@ -310,7 +310,7 @@ export const getMovieReviews = async (id, pageNum) => {
     `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${process.env.REACT_APP_TMDB_KEY}&page=${pageNum}`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 };
 
 export const getTVReviews = async (id, pageNum) => {
@@ -318,7 +318,7 @@ export const getTVReviews = async (id, pageNum) => {
     `https://api.themoviedb.org/3/tv/${id}/reviews?api_key=${process.env.REACT_APP_TMDB_KEY}&page=${pageNum}`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 };
 
 export const getSimilarMovies = async (id) => {
@@ -326,7 +326,7 @@ export const getSimilarMovies = async (id) => {
     `https://api.themoviedb.org/3/movie/${id}/similar?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 };
 
 export const getSimilarTVShows = async (id) => {
@@ -334,7 +334,7 @@ export const getSimilarTVShows = async (id) => {
     `https://api.themoviedb.org/3/tv/${id}/similar?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 };
 
 export const getMovieRecommendations = async (id) => {
@@ -342,7 +342,7 @@ export const getMovieRecommendations = async (id) => {
     `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 };
 
 export const getTVRecommendations = async (id) => {
@@ -350,42 +350,42 @@ export const getTVRecommendations = async (id) => {
     `https://api.themoviedb.org/3/tv/${id}/recommendations?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 }
 
 export const getSearchResults = async (pageNum, searchTerm) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
   const response = await fetch(
-    `https://api.themoviedb.org/3/search/multi?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&include_adult=${allowAdult}&query=${searchTerm}`
+    `https://api.themoviedb.org/3/search/multi?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&include_adult=${allowAdult}&query=${encodeURIComponent(searchTerm)}`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 };
 
 export const getPersonSearchResults = async (pageNum, searchTerm) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
   const response = await fetch(
-    `https://api.themoviedb.org/3/search/person?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&query=${searchTerm}&include_adult=${allowAdult}`
+    `https://api.themoviedb.org/3/search/person?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&query=${encodeURIComponent(searchTerm)}&include_adult=${allowAdult}`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 }
 
 export const getMovieSearchResults = async (pageNum, searchTerm) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
   const response = await fetch(
-    `https://api.themoviedb.org/3/search/movie?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&include_adult=${allowAdult}&query=${searchTerm}`
+    `https://api.themoviedb.org/3/search/movie?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&include_adult=${allowAdult}&query=${encodeURIComponent(searchTerm)}`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 };
 export const getTVShowSearchResults = async (pageNum, searchTerm) => {
   const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
   const response = await fetch(
-    `https://api.themoviedb.org/3/search/tv?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&include_adult=${allowAdult}&query=${searchTerm}`
+    `https://api.themoviedb.org/3/search/tv?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=${pageNum}&include_adult=${allowAdult}&query=${encodeURIComponent(searchTerm)}`
   );
   const json = await response.json();
-  return json.results;
+  return json.results || [];
 };
 
 

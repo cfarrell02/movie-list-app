@@ -1,30 +1,36 @@
-import React, { useState, useContext } from 'react';
-import { AppBar, Toolbar, Typography, Button, IconButton, Alert } from '@mui/material';
+import React, { useContext } from 'react';
+import { Alert, Slide, Stack } from '@mui/material';
 import { AlertContext } from '../../contexts/alertContext';
 
 const AlertNotice = () => {
-  const {alerts} = useContext(AlertContext); // Access alerts from the context
-
+  const { alerts, removeAlert } = useContext(AlertContext);
 
   return (
-    alerts.slice(0, 5).map((alert, index) => (
-      <Alert
-        key={index} // Adding a key to each alert for React's internal tracking
-        severity={alert.severity}
-        sx={{
-          maxWidth: '40%',
-          position: 'fixed',
-          right: '2%',
-          bottom: `${index * 8 + 2}%`,
-          zIndex: 1000
-        }}
-      >
-        {alert.message}
-      </Alert>
-    ))
+    <Stack
+      spacing={1}
+      sx={{
+        position: 'fixed',
+        right: { xs: 16, sm: 24 },
+        left: { xs: 16, sm: 'auto' },
+        bottom: { xs: 16, sm: 24 },
+        zIndex: (theme) => theme.zIndex.snackbar,
+        maxWidth: { sm: 420 },
+      }}
+    >
+      {alerts.slice(-5).map((alert) => (
+        <Slide key={alert.uid} direction="up" in mountOnEnter unmountOnExit>
+          <Alert
+            variant="filled"
+            severity={alert.severity}
+            onClose={() => removeAlert(alert.uid)}
+            sx={{ boxShadow: 6, alignItems: 'center' }}
+          >
+            {alert.message}
+          </Alert>
+        </Slide>
+      ))}
+    </Stack>
   );
 };
 
 export default AlertNotice;
-
-

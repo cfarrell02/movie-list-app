@@ -140,22 +140,18 @@ const MovieDetailsPage = (props) => {
   }, [movie]);
 
   const handleChange = async (event) => {
-    const userData = await getUserById(user.uid);
-    try{
-      movie.addedDate = new Date().toISOString();
-      movie.addedBy = user.uid;
-      movie.watched = false;
-      const movieList = await getMovieListById(event.target.value);
-      if(movieList.movies.find(m => m.id === movie.id)) throw new Error('Movie already in list');
-      try{
-        await addMovieToList(event.target.value, movie);
-      }catch(error){
-        addAlert('error', error.message);
-      }finally{
-        addAlert('success', `${movie.title} added to ${movieList.title}`);
-      }
-    }
-    catch(error){
+    const listId = event.target.value;
+    if (!listId || !user) return;
+    try {
+      const list = await getMovieListById(listId);
+      if ((list.movies || []).find(m => m.id === movie.id)) throw new Error('Movie is already in "' + list.title + '"');
+      // Strip bulky detail-page data so list documents stay well under Firestore's 1MB limit
+      // eslint-disable-next-line no-unused-vars
+      const { credits, images, videos, recommendations, ...summary } = movie;
+      const entry = { ...summary, addedDate: new Date().toISOString(), addedBy: user.uid, watched: false };
+      await addMovieToList(listId, entry);
+      addAlert('success', `${movie.title} added to ${list.title}`);
+    } catch (error) {
       addAlert('error', error.message);
     }
   };
@@ -178,12 +174,13 @@ const MovieDetailsPage = (props) => {
         <InputLabel> Add to list</InputLabel>
         <Select
         autoWidth
+        value=""
         onChange={handleChange}
         label="Add to list"
         title= 'Select a list to add this movie to'
         >
           {movieLists.map((list) => (
-          <MenuItem value={list.id}>{list.title}</MenuItem>
+          <MenuItem key={list.id} value={list.id}>{list.title}</MenuItem>
           ))}
         </Select>
         </FormControl>

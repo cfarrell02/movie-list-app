@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';  // Grouped import statements
+import { Link as RouterLink } from 'react-router-dom';
 import { Card, CardContent, CardMedia, Typography, Grid, List, ListItem, ListItemText, Link } from '@mui/material';
 import defaultImage from '../../../images/default.jpg';
 
@@ -38,7 +39,7 @@ try{
             <Grid item xs={6}>
             <List>
               {creators.map((star) => (
-                <Link href={`/person/${star.id}`} key={star.id}>
+                <Link component={RouterLink} underline="hover" to={`/person/${star.id}`} key={star.id}>
                 <ListItem key={star.id}><ListItemText primary={star.name}/></ListItem>
                 </Link>
               ))}
@@ -54,7 +55,7 @@ try{
             <Grid item xs={6}>
             <List>
               {starring.map((star) => (
-                <Link href={`/person/${star.id}`} key={star.id}>
+                <Link component={RouterLink} underline="hover" to={`/person/${star.id}`} key={star.id}>
                 <ListItem key={star.id}><ListItemText primary={star.name}/></ListItem>
                 </Link>
               ))}

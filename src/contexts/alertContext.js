@@ -1,38 +1,34 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 
 export const AlertContext = createContext();
 
-// export const useAlertContext = () => useContext(AlertContext);
+const ALERT_LIFETIME_MS = 5000;
+let nextAlertId = 0;
 
 export const AlertProvider = ({ children }) => {
   const [alerts, setAlerts] = useState([]);
 
-  const addAlert = (severity, message) => {
-    const uid = Date.now();
-    setAlerts([...alerts, { severity, message, uid }]);
-  };
-  
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      const currentTime = Date.now();
-      setAlerts(alerts => alerts.filter(alert => currentTime - alert.uid <= 5000));
-    }, 1000); // Check every second for removal
-
-    return () => clearInterval(timer);
+  // Use functional updates so alerts fired in quick succession don't overwrite each other
+  const addAlert = useCallback((severity, message) => {
+    nextAlertId += 1;
+    setAlerts((current) => [...current, { severity, message, uid: nextAlertId, createdAt: Date.now() }]);
   }, []);
 
-  const removeAlert = (index) => {
-    setAlerts(alerts.filter((_, i) => i !== index));
-  };
+  const removeAlert = useCallback((uid) => {
+    setAlerts((current) => current.filter((alert) => alert.uid !== uid));
+  }, []);
 
-  const alertContextValue = {
-    alerts,
-    addAlert,
-    removeAlert,
-    };
+  useEffect(() => {
+    if (alerts.length === 0) return undefined;
+    const timer = setInterval(() => {
+      const now = Date.now();
+      setAlerts((current) => current.filter((alert) => now - alert.createdAt <= ALERT_LIFETIME_MS));
+    }, 500);
+    return () => clearInterval(timer);
+  }, [alerts.length]);
 
   return (
-    <AlertContext.Provider value={alertContextValue}>
+    <AlertContext.Provider value={{ alerts, addAlert, removeAlert }}>
       {children}
     </AlertContext.Provider>
   );

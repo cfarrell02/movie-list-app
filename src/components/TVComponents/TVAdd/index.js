@@ -39,7 +39,7 @@ const TVAdd = ({title, tvshows, listId, setTvShows, disabled, currentUserID, onR
     try {
       setFetchingShows(true);
       setSearchText(event.target.value);
-      let data = await getTVShowSearchResults(1, searchText);
+      let data = await getTVShowSearchResults(1, event.target.value);
       if (data) {
         data = data.sort((a, b) => a.popularity - b.popularity).reverse();
         setOptions(data);

@@ -13,7 +13,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { getTVSeason } from "../../../api/TMDBAPI";
-import { hover } from "@testing-library/user-event/dist/hover";
 
 const TVEpisodesSummary = ({ tvShow }) => {
   const [seasons, setSeasons] = useState([]);

@@ -21,7 +21,6 @@ const Login = ({ handleLogin, addAlert }) => {
       const result = await handleLogin(username, password);
       const userData = await getUserById(result.user.uid);
       setAdultContent(userData.adultAllowed);
-      localStorage.setItem('adultContent', userData.adultAllowed);
       addAlert('success', 'Logged in');
     } catch (error) {
       addAlert('error', 'Error logging in: ' + error.message);

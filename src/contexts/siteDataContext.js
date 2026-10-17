@@ -1,32 +1,40 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useState } from "react";
 
 export const SiteDataContext = createContext();
 
+const readFlag = (key) => {
+  try {
+    return localStorage.getItem(key) === "true";
+  } catch {
+    return false;
+  }
+};
+
+const writeFlag = (key, value) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage can be unavailable (e.g. private browsing); the setting just won't persist
+  }
+};
+
 export const SiteDataProvider = ({ children }) => {
-  const [adultContent, setAdultContent] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  // Read synchronously so the correct theme is applied on first paint
+  const [adultContent, setAdultContentState] = useState(() => readFlag("adultContent"));
+  const [darkMode, setDarkModeState] = useState(() => readFlag("isDarkMode"));
 
-  useEffect(() => {
-    const adult = localStorage.getItem("adultContent");
-    const darkMode = localStorage.getItem("isDarkMode");
+  const setAdultContent = (value) => {
+    setAdultContentState(!!value);
+    writeFlag("adultContent", !!value);
+  };
 
-    if (adult) {
-        setAdultContent(adult === "true");
-    }
-    if (darkMode) {
-        setDarkMode(darkMode === "true");
-    }
-  }, []);
-
-  const siteDataProviderValue = {
-    adultContent,
-    setAdultContent,
-    darkMode,
-    setDarkMode,
+  const setDarkMode = (value) => {
+    setDarkModeState(!!value);
+    writeFlag("isDarkMode", !!value);
   };
 
   return (
-    <SiteDataContext.Provider value={siteDataProviderValue}>
+    <SiteDataContext.Provider value={{ adultContent, setAdultContent, darkMode, setDarkMode }}>
       {children}
     </SiteDataContext.Provider>
   );

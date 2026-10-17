@@ -10,7 +10,6 @@ import UpdateProfile from '../../components/Onboarding/updateProfile';
 import { AlertContext } from '../../contexts/alertContext';
 import Login from '../../components/Onboarding/login';
 import { Link } from 'react-router-dom';
-import { type } from '@testing-library/user-event/dist/type';
 
 const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvider }) => {
   const [user, setUser] = useState(null);
@@ -68,7 +67,6 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
 
   const toggleAdultContent = async (event) => {
     setAdultContent(event.target.checked);
-    localStorage.setItem('adultContent', event.target.checked);
 
     const userData = await getUserById(user.uid);
     userData.adultAllowed = event.target.checked;
@@ -77,9 +75,6 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
 
   const toggleTheme = () => {
     setDarkMode(!darkMode);
-    document.body.style.backgroundColor = darkMode ? '#f0f0f0' : '#333333';
-    localStorage.setItem('isDarkMode', !darkMode);
-    updateThemeProvider(!darkMode);
   };
 
   const handleForgotPassword = () => {

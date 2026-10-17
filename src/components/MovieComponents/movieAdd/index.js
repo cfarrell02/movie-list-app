@@ -39,7 +39,7 @@ const MovieAdd = ({title, movies, listId, setMovies, disabled, currentUserID, on
     try {
       setFetchingMovies(true);
       setSearchText(event.target.value);
-      let data = await getMovieSearchResults(1, searchText);
+      let data = await getMovieSearchResults(1, event.target.value);
       if (data) {
         data = data.sort((a, b) => a.popularity - b.popularity).reverse();
         setOptions(data);
