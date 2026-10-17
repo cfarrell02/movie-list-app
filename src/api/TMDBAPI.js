@@ -405,3 +405,28 @@ export const getTVCredits = async (id) => {
   const json = await response.json();
   return json.cast;
 };
+
+// Streaming/rent/buy availability by country (data from JustWatch via TMDB)
+const getWatchProviders = async (type, id) => {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${process.env.REACT_APP_TMDB_KEY}`
+  );
+  if (!response.ok) {
+    throw new Error((await response.json()).status_message);
+  }
+  const json = await response.json();
+  return json.results || {};
+};
+
+export const getMovieWatchProviders = (id) => getWatchProviders('movie', id);
+export const getTVWatchProviders = (id) => getWatchProviders('tv', id);
+
+export const getTVExternalIDs = async (id) => {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/tv/${id}/external_ids?api_key=${process.env.REACT_APP_TMDB_KEY}`
+  );
+  if (!response.ok) {
+    throw new Error((await response.json()).status_message);
+  }
+  return await response.json();
+};

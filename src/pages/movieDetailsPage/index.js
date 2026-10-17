@@ -2,13 +2,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Grid, Typography } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getMovie, getMovieCredits, getMovieImages, getMovieVideos, getMovieRecommendations, getMovieReviews } from '../../api/TMDBAPI';
+import { getMovie, getMovieCredits, getMovieImages, getMovieVideos, getMovieRecommendations, getMovieReviews, getMovieWatchProviders } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId } from '../../api/movieStorage';
 import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import MediaDisplay from '../../components/mediaDisplay';
 import MovieCard from '../../components/MovieComponents/movieCard';
+import WhereToWatch from '../../components/whereToWatch';
 import { filterAdult } from '../../utils';
 import {
   AdultContentNotice,
@@ -137,7 +138,6 @@ const MovieDetailsPage = () => {
               links={[
                 { label: 'IMDb', href: movie.imdb_id && `https://www.imdb.com/title/${movie.imdb_id}` },
                 { label: 'TMDB', href: `https://www.themoviedb.org/movie/${movie.id}` },
-                { label: 'Stremio', href: stremioSlug && `https://www.strem.io/s/movie/${stremioSlug}` },
               ]}
             />
           </>
@@ -145,6 +145,14 @@ const MovieDetailsPage = () => {
       />
 
       <Container maxWidth="lg" sx={{ pb: 4 }}>
+        <Section title="Where to watch">
+          <WhereToWatch
+            id={movie.id}
+            fetchProviders={getMovieWatchProviders}
+            stremioUrl={stremioSlug && `https://www.strem.io/s/movie/${stremioSlug}`}
+          />
+        </Section>
+
         <Section title="Details">
           <FactGrid
             facts={[

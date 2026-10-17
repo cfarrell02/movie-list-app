@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Grid, Typography } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getTVShow, getTVCredits, getTVImages, getTVVideos, getTVRecommendations, getTVReviews } from '../../api/TMDBAPI';
+import { getTVShow, getTVCredits, getTVImages, getTVVideos, getTVRecommendations, getTVReviews, getTVWatchProviders, getTVExternalIDs } from '../../api/TMDBAPI';
 import { getMovieListById, addTVShowToList, getMovieListsByUserId } from '../../api/movieStorage';
 import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
@@ -11,6 +11,7 @@ import { filterAdult } from '../../utils';
 import MediaDisplay from '../../components/mediaDisplay';
 import TVCard from '../../components/TVComponents/TVCard';
 import TVEpisodesSummary from '../../components/TVDetailComponents/tvEpisodesSummary';
+import WhereToWatch from '../../components/whereToWatch';
 import {
   AdultContentNotice,
   AddToListSelect,
@@ -48,19 +49,21 @@ const TVDetailsPage = () => {
       setShowAllRecs(false);
       setBlocked(false);
       try {
-        const [details, cast, images, videos, recommendations] = await Promise.all([
+        const [details, cast, images, videos, recommendations, externalIds] = await Promise.all([
           getTVShow(id),
           getTVCredits(id),
           getTVImages(id),
           getTVVideos(id),
           getTVRecommendations(id),
+          // Only needed for the IMDb/Stremio links, so a failure shouldn't break the page
+          getTVExternalIDs(id).catch(() => ({})),
         ]);
         if (!active) return;
         if (!adultContent && details.adult) {
           setBlocked(true);
           return;
         }
-        setTvShow({ ...details, credits: cast, images, videos, recommendations });
+        setTvShow({ ...details, imdb_id: externalIds.imdb_id, credits: cast, images, videos, recommendations });
         window.scrollTo(0, 0);
       } catch (error) {
         console.error(error);
@@ -128,12 +131,25 @@ const TVDetailsPage = () => {
         actions={
           <>
             <AddToListSelect lists={movieLists} onSelect={handleAddToList} />
-            <ExternalLinks links={[{ label: 'TMDB', href: `https://www.themoviedb.org/tv/${tvShow.id}` }]} />
+            <ExternalLinks
+              links={[
+                { label: 'IMDb', href: tvShow.imdb_id && `https://www.imdb.com/title/${tvShow.imdb_id}` },
+                { label: 'TMDB', href: `https://www.themoviedb.org/tv/${tvShow.id}` },
+              ]}
+            />
           </>
         }
       />
 
       <Container maxWidth="lg" sx={{ pb: 4 }}>
+        <Section title="Where to watch">
+          <WhereToWatch
+            id={tvShow.id}
+            fetchProviders={getTVWatchProviders}
+            stremioUrl={tvShow.imdb_id && `https://web.stremio.com/#/detail/series/${tvShow.imdb_id}`}
+          />
+        </Section>
+
         <Section title="Details">
           <FactGrid
             facts={[
