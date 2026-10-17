@@ -31,9 +31,14 @@ export const authorPhotoUrl = (photoId, size = 'M') => (photoId && photoId > 0 ?
 
 export const getBooks = async (page, limit = 18) => getJSON(`/trending/weekly.json?limit=${limit}&page=${page}`);
 
+// Open Library rejects very short queries (e.g. "du") with a 422
+const MIN_QUERY_LENGTH = 3;
+
 /** General search (title, author, subject…) – returns { docs, numFound } */
-export const getBookSearchResults = async (page, query, limit = 18) =>
-  getJSON(`/search.json?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}&fields=${SEARCH_FIELDS}`);
+export const getBookSearchResults = async (page, query, limit = 18) => {
+  if (String(query || '').trim().length < MIN_QUERY_LENGTH) return { docs: [], numFound: 0 };
+  return getJSON(`/search.json?q=${encodeURIComponent(query.trim())}&page=${page}&limit=${limit}&fields=${SEARCH_FIELDS}`);
+};
 
 /** Search-index summary for one work (page count, year, ratings, availability) */
 export const getBookSummary = async (id) => {

@@ -34,10 +34,9 @@ const MovieTrackingPage = () => {
   const location = useLocation();
   const { getFeatureFlag } = React.useContext(FeatureFlagContext);
   const booksEnabled = !!getFeatureFlag('Books')?.enabled;
-  const tabParam = new URLSearchParams(location.search).get('tab') || 'movies';
-  const requestedTab = LEGACY_TABS[tabParam] || tabParam;
+  const tabParam = new URLSearchParams(location.search).get('tab');
+  const requestedTab = tabParam ? LEGACY_TABS[tabParam] || tabParam : null;
   const validTabs = ['movies', 'tv', ...(booksEnabled ? ['books'] : []), 'settings'];
-  const selectedTab = validTabs.includes(requestedTab) ? requestedTab : 'movies';
   const [user, setUser] = useState(null);
   const [accessType, setAccessType] = useState(0);
   const { addAlert } = React.useContext(AlertContext);
@@ -155,6 +154,12 @@ const MovieTrackingPage = () => {
     }
   };
 
+  // With no tab in the URL, open on the first tab that has something in it
+  const defaultTab = movies.length ? 'movies' : tvShows.length ? 'tv' : booksEnabled && books.length ? 'books' : 'movies';
+  const selectedTab = validTabs.includes(requestedTab) ? requestedTab : defaultTab;
+  // Don't flash the Movies tab before we know which tab to default to
+  const choosingTab = loading && !validTabs.includes(requestedTab);
+
   // Lists with adult titles are hidden from the overview, so don't reveal them via a direct link either
   const hasAdultItems = [...movies, ...tvShows].some((item) => item.adult);
 
@@ -190,14 +195,16 @@ const MovieTrackingPage = () => {
         </Tooltip>
       </Stack>
 
-      <Tabs value={selectedTab} onChange={handleTabChange} variant="scrollable" scrollButtons={false} sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+      <Tabs value={choosingTab ? false : selectedTab} onChange={handleTabChange} variant="scrollable" scrollButtons={false} sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tab value="movies" label={`Movies (${movies.length})`} />
         <Tab value="tv" label={`TV Shows (${tvShows.length})`} />
         {booksEnabled && <Tab value="books" label={`Books (${books.length})`} />}
         <Tab value="settings" label="Settings" />
       </Tabs>
 
-      {selectedTab === 'movies' && (
+      {choosingTab && <Skeleton variant="rounded" height={240} sx={{ borderRadius: '16px' }} />}
+
+      {!choosingTab && selectedTab === 'movies' && (
         <Stack spacing={2}>
           <MovieAdd
             listId={listId}
@@ -210,7 +217,7 @@ const MovieTrackingPage = () => {
         </Stack>
       )}
 
-      {selectedTab === 'tv' && (
+      {!choosingTab && selectedTab === 'tv' && (
         <Stack spacing={2}>
           <TVAdd
             listId={listId}
@@ -223,7 +230,7 @@ const MovieTrackingPage = () => {
         </Stack>
       )}
 
-      {selectedTab === 'books' && (
+      {!choosingTab && selectedTab === 'books' && (
         <Stack spacing={2}>
           <BookAdd
             listId={listId}
@@ -236,7 +243,7 @@ const MovieTrackingPage = () => {
         </Stack>
       )}
 
-      {selectedTab === 'settings' && (
+      {!choosingTab && selectedTab === 'settings' && (
         <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
           <MovieListSettings movieList={{ ...movieList, movies, tvShows, books }} setMovieList={setMovieList} onListChanged={refreshMovieList} />
         </Paper>

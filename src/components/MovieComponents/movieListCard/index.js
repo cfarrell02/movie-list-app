@@ -36,7 +36,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
 
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'box-shadow .2s', '&:hover': { boxShadow: 6 } }}>
-      <CardActionArea component={RouterLink} to={`/movielist/${movieList.id}?tab=movies`} sx={{ flex: 1 }}>
+      <CardActionArea component={RouterLink} to={`/movielist/${movieList.id}`} sx={{ flex: 1 }}>
         <Box
           sx={{
             aspectRatio: '16 / 10',
