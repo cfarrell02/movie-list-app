@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Grid, Typography } from '@mui/material';
+import { Container } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getTVShow, getTVCredits, getTVImages, getTVVideos, getTVRecommendations, getTVReviews, getTVWatchProviders, getTVExternalIDs } from '../../api/TMDBAPI';
+import { getTVShow, getTVCredits, getTVImages, getTVVideos, getTVRecommendations, getTVReviews, getTVWatchProviders, getTVExternalIDs, getTitlesFromCompany } from '../../api/TMDBAPI';
 import { getMovieListById, addTVShowToList, getMovieListsByUserId } from '../../api/movieStorage';
 import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
@@ -19,10 +19,13 @@ import {
   DetailHero,
   DetailHeroSkeleton,
   ExternalLinks,
-  FactGrid,
+  FactSection,
+  MoreFromCompany,
   PeopleGrid,
   ReviewList,
   Section,
+  TitleGridSection,
+  hasPlayableMedia,
 } from '../../components/detail';
 
 const yearOf = (date) => (date ? new Date(date).getFullYear() : null);
@@ -34,7 +37,7 @@ const TVDetailsPage = () => {
   const { addAlert } = React.useContext(AlertContext);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showAllRecs, setShowAllRecs] = useState(false);
+  const [watchAvailable, setWatchAvailable] = useState(true);
   const [blocked, setBlocked] = useState(false);
   const { adultContent } = React.useContext(SiteDataContext);
   const navigate = useNavigate();
@@ -47,7 +50,7 @@ const TVDetailsPage = () => {
     let active = true;
     const fetchData = async () => {
       setLoading(true);
-      setShowAllRecs(false);
+      setWatchAvailable(true);
       setBlocked(false);
       try {
         const [details, cast, images, videos, recommendations, externalIds] = await Promise.all([
@@ -108,7 +111,8 @@ const TVDetailsPage = () => {
   const years = start ? (end && end !== start ? `${start} – ${end}` : `${start}`) : null;
   const seasons = (tvShow.seasons || []).filter((s) => s.name !== 'Specials');
   const recommendations = filterAdult(tvShow.recommendations, adultContent);
-  const shownRecs = showAllRecs ? recommendations : recommendations.slice(0, 12);
+  const stremioUrl = tvShow.imdb_id && `https://web.stremio.com/#/detail/series/${tvShow.imdb_id}`;
+  const cast = filterAdult(tvShow.credits, adultContent);
 
   return (
     <>
@@ -133,6 +137,8 @@ const TVDetailsPage = () => {
               links={[
                 { label: 'IMDb', href: tvShow.imdb_id && `https://www.imdb.com/title/${tvShow.imdb_id}` },
                 { label: 'TMDB', href: `https://www.themoviedb.org/tv/${tvShow.id}` },
+                // Stremio normally sits in "Where to watch"; show it here when that section is hidden
+                { label: 'Stremio', href: !watchAvailable && stremioUrl },
               ]}
             />
           </>
@@ -140,28 +146,21 @@ const TVDetailsPage = () => {
       />
 
       <Container maxWidth="lg" sx={{ pb: 4 }}>
-        <Section title="Where to watch">
-          <WhereToWatch
-            id={tvShow.id}
-            fetchProviders={getTVWatchProviders}
-            stremioUrl={tvShow.imdb_id && `https://web.stremio.com/#/detail/series/${tvShow.imdb_id}`}
-          />
-        </Section>
+        <WhereToWatch id={tvShow.id} fetchProviders={getTVWatchProviders} stremioUrl={stremioUrl} onAvailability={setWatchAvailable} />
 
-        <Section title="Details">
-          <FactGrid
-            facts={[
-              { label: 'First aired', value: tvShow.first_air_date && new Date(tvShow.first_air_date).toLocaleDateString() },
-              { label: 'Last aired', value: tvShow.last_air_date && new Date(tvShow.last_air_date).toLocaleDateString() },
-              { label: 'Status', value: tvShow.status },
-              { label: 'Episodes', value: tvShow.number_of_episodes },
-              { label: 'Seasons', value: seasons.length || null },
-              { label: 'Network', value: tvShow.networks?.map((n) => n.name).slice(0, 2).join(', ') },
-              { label: 'Created by', value: tvShow.created_by?.map((c) => c.name).join(', ') },
-              { label: 'Language', value: tvShow.spoken_languages?.[0]?.english_name },
-            ]}
-          />
-        </Section>
+        <FactSection
+          title="Details"
+          facts={[
+            { label: 'First aired', value: tvShow.first_air_date && new Date(tvShow.first_air_date).toLocaleDateString() },
+            { label: 'Last aired', value: tvShow.last_air_date && new Date(tvShow.last_air_date).toLocaleDateString() },
+            { label: 'Status', value: tvShow.status },
+            { label: 'Episodes', value: tvShow.number_of_episodes },
+            { label: 'Seasons', value: seasons.length || null },
+            { label: 'Network', value: tvShow.networks?.map((n) => n.name).slice(0, 2).join(', ') },
+            { label: 'Created by', value: tvShow.created_by?.map((c) => c.name).join(', ') },
+            { label: 'Language', value: tvShow.spoken_languages?.[0]?.english_name },
+          ]}
+        />
 
         {seasons.length > 0 && (
           <Section title="Episode ratings">
@@ -169,40 +168,29 @@ const TVDetailsPage = () => {
           </Section>
         )}
 
-        <Section title="Cast">
-          <PeopleGrid people={filterAdult(tvShow.credits, adultContent)} getRole={(p) => p.character} />
-        </Section>
-
-        {recommendations.length > 0 && (
-          <Section
-            title="You might also like"
-            action={
-              recommendations.length > 12 && (
-                <Typography component="button" onClick={() => setShowAllRecs(!showAllRecs)} sx={{ all: 'unset', cursor: 'pointer', color: 'primary.main', fontWeight: 600 }}>
-                  {showAllRecs ? 'Show less' : 'Show all'}
-                </Typography>
-              )
-            }
-          >
-            <Grid container spacing={{ xs: 2, md: 3 }}>
-              {shownRecs.map((rec) => (
-                <Grid item xs={6} sm={4} md={3} lg={2} key={rec.id}>
-                  <TVCard tv={rec} />
-                </Grid>
-              ))}
-            </Grid>
+        {cast.length > 0 && (
+          <Section title="Cast">
+            <PeopleGrid people={cast} getRole={(p) => p.character} />
           </Section>
         )}
 
-        {(tvShow.videos?.results?.length > 0 || tvShow.images?.backdrops?.length > 0) && (
+        <TitleGridSection title="You might also like" items={recommendations} renderItem={(rec) => <TVCard tv={rec} />} />
+
+        <MoreFromCompany
+          companies={tvShow.networks}
+          currentId={tvShow.id}
+          fetchTitles={(networkId) => getTitlesFromCompany('tv', networkId)}
+          filterItems={(items) => filterAdult(items, adultContent)}
+          renderItem={(item) => <TVCard tv={item} />}
+        />
+
+        {hasPlayableMedia(tvShow.videos?.results, tvShow.images?.backdrops) && (
           <Section title="Media">
             <MediaDisplay videos={tvShow.videos?.results} images={tvShow.images?.backdrops} />
           </Section>
         )}
 
-        <Section title="Reviews">
-          <ReviewList id={tvShow.id} fetchReviews={getTVReviews} />
-        </Section>
+        <ReviewList id={tvShow.id} fetchReviews={getTVReviews} title="Reviews" />
       </Container>
     </>
   );

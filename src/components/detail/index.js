@@ -155,8 +155,10 @@ export const DetailHeroSkeleton = () => (
 );
 
 /** Labelled facts in a responsive grid */
+export const hasValue = (value) => value !== undefined && value !== null && value !== '' && !(typeof value === 'number' && isNaN(value));
+
 export const FactGrid = ({ facts }) => {
-  const visible = facts.filter((f) => f.value !== undefined && f.value !== null && f.value !== '');
+  const visible = facts.filter((f) => hasValue(f.value));
   if (visible.length === 0) return null;
   return (
     <Card sx={{ p: { xs: 2, sm: 3 } }}>
@@ -261,7 +263,7 @@ const Review = ({ review }) => {
 };
 
 /** Loads and displays reviews via the supplied fetcher */
-export const ReviewList = ({ id, fetchReviews }) => {
+export const ReviewList = ({ id, fetchReviews, title }) => {
   const [reviews, setReviews] = useState(null);
   useEffect(() => {
     if (!id) return undefined;
@@ -275,9 +277,11 @@ export const ReviewList = ({ id, fetchReviews }) => {
     };
   }, [id, fetchReviews]);
 
+  // With a title, the list renders its own section and disappears entirely when there are no reviews
+  if (title && (reviews === null || reviews.length === 0)) return null;
   if (reviews === null) return <Skeleton variant="rounded" height={120} />;
   if (reviews.length === 0) return <Typography color="text.secondary">No reviews yet.</Typography>;
-  return (
+  const list = (
     <Card sx={{ px: { xs: 2, sm: 3 } }}>
       <Stack divider={<Divider flexItem />}>
         {reviews.map((review) => (
@@ -286,6 +290,7 @@ export const ReviewList = ({ id, fetchReviews }) => {
       </Stack>
     </Card>
   );
+  return title ? <Section title={title}>{list}</Section> : list;
 };
 
 /** "Add to list" dropdown; resets after each pick so the same list can be chosen again */
@@ -350,3 +355,75 @@ export const ExpandableText = ({ text, lines = 6, threshold = 700 }) => {
     </Box>
   );
 };
+
+/** Section with a fact grid; hidden when none of the facts have a value */
+export const FactSection = ({ title, facts }) =>
+  facts.some((f) => hasValue(f.value)) ? (
+    <Section title={title}>
+      <FactGrid facts={facts} />
+    </Section>
+  ) : null;
+
+/** Grid of poster cards with a Show all toggle; hidden when empty */
+export const TitleGridSection = ({ title, items, renderItem, initialCount = 12 }) => {
+  const [showAll, setShowAll] = useState(false);
+  if (!items || items.length === 0) return null;
+  const shown = showAll ? items : items.slice(0, initialCount);
+  return (
+    <Section
+      title={title}
+      action={
+        items.length > initialCount && (
+          <Button onClick={() => setShowAll(!showAll)}>{showAll ? 'Show less' : `Show all ${items.length}`}</Button>
+        )
+      }
+    >
+      <Grid container spacing={{ xs: 2, md: 3 }}>
+        {shown.map((item) => (
+          <Grid item xs={6} sm={4} md={3} lg={2} key={item.id}>
+            {renderItem(item)}
+          </Grid>
+        ))}
+      </Grid>
+    </Section>
+  );
+};
+
+/**
+ * "More from <studio/network>": of the first few listed companies, uses the one with the most titles.
+ * Listing order isn't reliable (a founder's own company can come before the studio), but catalogue size is.
+ * fetchTitles(companyId) -> { results, total }; hidden when nothing turns up.
+ */
+export const MoreFromCompany = ({ companies, currentId, fetchTitles, renderItem, filterItems = (x) => x }) => {
+  const [result, setResult] = useState(null);
+  const key = (companies || []).map((c) => c.id).join(',');
+
+  useEffect(() => {
+    let active = true;
+    setResult(null);
+    const candidates = (companies || []).slice(0, 3);
+    (async () => {
+      const responses = await Promise.all(
+        candidates.map((company) =>
+          fetchTitles(company.id)
+            .then(({ results, total }) => ({ company, total, titles: filterItems(results).filter((t) => t.id !== currentId) }))
+            .catch(() => null)
+        )
+      );
+      const best = responses
+        .filter((r) => r && r.titles.length > 0)
+        .sort((a, b) => b.total - a.total)[0];
+      if (active && best) setResult({ name: best.company.name, titles: best.titles });
+    })();
+    return () => {
+      active = false;
+    };
+  }, [key, currentId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!result) return null;
+  return <TitleGridSection title={`More from ${result.name}`} items={result.titles} renderItem={renderItem} />;
+};
+
+/** True when MediaDisplay would have something to show (embeddable video or at least one image) */
+export const hasPlayableMedia = (videos, images) =>
+  (videos || []).some((v) => v.site === 'YouTube' || v.site === 'Vimeo') || (images || []).length > 0;

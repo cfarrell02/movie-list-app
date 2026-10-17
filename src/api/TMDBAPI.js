@@ -430,3 +430,20 @@ export const getTVExternalIDs = async (id) => {
   }
   return await response.json();
 };
+
+/**
+ * Popular titles from one studio (movies) or network (TV) – returns { results, total }.
+ * Unlike /recommendations, discover honours include_adult, so adult studios work when enabled.
+ */
+export const getTitlesFromCompany = async (type, companyId) => {
+  const allowAdult = localStorage.getItem('adultContent') === 'true' ? 'true' : 'false';
+  const filter = type === 'tv' ? `with_networks=${companyId}` : `with_companies=${companyId}`;
+  const response = await fetch(
+    `https://api.themoviedb.org/3/discover/${type}?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&include_adult=${allowAdult}&sort_by=popularity.desc&${filter}`
+  );
+  if (!response.ok) {
+    throw new Error((await response.json()).status_message);
+  }
+  const json = await response.json();
+  return { results: json.results || [], total: json.total_results || 0 };
+};

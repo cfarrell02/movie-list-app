@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Grid, Typography } from '@mui/material';
+import { Container } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getMovie, getMovieCredits, getMovieImages, getMovieVideos, getMovieRecommendations, getMovieReviews, getMovieWatchProviders } from '../../api/TMDBAPI';
+import { getMovie, getMovieCredits, getMovieImages, getMovieVideos, getMovieRecommendations, getMovieReviews, getMovieWatchProviders, getTitlesFromCompany } from '../../api/TMDBAPI';
 import { getMovieListById, addMovieToList, getMovieListsByUserId } from '../../api/movieStorage';
 import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
@@ -18,10 +18,13 @@ import {
   DetailHero,
   DetailHeroSkeleton,
   ExternalLinks,
-  FactGrid,
+  FactSection,
+  MoreFromCompany,
   PeopleGrid,
   ReviewList,
   Section,
+  TitleGridSection,
+  hasPlayableMedia,
   mergeCrew,
 } from '../../components/detail';
 
@@ -41,7 +44,7 @@ const MovieDetailsPage = () => {
   const { adultContent } = React.useContext(SiteDataContext);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showAllRecs, setShowAllRecs] = useState(false);
+  const [watchAvailable, setWatchAvailable] = useState(true);
   const [blocked, setBlocked] = useState(false);
   const navigate = useNavigate();
 
@@ -53,7 +56,7 @@ const MovieDetailsPage = () => {
     let active = true;
     const fetchData = async () => {
       setLoading(true);
-      setShowAllRecs(false);
+      setWatchAvailable(true);
       setBlocked(false);
       try {
         const [details, credits, images, videos, recommendations] = await Promise.all([
@@ -115,7 +118,8 @@ const MovieDetailsPage = () => {
     : null;
   const director = crew.find((c) => c.job.split(', ').includes('Director'));
   const recommendations = filterAdult(movie.recommendations, adultContent);
-  const shownRecs = showAllRecs ? recommendations : recommendations.slice(0, 12);
+  const stremioUrl = stremioSlug && `https://www.strem.io/s/movie/${stremioSlug}`;
+  const cast = filterAdult(movie.credits?.cast, adultContent);
 
   return (
     <>
@@ -136,6 +140,8 @@ const MovieDetailsPage = () => {
               links={[
                 { label: 'IMDb', href: movie.imdb_id && `https://www.imdb.com/title/${movie.imdb_id}` },
                 { label: 'TMDB', href: `https://www.themoviedb.org/movie/${movie.id}` },
+                // Stremio normally sits in "Where to watch"; show it here when that section is hidden
+                { label: 'Stremio', href: !watchAvailable && stremioUrl },
               ]}
             />
           </>
@@ -143,67 +149,51 @@ const MovieDetailsPage = () => {
       />
 
       <Container maxWidth="lg" sx={{ pb: 4 }}>
-        <Section title="Where to watch">
-          <WhereToWatch
-            id={movie.id}
-            fetchProviders={getMovieWatchProviders}
-            stremioUrl={stremioSlug && `https://www.strem.io/s/movie/${stremioSlug}`}
-          />
-        </Section>
+        <WhereToWatch id={movie.id} fetchProviders={getMovieWatchProviders} stremioUrl={stremioUrl} onAvailability={setWatchAvailable} />
 
-        <Section title="Details">
-          <FactGrid
-            facts={[
-              { label: 'Released', value: movie.release_date && new Date(movie.release_date).toLocaleDateString() },
-              { label: 'Runtime', value: formatRuntime(movie.runtime) },
-              { label: 'Status', value: movie.status },
-              { label: 'Language', value: movie.spoken_languages?.[0]?.english_name },
-              { label: 'Budget', value: money(movie.budget) },
-              { label: 'Revenue', value: money(movie.revenue) },
-              { label: 'Studio', value: movie.production_companies?.slice(0, 2).map((c) => c.name).join(', ') },
-              { label: 'Country', value: movie.production_countries?.slice(0, 2).map((c) => c.name).join(', ') },
-            ]}
-          />
-        </Section>
+        <FactSection
+          title="Details"
+          facts={[
+            { label: 'Released', value: movie.release_date && new Date(movie.release_date).toLocaleDateString() },
+            { label: 'Runtime', value: formatRuntime(movie.runtime) },
+            { label: 'Status', value: movie.status },
+            { label: 'Language', value: movie.spoken_languages?.[0]?.english_name },
+            { label: 'Budget', value: money(movie.budget) },
+            { label: 'Revenue', value: money(movie.revenue) },
+            { label: 'Studio', value: movie.production_companies?.slice(0, 2).map((c) => c.name).join(', ') },
+            { label: 'Country', value: movie.production_countries?.slice(0, 2).map((c) => c.name).join(', ') },
+          ]}
+        />
 
-        <Section title="Cast">
-          <PeopleGrid people={filterAdult(movie.credits?.cast, adultContent)} getRole={(p) => p.character} />
-        </Section>
-
-        <Section title="Crew">
-          <PeopleGrid people={crew} getRole={(p) => p.job} initialCount={8} />
-        </Section>
-
-        {recommendations.length > 0 && (
-          <Section
-            title="You might also like"
-            action={
-              recommendations.length > 12 && (
-                <Typography component="button" onClick={() => setShowAllRecs(!showAllRecs)} sx={{ all: 'unset', cursor: 'pointer', color: 'primary.main', fontWeight: 600 }}>
-                  {showAllRecs ? 'Show less' : 'Show all'}
-                </Typography>
-              )
-            }
-          >
-            <Grid container spacing={{ xs: 2, md: 3 }}>
-              {shownRecs.map((rec) => (
-                <Grid item xs={6} sm={4} md={3} lg={2} key={rec.id}>
-                  <MovieCard movie={rec} />
-                </Grid>
-              ))}
-            </Grid>
+        {cast.length > 0 && (
+          <Section title="Cast">
+            <PeopleGrid people={cast} getRole={(p) => p.character} />
           </Section>
         )}
 
-        {(movie.videos?.results?.length > 0 || movie.images?.backdrops?.length > 0) && (
+        {crew.length > 0 && (
+          <Section title="Crew">
+            <PeopleGrid people={crew} getRole={(p) => p.job} initialCount={8} />
+          </Section>
+        )}
+
+        <TitleGridSection title="You might also like" items={recommendations} renderItem={(rec) => <MovieCard movie={rec} />} />
+
+        <MoreFromCompany
+          companies={movie.production_companies}
+          currentId={movie.id}
+          fetchTitles={(companyId) => getTitlesFromCompany('movie', companyId)}
+          filterItems={(items) => filterAdult(items, adultContent)}
+          renderItem={(item) => <MovieCard movie={item} />}
+        />
+
+        {hasPlayableMedia(movie.videos?.results, movie.images?.backdrops) && (
           <Section title="Media">
             <MediaDisplay videos={movie.videos?.results} images={movie.images?.backdrops} />
           </Section>
         )}
 
-        <Section title="Reviews">
-          <ReviewList id={movie.id} fetchReviews={getMovieReviews} />
-        </Section>
+        <ReviewList id={movie.id} fetchReviews={getMovieReviews} title="Reviews" />
       </Container>
     </>
   );

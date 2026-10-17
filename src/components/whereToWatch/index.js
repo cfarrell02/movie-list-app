@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Avatar, Box, Button, Card, Link, MenuItem, Select, Skeleton, Stack, Tooltip, Typography } from '@mui/material';
+import { Avatar, Box, Button, Card, Link, MenuItem, Select, Stack, Tooltip, Typography } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Section } from '../detail';
 
 const COUNTRY_KEY = 'watchCountry';
 
@@ -37,8 +38,9 @@ const preferredCountry = () => {
 /**
  * Lists where a title can be streamed, rented or bought, plus an "Open in Stremio" link.
  * fetchProviders(id) resolves to TMDB's per-country provider map.
+ * The whole section is hidden when no country has any providers; onAvailability(bool) reports which.
  */
-const WhereToWatch = ({ id, fetchProviders, stremioUrl }) => {
+const WhereToWatch = ({ id, fetchProviders, stremioUrl, title = 'Where to watch', onAvailability }) => {
   const [providers, setProviders] = useState(null);
   const [country, setCountry] = useState(preferredCountry);
 
@@ -46,7 +48,7 @@ const WhereToWatch = ({ id, fetchProviders, stremioUrl }) => {
     let active = true;
     setProviders(null);
     fetchProviders(id)
-      .then((data) => active && setProviders(data))
+      .then((data) => active && setProviders(data || {}))
       .catch(() => active && setProviders({}));
     return () => {
       active = false;
@@ -67,12 +69,19 @@ const WhereToWatch = ({ id, fetchProviders, stremioUrl }) => {
     }
   };
 
-  if (providers === null) return <Skeleton variant="rounded" height={120} />;
+  const available = providers !== null && countries.length > 0;
+  // Report after render so the page can surface the Stremio link elsewhere when this is hidden
+  useEffect(() => {
+    if (providers !== null && onAvailability) onAvailability(available);
+  }, [providers, available]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (providers === null || !available) return null;
 
   const current = providers[country];
   const groups = current ? GROUPS.filter((g) => current[g.key]?.length) : [];
 
   return (
+    <Section title={title}>
     <Card sx={{ p: { xs: 2, sm: 3 } }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ sm: 'center' }} sx={{ mb: 2.5 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'stretch', sm: 'center' }}>
@@ -128,6 +137,7 @@ const WhereToWatch = ({ id, fetchProviders, stremioUrl }) => {
         <Link href="https://www.justwatch.com/" target="_blank" rel="noopener noreferrer" color="inherit">JustWatch</Link>.
       </Typography>
     </Card>
+    </Section>
   );
 };
 

@@ -5,8 +5,8 @@ import { getPerson, getPersonMovies, getPersonTV, getPersonImages, getPersonTagg
 import PersonCreditsSection from '../../components/personComponents/personCreditsSection';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import MediaDisplay from '../../components/mediaDisplay';
-import { AdultContentNotice, DetailHero, DetailHeroSkeleton, ExternalLinks, FactGrid, Section } from '../../components/detail';
-import { ageFormatter } from '../../utils';
+import { AdultContentNotice, DetailHero, DetailHeroSkeleton, ExternalLinks, FactGrid, Section, hasValue } from '../../components/detail';
+import { ageFormatter, filterAdult } from '../../utils';
 
 const Biography = ({ text }) => {
     const [expanded, setExpanded] = useState(false);
@@ -85,6 +85,13 @@ const PersonPage = () => {
 
     const age = person.birthday ? ageFormatter(person.birthday) : null;
     const tmdbSlug = `${person.id}-${person.name.replace(/\s/g, '-')}`;
+    const facts = [
+        { label: 'Born', value: person.birthday && new Date(person.birthday).toLocaleDateString() },
+        { label: person.deathday ? 'Died' : 'Age', value: person.deathday ? new Date(person.deathday).toLocaleDateString() : age },
+        { label: 'Birthplace', value: person.place_of_birth },
+        { label: 'Known for', value: person.known_for_department },
+    ];
+    const hasCredits = [person.credits?.cast, person.credits?.crew, person.tvCredits?.cast].some((list) => filterAdult(list, adultContent).length > 0);
 
     return (
         <>
@@ -105,24 +112,19 @@ const PersonPage = () => {
             />
             <Container maxWidth="lg" sx={{ pb: 4 }}>
                 <Stack>
-                    <Section title="About">
-                        <Stack spacing={3}>
-                            <FactGrid
-                                facts={[
-                                    { label: 'Born', value: person.birthday && new Date(person.birthday).toLocaleDateString() },
-                                    { label: person.deathday ? 'Died' : 'Age', value: person.deathday ? new Date(person.deathday).toLocaleDateString() : age },
-                                    { label: 'Birthplace', value: person.place_of_birth },
-                                    { label: 'Known for', value: person.known_for_department },
-                                ]}
-                            />
-                            {person.biography ? <Biography text={person.biography} /> : (
-                                <Typography color="text.secondary">No biography available.</Typography>
-                            )}
-                        </Stack>
-                    </Section>
-                    <Section title="Credits">
-                        <PersonCreditsSection person={person} />
-                    </Section>
+                    {(facts.some((f) => hasValue(f.value)) || person.biography) && (
+                        <Section title="About">
+                            <Stack spacing={3}>
+                                <FactGrid facts={facts} />
+                                {person.biography && <Biography text={person.biography} />}
+                            </Stack>
+                        </Section>
+                    )}
+                    {hasCredits && (
+                        <Section title="Credits">
+                            <PersonCreditsSection person={person} />
+                        </Section>
+                    )}
                     {person.images.profiles.length > 0 && (
                         <Section title="Photos">
                             <MediaDisplay images={person.images.profiles} imageAspect="2 / 3" />

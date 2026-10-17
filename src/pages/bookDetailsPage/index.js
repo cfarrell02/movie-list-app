@@ -22,7 +22,7 @@ import {
   DetailHeroSkeleton,
   ExpandableText,
   ExternalLinks,
-  FactGrid,
+  FactSection,
   Section,
 } from '../../components/detail';
 
@@ -171,17 +171,16 @@ const BookDetailsPage = () => {
         }
       />
       <Container maxWidth="lg" sx={{ pb: 4 }}>
-        <Section title="Details">
-          <FactGrid
-            facts={[
-              { label: 'First published', value: book.first_publish_year },
-              { label: 'Pages', value: book.number_of_pages_median },
-              { label: 'Editions', value: book.edition_count },
-              { label: 'Ratings', value: book.ratings_count ? book.ratings_count.toLocaleString() : null },
-              { label: 'Online', value: book.ebook_access === 'public' ? 'Free to read' : book.ebook_access === 'borrowable' ? 'Borrowable' : null },
-            ]}
-          />
-        </Section>
+        <FactSection
+          title="Details"
+          facts={[
+            { label: 'First published', value: book.first_publish_year },
+            { label: 'Pages', value: book.number_of_pages_median },
+            { label: 'Editions', value: book.edition_count },
+            { label: 'Ratings', value: book.ratings_count ? book.ratings_count.toLocaleString() : null },
+            { label: 'Online', value: book.ebook_access === 'public' ? 'Free to read' : book.ebook_access === 'borrowable' ? 'Borrowable' : null },
+          ]}
+        />
 
         {book.authorRecords.length > 0 && (
           <Section title={book.authorRecords.length > 1 ? 'About the authors' : 'About the author'}>
