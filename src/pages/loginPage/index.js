@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Container, Typography, Button, Card, Alert, Switch, Box, Stack, Link as MuiLink } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { onAuthStateChanged, sendPasswordResetEmail, updateEmail, updatePassword, deleteUser } from 'firebase/auth';
+import { onAuthStateChanged, sendPasswordResetEmail, updateEmail, deleteUser } from 'firebase/auth';
 import { auth } from '../../firebase-config';
 import Register from '../../components/Onboarding/register';
 import ForgotPassword from '../../components/Onboarding/forgotPassword';

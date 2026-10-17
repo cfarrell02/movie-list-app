@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Card, Typography, Button, TextField, Box, Divider } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
+import { Alert, Card, Typography, Button, TextField } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, confirmPasswordReset, verifyPasswordResetCode, applyActionCode } from "firebase/auth";
-import { getUserById, updateUser } from '../../api/userDataStorage';
-import { getMovieListsByUserId, updateMovieList} from '../../api/movieStorage';
 
+
+const allowedModes = ['resetPassword', 'verifyEmail', 'recoverEmail'];
 
 const UserActionPage = () => {
-    const allowedModes = ['resetPassword', 'verifyEmail', 'recoverEmail'];
     const location = useLocation();
     const urlSearch = new URLSearchParams(location.search);
     const mode = urlSearch.get('mode');

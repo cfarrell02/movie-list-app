@@ -1,31 +1,8 @@
 import React, { useState, useEffect, useMemo} from 'react';
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Grid,
-  Autocomplete,
-  CircularProgress,
-  Tab,
-  Tabs,
-  Select,
-  MenuItem,
-  Card,
-  FormControl,
-  Divider,
-  ButtonGroup,
-  InputLabel,
-  useMediaQuery,
-  Stack,
-  Box
-} from '@mui/material';
+import { Container, Typography, Grid, CircularProgress, Card, useMediaQuery, Stack } from '@mui/material';
 import { getBook, getAuthor } from '../../api/bookAPI';
 import { getPersonExternalIDs, getPersonSearchResults } from '../../api/TMDBAPI';
-import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
 import { Link, useParams } from 'react-router-dom';
-import { auth } from '../../firebase-config';
 
 
 

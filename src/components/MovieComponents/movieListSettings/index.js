@@ -1,34 +1,8 @@
 // MovieAdd.js
 
 import React, { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Alert,
-  Grid,
-  Autocomplete,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  List,
-  ListItem,
-  CircularProgress,
-  ListItemText,
-  useMediaQuery,
-  IconButton,
-  ButtonGroup,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Divider,
-} from "@mui/material";
+import { Box, Container, Typography, TextField, Button, Grid, Autocomplete, Accordion, AccordionSummary, AccordionDetails, List, ListItem, CircularProgress, ListItemText, useMediaQuery, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Divider } from "@mui/material";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -39,7 +13,6 @@ import { auth } from "../../../firebase-config";
 import { onAuthStateChanged } from "firebase/auth";
 import ListTransfer from "../listTransfer";
 import { AlertContext } from "../../../contexts/alertContext";
-import { BorderBottom } from "@mui/icons-material";
 import ConfimationModal from "../../Modals/confirmationModal";
 
 const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
@@ -232,7 +205,7 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
       const userIndex = movieList.userIds.indexOf(userID);
       const updatedUsers = [...users];
       updatedUsers.splice(userIndex, 1);
-      const updatedUserIds = movieList.userIds.filter((id) => id != userID);
+      const updatedUserIds = movieList.userIds.filter((id) => id !== userID);
       const updatedMovieList = {
         ...movieList,
         users: updatedUsers,

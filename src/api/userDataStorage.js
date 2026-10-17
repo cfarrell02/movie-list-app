@@ -1,4 +1,4 @@
-import { collection, addDoc, getDoc, setDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
+import { collection, getDoc, setDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
 export const addUser = async (user) => {

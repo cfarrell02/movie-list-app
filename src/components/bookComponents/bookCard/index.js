@@ -1,52 +1,17 @@
-import React, { useContext } from "react";
+import React from "react";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
-import CardHeader from "@mui/material/CardHeader";
-import Button from "@mui/material/Button";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import InputLabel from "@mui/material/InputLabel";
 import Typography from "@mui/material/Typography";
-import FavoriteIcon from "@mui/icons-material/Favorite";
 import CalendarIcon from "@mui/icons-material/CalendarTodayTwoTone";
 import StarRateIcon from "@mui/icons-material/StarRate";
 import Grid from "@mui/material/Grid";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import {
-  getMovieListsByUserId,
-  addMovieToList,
-  getMovieListById,
-} from "../../../api/movieStorage";
-import { AlertContext } from "../../../contexts/alertContext";
-import { getUserById } from "../../../api/userDataStorage";
-import { auth } from "../../../firebase-config";
-import { onAuthStateChanged } from "firebase/auth";
-import Stack from "@mui/material/Stack";
-import { NativeSelect, FormControl } from "@mui/material";
 import defaultImage from "../../../images/default.jpg";
 
 export default function BookCard({ book }) {
-  const [user, setUser] = React.useState(null);
-  const { addAlert } = React.useContext(AlertContext);
   const [posterUrl, setPosterUrl] = React.useState("");
   const [navURL, setNavURL] = React.useState("");
   const navigate = useNavigate();
-  React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-      } else {
-        setUser(null);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
 
   React.useEffect(() => {
     if (book) {

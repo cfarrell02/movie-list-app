@@ -1,47 +1,11 @@
-import React, { useRef, useState , useEffect} from 'react';
-import {
-  Avatar,
-  Box,
-  Container,
-  FormControlLabel,
-  TableContainer,
-  List,
-  ListItem,
-  TableRow,
-  TableCell,
-  TableBody,
-  Button,
-  Typography,
-  Paper,
-  CircularProgress,
-  TablePagination,
-  TextField,
-  Rating,
-  Slider,
-  Chip,
-  Stack,
-  Select,
-  Switch,
-  Grid,
-  Alert,
-  useMediaQuery,
-  InputAdornment,
-  Card,
-  Divider
-} from '@mui/material';
-import { ArrowUpward, ArrowDownward, Filter, Label, Refresh } from '@mui/icons-material';
-import { orderBy } from 'lodash';
-import { AlertContext } from '../../../contexts/alertContext';
-import Checkbox from '@mui/material/Checkbox';
+import React, { useState, useEffect } from 'react';
+import { Avatar, Box, Container, FormControlLabel, List, ListItem, Typography, Chip, Switch, Card, Divider } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../../firebase-config';
 import { getUserById } from '../../../api/userDataStorage';
-import ConfirmationModal from '../../Modals/confirmationModal';
 
 const UserManagementList = ({ users, handleUpdate }) => {
     const [currentUser, setUser] = useState({});
-    const [confirmationOpen, setConfirmationOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState({});
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
           if (currentUser) {
@@ -85,7 +49,7 @@ const UserManagementList = ({ users, handleUpdate }) => {
                                     {`${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
                                 </Avatar>
                                 <Box sx={{ flex: 1, minWidth: 180 }}>
-                                    <Typography fontWeight={600}>
+                                    <Typography component="div" fontWeight={600}>
                                         {user.firstName} {user.lastName} {user.id === currentUser.id && <Chip size="small" label="You" sx={{ ml: 0.5 }} />}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary" noWrap>{user.email}</Typography>

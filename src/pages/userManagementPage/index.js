@@ -1,13 +1,9 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Card, Typography, Button, TextField, Box, Divider } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
 
-import { getUserById, updateUser, getAllUsers, deleteUser } from '../../api/userDataStorage';
-import { getMovieListsByUserId, updateMovieList, deleteMovieList } from '../../api/movieStorage';
+import { getUserById, updateUser, getAllUsers } from '../../api/userDataStorage';
 
 import UserManagementList from '../../components/Admin/userManagementList';
-import { onAuthStateChanged, deleteUser as deleteUserAuth , getAuth} from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
 
@@ -51,7 +47,7 @@ const UserManagementPage = () => {
             setUsers(userData);
         });
     }
-    , []);
+    , [currentUser.id]);
 
     const getFullName = (user) => {
         return `${user.firstName} ${user.lastName}`;

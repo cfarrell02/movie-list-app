@@ -66,7 +66,7 @@ const MovieTrackingPage = () => {
     }catch(error){
       console.error(error);
     }
-  }, [user, movieList.users]);
+  }, [user, movieList.users, navigate]);
 
   const removeMovie = async (movie) => {
     try{
