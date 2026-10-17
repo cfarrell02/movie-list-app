@@ -1,47 +1,31 @@
-import React, {useState} from "react";
-import { Modal, Card, Typography, Button, TextField, Grid} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    boxShadow: 24,
-    p: 4,
+// onClose(title) creates the list; onCancel dismisses without creating
+const NewMovieListModal = ({ header, title: heading, body, open, onClose, onCancel }) => {
+  const [title, setTitle] = useState("");
+
+  useEffect(() => {
+    if (open) setTitle("");
+  }, [open]);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (title.trim()) onClose(title.trim());
   };
 
-const NewMovieListModal = ({ header, body, open, onClose, onCancel }) => {
-  const [title, setTitle] = useState("");
   return (
-    <Modal open={open} onClose={onClose} aria-labelledby={header}>
-      <Card sx={style} align="center">
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12}>
-        <Typography id="modal-modal-title" variant="h6" component="h2">
-          {header}
-        </Typography>
-          </Grid>
-          <Grid item xs={12}>
-        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-          {body}
-        </Typography>
-          </Grid>
-          <Grid item xs={12}>
-        <TextField id="outlined-basic" label="Title" variant="outlined" onChange={(event) => setTitle(event.target.value)} />
-          </Grid>
-        <Grid item xs={12}>
-        <Button variant="contained" size="large" color="primary" sx={{marginTop:"2em", marginRight:'1em'}} onClick={() => onCancel()}>
-          Cancel
-        </Button>
-        <Button variant="contained" size="large" color="primary" sx={{marginTop:"2em"}} onClick={() => onClose(title)}>
-          Submit
-        </Button>
-        </Grid>
-        </Grid>
-      </Card>
-    </Modal>
+    <Dialog open={open} onClose={onCancel} fullWidth maxWidth="xs" PaperProps={{ component: "form", onSubmit: handleSubmit }}>
+      <DialogTitle>{header || heading}</DialogTitle>
+      <DialogContent>
+        {body && <DialogContentText sx={{ mb: 2 }}>{body}</DialogContentText>}
+        <TextField autoFocus fullWidth label="List name" value={title} onChange={(event) => setTitle(event.target.value)} />
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onCancel} color="inherit">Cancel</Button>
+        <Button type="submit" variant="contained" disabled={!title.trim()}>Create list</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

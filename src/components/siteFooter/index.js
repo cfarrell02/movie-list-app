@@ -1,24 +1,25 @@
 import React from 'react';
-import { Typography, Link } from '@mui/material';
+import { Box, Container, Link, Typography } from '@mui/material';
 
 function SiteFooter() {
-    
     return (
-        <div style={{paddingTop:'2em'}}>
-            <Typography variant="h6" align="center" gutterBottom sx={{color:'text.primary'}}>
-                Watch List App
-            </Typography>
-            <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
-                Created by Cian Farrell
-            </Typography>
-            <Typography variant="body2" color="textSecondary" align="center" sx={{paddingBottom:'2em'}}>
-                {'Movies supplied by '}
-                <Link color="inherit" href="https://www.themoviedb.org/">
-                    The Movie Database
-                </Link>
-            </Typography>
-        </div>
+        <Box component="footer" sx={{ borderTop: 1, borderColor: 'divider', mt: 6, py: 3 }}>
+            <Container
+                maxWidth="xl"
+                sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'space-between', alignItems: 'center' }}
+            >
+                <Typography variant="body2" color="text.secondary">
+                    Watchlist · Created by Cian Farrell
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                    {'Data provided by '}
+                    <Link color="inherit" href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">
+                        The Movie Database (TMDB)
+                    </Link>
+                </Typography>
+            </Container>
+        </Box>
     );
-    }
+}
 
 export default SiteFooter;

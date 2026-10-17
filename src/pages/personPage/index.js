@@ -1,137 +1,134 @@
-import React, { useState, useEffect, useMemo} from 'react';
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Grid,
-  Autocomplete,
-  CircularProgress,
-  Tab,
-  Tabs,
-  Select,
-  MenuItem,
-  Card,
-  FormControl,
-  Divider,
-  ButtonGroup,
-  Stack,
-  useMediaQuery
-} from '@mui/material';
-import { getPerson, getPersonMovies, getPersonTV , getPersonImages, getPersonTaggedImages} from '../../api/TMDBAPI';
-import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
-import { useParams } from 'react-router-dom';
-import {auth} from '../../firebase-config';
-import { onAuthStateChanged } from 'firebase/auth';
-import PersonDetailsCard from '../../components/personComponents/personDetailsCard';
-import PersonDetailsSection from '../../components/personComponents/personDetailsSection';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Box, Button, Container, Stack, Typography } from '@mui/material';
+import { getPerson, getPersonMovies, getPersonTV, getPersonImages, getPersonTaggedImages } from '../../api/TMDBAPI';
 import PersonCreditsSection from '../../components/personComponents/personCreditsSection';
-import { AlertContext } from '../../contexts/alertContext';
-import { getUserById } from '../../api/userDataStorage';
-import { useNavigate } from 'react-router-dom';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import MediaDisplay from '../../components/mediaDisplay';
+import { DetailHero, DetailHeroSkeleton, ExternalLinks, FactGrid, Section } from '../../components/detail';
+import { ageFormatter } from '../../utils';
 
-const PersonPage = (props) => {
-    const {id} = useParams();
-    const [loading , setLoading] = useState(false);
-    const [person, setPerson] = useState({});
-    const [tmdbId, setTmdbId] = useState(null);
-    const {adultContent} = React.useContext(SiteDataContext);
+const Biography = ({ text }) => {
+    const [expanded, setExpanded] = useState(false);
+    if (!text) return null;
+    const long = text.length > 700;
+    return (
+        <Box>
+            <Typography
+                sx={{
+                    whiteSpace: 'pre-line',
+                    lineHeight: 1.7,
+                    maxWidth: 820,
+                    ...(!expanded && long ? { display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : {}),
+                }}
+            >
+                {text}
+            </Typography>
+            {long && (
+                <Button size="small" onClick={() => setExpanded(!expanded)} sx={{ px: 0, mt: 0.5 }}>
+                    {expanded ? 'Show less' : 'Read more'}
+                </Button>
+            )}
+        </Box>
+    );
+};
+
+const PersonPage = () => {
+    const { id } = useParams();
+    const [loading, setLoading] = useState(true);
+    const [person, setPerson] = useState(null);
+    const { adultContent } = React.useContext(SiteDataContext);
     const navigate = useNavigate();
-    const isMobile = useMediaQuery  ('(max-width:900px)');
 
     useEffect(() => {
+        let active = true;
         const fetchData = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
-                const fetchedPerson = await getPerson(id);
-                const fetchedMovieCredits = await getPersonMovies(id);
-                const fetchedTVCredits = await getPersonTV(id);
-                const fetchedImages = await getPersonImages(id);
-                const fetchedTaggedImages = await getPersonTaggedImages(id);
-                
+                const [details, movieCredits, tvCredits, images, taggedImages] = await Promise.all([
+                    getPerson(id),
+                    getPersonMovies(id),
+                    getPersonTV(id),
+                    getPersonImages(id),
+                    getPersonTaggedImages(id),
+                ]);
+                if (!active) return;
                 // If the person is adult only and the user has adult content disabled, redirect to home
-                if(!adultContent && fetchedPerson.adult){
-                    navigate('/');
+                if (!adultContent && details.adult) {
+                    navigate('/', { replace: true });
+                    return;
                 }
-
-                const combinedImages = fetchedImages.profiles.concat(fetchedTaggedImages.results);
-
-                setPerson({...fetchedPerson, credits: fetchedMovieCredits, tvCredits: fetchedTVCredits, images : {profiles: combinedImages}});
-                setTmdbId(fetchedPerson.id + fetchedPerson.name.replace(/\s/g, '-'));
+                setPerson({
+                    ...details,
+                    credits: movieCredits,
+                    tvCredits,
+                    images: { profiles: [...(images.profiles || []), ...(taggedImages.results || [])].filter((img, i, all) => all.findIndex((o) => o.file_path === img.file_path) === i) },
+                });
+                window.scrollTo(0, 0);
             } catch (error) {
-                console.log(error);
-            }finally{
-                setLoading(false);
+                console.error(error);
+                if (active) navigate('/404', { replace: true });
+            } finally {
+                if (active) setLoading(false);
             }
-        }
+        };
         fetchData();
+        return () => {
+            active = false;
+        };
     }, [id, adultContent, navigate]);
 
+    if (loading || !person) return <DetailHeroSkeleton />;
+
+    const age = person.birthday ? ageFormatter(person.birthday) : null;
+    const tmdbSlug = `${person.id}-${person.name.replace(/\s/g, '-')}`;
 
     return (
-      <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%'}}>
-        {loading ? 
-      <Container sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
-        <CircularProgress/>
-      </Container>
-        : <>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-start' }}>
-        <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{person.name}</Typography>
-        </Grid>
-        <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-end' }}>
-          <ButtonGroup sx={{marginBottom: '.5em', marginRight:'1em'}}>
-            {person.imdb_id && <Button variant="contained" target="_blank" href={`https://www.imdb.com/name/${person.imdb_id}`} title='IMDB'>IMDB</Button>}
-            <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/person/${tmdbId}`} title='TMDB'>TMDB</Button>
-          </ButtonGroup>
-        </Grid>
-        </Grid>
-        <Divider/>
-        {person.known_for_department ? (
-        <Typography variant="subtitle1" color='text.secondary' >{person.known_for_department}</Typography>
-        ) : ''}
-        <Grid container spacing={ isMobile ? 0 : 2}>
-          {isMobile ? (<>
-            <Grid item xs={12}>
-              <PersonDetailsCard person={person}/>
-            </Grid>
-            <Grid item xs={12}>
-            <PersonDetailsSection person={person}/>
-            </Grid>
-            </>):<>
-          <Grid item xs={9}>
-            <PersonDetailsSection person={person}/>
-            </Grid>
-            <Grid item xs={3}>
-              <PersonDetailsCard person={person}/>
-            </Grid> 
-            </>}
-            {person.images && 
-        <Grid item xs={12}>
-        <Typography variant="h4" sx={{ marginTop: '1em' }}>
-                    Media
-            </Typography>
-        <Divider sx={{ marginBottom: '1em' }} />
-        <Container sx={{ maxHeight: '45em', overflow: 'auto', margin: '1em 0', width: '100%', maxWidth: 'none !important' }}>
-        <MediaDisplay images={person.images.profiles}/>
-        </Container>
-        </Grid>
-        }
-            <Grid item xs={12}>
-            <Typography variant="h4" sx={{ marginTop: '1em' }}>
-                      Credits 
-              </Typography>
-              <Divider sx={{ marginBottom: '1em' }} />
-              <PersonCreditsSection person={person}/>
-              </Grid>
-            </Grid>
+        <>
+            <DetailHero
+                posterPath={person.profile_path}
+                round
+                title={person.name}
+                meta={[person.known_for_department, person.place_of_birth]}
+                chips={(person.also_known_as || []).slice(0, 4)}
+                actions={
+                    <ExternalLinks
+                        links={[
+                            { label: 'IMDb', href: person.imdb_id && `https://www.imdb.com/name/${person.imdb_id}` },
+                            { label: 'TMDB', href: `https://www.themoviedb.org/person/${tmdbSlug}` },
+                        ]}
+                    />
+                }
+            />
+            <Container maxWidth="lg" sx={{ pb: 4 }}>
+                <Stack>
+                    <Section title="About">
+                        <Stack spacing={3}>
+                            <FactGrid
+                                facts={[
+                                    { label: 'Born', value: person.birthday && new Date(person.birthday).toLocaleDateString() },
+                                    { label: person.deathday ? 'Died' : 'Age', value: person.deathday ? new Date(person.deathday).toLocaleDateString() : age },
+                                    { label: 'Birthplace', value: person.place_of_birth },
+                                    { label: 'Known for', value: person.known_for_department },
+                                ]}
+                            />
+                            {person.biography ? <Biography text={person.biography} /> : (
+                                <Typography color="text.secondary">No biography available.</Typography>
+                            )}
+                        </Stack>
+                    </Section>
+                    <Section title="Credits">
+                        <PersonCreditsSection person={person} />
+                    </Section>
+                    {person.images.profiles.length > 0 && (
+                        <Section title="Photos">
+                            <MediaDisplay images={person.images.profiles} imageAspect="2 / 3" />
+                        </Section>
+                    )}
+                </Stack>
+            </Container>
+        </>
+    );
+};
 
-          </>}
-      </Card>
-    )
-
-}
 export default PersonPage;

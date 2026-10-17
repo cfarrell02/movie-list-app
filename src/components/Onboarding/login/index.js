@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography , Container, useMediaQuery} from '@mui/material';
+import { Box, TextField, Button, Typography } from '@mui/material';
 import { SiteDataContext } from '../../../contexts/siteDataContext';
 import { getUserById } from '../../../api/userDataStorage';
 
@@ -7,7 +7,6 @@ const Login = ({ handleLogin, addAlert }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const {adultContent, setAdultContent} = React.useContext(SiteDataContext);
-  const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -28,37 +27,31 @@ const Login = ({ handleLogin, addAlert }) => {
   };
 
   return (
-    <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
-      <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
-        Login
-      </Typography>
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-      >
+    <Box sx={{ width: '100%' }}>
+      <Typography variant="h4" component="h1">Sign in</Typography>
+      <Typography color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>Welcome back – pick up where you left off.</Typography>
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <TextField
           fullWidth
-          margin="normal"
           label="Email"
-          variant="outlined"
+          type="email"
+          autoComplete="email"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
         />
         <TextField
           fullWidth
-          margin="normal"
           label="Password"
-          variant="outlined"
           type="password"
+          autoComplete="current-password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
-        <Button variant="contained" type="submit" color="primary">
-          Login
+        <Button variant="contained" type="submit" size="large">
+          Sign in
         </Button>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

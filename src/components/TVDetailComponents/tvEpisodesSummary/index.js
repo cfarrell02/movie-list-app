@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  Box,
   Container,
   Table,
   TableHead,
@@ -50,43 +51,46 @@ const TVEpisodesSummary = ({ tvShow }) => {
   }, [tvShow]);
 
 const getColor = (rating) => {
-    if (rating >= 9) return "rgb(0, 100, 0)"; // dark green
-    if (rating >= 8) return "rgb(0, 128, 0)"; // green
-    if (rating >= 6) return "rgb(255, 165, 0)"; // orange
-    if (rating === 0) return /* grey */ "rgb(128, 128, 128)";
-    return "rgb(255, 0, 0)"; // red
+    if (!rating) return "#6B7280"; // unrated
+    if (rating >= 9) return "#15803D";
+    if (rating >= 8) return "#16A34A";
+    if (rating >= 7) return "#65A30D";
+    if (rating >= 6) return "#D97706";
+    return "#DC2626";
 };
 
 return (
-  <Container>
+  <Box>
     {loading ? (
     <Container sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "5em" }}>
       <CircularProgress />
     </Container>
     ) : (
     <>
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 3, maxHeight: '40em', overflowX: "auto" }}>
-      <Table sx={{ borderCollapse: "separate", borderSpacing: "10px" }}>
+      <TableContainer component={Paper} variant="outlined" sx={{ p: 1, borderRadius: '16px', maxHeight: '40em', overflowX: "auto" }}>
+      <Table sx={{ borderCollapse: "separate", borderSpacing: "6px" }}>
         <TableHead>
         <TableRow>
-          <TableCell sx={headerCellStyle}>Season</TableCell>
+          <TableCell sx={{ ...headerCellStyle, textAlign: "left" }}>Season</TableCell>
           {longest.episodes &&
           longest.episodes.map((episode, index) => (
-            <TableCell key={index} sx={headerCellStyle}>{`Ep${index + 1}`}</TableCell>
+            <TableCell key={index} sx={headerCellStyle}>{index + 1}</TableCell>
           ))}
         </TableRow>
         </TableHead>
         <TableBody>
         {seasons.map((season) => (
           <TableRow key={season.id}>
-          <TableCell sx={bodyCellStyle}>{season.name}</TableCell>
+          <TableCell sx={seasonCellStyle}>{season.name}</TableCell>
           {season.episodes.map((episode, index) => (
             <Tooltip title={episode.name} key={index} onClick={() => setSelectedEpisode(episode)}>
             <TableCell
               sx={{
               ...bodyCellStyle,
               backgroundColor: getColor(episode.vote_average),
-              outline: episode === selectedEpisode ? "2px solid #1976d2" : "none",
+              outline: episode === selectedEpisode ? "3px solid" : "none",
+              outlineColor: "text.primary",
+              outlineOffset: "1px",
               "&:hover": {
                 backgroundColor: (theme) =>
                 theme.palette.augmentColor({
@@ -95,7 +99,7 @@ return (
               },
               }}
             >
-              {episode.vote_average !== 0 ? episode.vote_average : "-"}
+              {episode.vote_average !== 0 ? episode.vote_average.toFixed(1) : "–"}
             </TableCell>
             </Tooltip>
           ))}
@@ -106,32 +110,53 @@ return (
       </TableContainer>
 
       {selectedEpisode && (
-      <Container sx={{ p: 2, borderRadius: 3, border: "1px solid #1976d2", marginTop: "1em" }}>
+      <Paper variant="outlined" sx={{ p: 2, borderRadius: '12px', borderColor: "primary.main", mt: 2 }}>
+        <Typography variant="caption" color="text.secondary" fontWeight={600}>
+          S{selectedEpisode.season_number} · E{selectedEpisode.episode_number}
+          {selectedEpisode.air_date ? ` · ${new Date(selectedEpisode.air_date).toLocaleDateString()}` : ""}
+        </Typography>
         <Typography variant="h6">{selectedEpisode.name}</Typography>
-        <Typography variant="body1">{selectedEpisode.overview}</Typography>
-      </Container>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{selectedEpisode.overview || "No synopsis available."}</Typography>
+      </Paper>
       )}
     </>
     )}
-  </Container>
+  </Box>
 );
 };
 
 // Common styles for cells
 const headerCellStyle = {
-  backgroundColor: "#1976d2",
-  color: "white",
-  fontWeight: "bold",
-  borderRadius: "10px",
-  padding: "12px",
+  color: "text.secondary",
+  fontWeight: 600,
+  fontSize: 12,
+  border: 0,
+  p: 0.5,
   textAlign: "center",
+  whiteSpace: "nowrap",
+};
+
+const seasonCellStyle = {
+  fontWeight: 600,
+  whiteSpace: "nowrap",
+  border: 0,
+  py: 1,
+  px: 1.5,
+  borderRadius: "8px",
+  bgcolor: "action.hover",
 };
 
 const bodyCellStyle = {
-  backgroundColor: "#1976d2",
-  borderRadius: "10px",
-  padding: "12px",
+  color: "#fff",
+  fontWeight: 600,
+  fontSize: 13,
+  border: 0,
+  borderRadius: "8px",
+  py: 1,
+  px: 0.5,
+  minWidth: 44,
   textAlign: "center",
+  cursor: "pointer",
 };
 
 export default TVEpisodesSummary;

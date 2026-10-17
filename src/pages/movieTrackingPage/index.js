@@ -1,86 +1,55 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Grid,
-  Autocomplete,
-  CircularProgress,
-  Tab,
-  Tabs
-} from '@mui/material';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Chip, Container, IconButton, Paper, Skeleton, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import MovieListSettings from '../../components/MovieComponents/movieListSettings';
 import { AlertContext } from '../../contexts/alertContext';
 import MovieTable from '../../components/MovieComponents/movieTable';
-import { getMovieListById, addMovieToList, addMovieList, deleteMovieFromList, updateMovieInList, deleteTVShowFromList, updateTVShowInList} from '../../api/movieStorage';
+import { getMovieListById, deleteMovieFromList, updateMovieInList, deleteTVShowFromList, updateTVShowInList } from '../../api/movieStorage';
 import MovieAdd from '../../components/MovieComponents/movieAdd';
-import { useParams , useNavigate} from 'react-router-dom';
-import {auth} from '../../firebase-config';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { auth } from '../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
-import { CheckBox } from '@mui/icons-material';
 import TVTable from '../../components/TVComponents/TVTable';
 import TVAdd from '../../components/TVComponents/TVAdd';
-import { useLocation } from 'react-router-dom';
 
-const MovieTrackingPage = (props) => {
+const ACCESS_LABELS = ['Viewer', 'Contributor', 'Admin', 'Owner'];
+
+const MovieTrackingPage = () => {
   const [movies, setMovies] = useState([]);
   const [tvShows, setTvShows] = useState([]);
   const [movieList, setMovieList] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { listId } = useParams();
   const location = useLocation();
-  const tab = new URLSearchParams(location.search).get('tab');
-  const [selectedTab, setSelectedTab] = useState(tab ? parseInt(tab) : 0);
+  const selectedTab = Math.min(Math.max(parseInt(new URLSearchParams(location.search).get('tab'), 10) || 0, 0), 2);
   const [user, setUser] = useState(null);
   const [accessType, setAccessType] = useState(0);
-  const {addAlert} = React.useContext(AlertContext);
+  const { addAlert } = React.useContext(AlertContext);
   const navigate = useNavigate();
 
-  const refreshMovieList = async () => {
+  const refreshMovieList = useCallback(async () => {
     setLoading(true);
-    const movies = await getMovieListById(listId);
-    setMovies(movies.movies);
-    setTvShows(movies.tvShows);
-    setMovieList(movies);
-    setLoading(false);
-  }
+    try {
+      const list = await getMovieListById(listId);
+      setMovies(list.movies || []);
+      setTvShows(list.tvShows || []);
+      setMovieList(list);
+    } catch (error) {
+      console.error('Error getting list:', error);
+      addAlert('error', 'Could not load this watch list.');
+      navigate('/movielist', { replace: true });
+    } finally {
+      setLoading(false);
+    }
+  }, [listId, addAlert, navigate]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-      } else {
-        setUser(null);
-      }
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  const cachedMovies = useMemo(() => {
-    
-    return getMovieListById(listId);
+    return onAuthStateChanged(auth, (authUser) => setUser(authUser || null));
   }, []);
 
   useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        setLoading(true);
-        const movies = await cachedMovies;
-        setMovies(movies.movies);
-        setTvShows(movies.tvShows);
-        setMovieList(movies);
-      } catch (error) {
-        console.error('Error getting movies:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMovies();
-  }, [cachedMovies]);
+    refreshMovieList();
+  }, [refreshMovieList]);
 
   useEffect(() => {
     try{
@@ -108,21 +77,19 @@ const MovieTrackingPage = (props) => {
     }
   };
 
+  // Optimistic update so toggles respond instantly; roll back if the save fails
   const editMovie = async (movie) => {
-    try{
-    const editedMovieIndex = movies.findIndex((m) => m.id === movie.id);
-    if (editedMovieIndex !== -1) {
-      let newMovies = [...movies];
-      newMovies[editedMovieIndex] = movie;
+    const previous = movies;
+    setMovies(previous.map((m) => (m.id === movie.id ? movie : m)));
+    try {
       await updateMovieInList(listId, movie.id, movie);
-      setMovies(newMovies);
-      addAlert('success', `${movie.title} edited successfully`)
-    }
-    }catch(error){
+    } catch (error) {
       console.error(error);
+      setMovies(previous);
       addAlert('error', 'Error editing movie');
     }
   };
+
   const removeTVShow = async (tvShow) => {
     try {
       const newTvShows = tvShows.filter((tv) => tv.id !== tvShow.id);
@@ -136,109 +103,84 @@ const MovieTrackingPage = (props) => {
   };
 
   const editTVShow = async (tvShow) => {
+    const previous = tvShows;
+    setTvShows(previous.map((tv) => (tv.id === tvShow.id ? tvShow : tv)));
     try {
-      const editedTVShowIndex = tvShows.findIndex((tv) => tv.id === tvShow.id);
-      if (editedTVShowIndex !== -1) {
-        let newTvShows = [...tvShows];
-        newTvShows[editedTVShowIndex] = tvShow;
-        await updateTVShowInList(listId, tvShow.id, tvShow); 
-        setTvShows(newTvShows);
-        addAlert('success', `${tvShow.name} edited successfully`);
-      }
+      await updateTVShowInList(listId, tvShow.id, tvShow);
     } catch (error) {
       console.error(error);
+      setTvShows(previous);
       addAlert('error', 'Error editing TV show');
     }
   };
 
   const handleTabChange = (event, newValue) => {
-    // Update the URL with the new tab value
-    navigate(`?tab=${newValue}`);
-    setSelectedTab(newValue);
+    navigate(`?tab=${newValue}`, { replace: true });
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 , minHeight: '100vh'}}>
-      <Paper elevation={3} sx={{ p: 2, mb: 2 }} align="center">
-        <Tabs value={selectedTab} onChange={handleTabChange} centered sx={{marginBottom:'2em'}}>
-          <Tab label="Movies" />
-          <Tab label="TV Shows" />
-          <Tab label="Settings" />
-        </Tabs>
-        {selectedTab === 0 && (
-          <>
-          <MovieAdd
-          title={movieList.title}
-          listId={listId}
-          movies={movies}
-          setMovies={setMovies}
-          disabled={accessType === 0} 
-          currentUserID = {user ? user.uid : null}
-          onRefresh={refreshMovieList}
-          />
-
-          {movies.length === 0 && !loading ? (
-
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              No movies found, add some!
-            </Typography>
-
-          ):(
-
-          <MovieTable
-          movies={movies}
-          deleteMovie={removeMovie}
-          editMovie={editMovie}
-          loading={loading}
-          accessType={accessType}
-        />
+    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2} sx={{ mb: 3 }}>
+        <Box sx={{ minWidth: 0 }}>
+          {loading && !movieList.title ? (
+            <Skeleton width={280} height={48} />
+          ) : (
+            <Typography variant="h3" component="h1" sx={{ wordBreak: 'break-word' }}>{movieList.title}</Typography>
           )}
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }} flexWrap="wrap" useFlexGap>
+            <Chip size="small" variant="outlined" label={ACCESS_LABELS[accessType] || 'Viewer'} />
+            <Typography variant="body2" color="text.secondary">
+              {movies.length} {movies.length === 1 ? 'movie' : 'movies'} · {tvShows.length} {tvShows.length === 1 ? 'show' : 'shows'}
+              {movieList.users ? ` · ${movieList.users.length} ${movieList.users.length === 1 ? 'member' : 'members'}` : ''}
+            </Typography>
+          </Stack>
+        </Box>
+        <Tooltip title="Refresh">
+          <span>
+            <IconButton onClick={refreshMovieList} disabled={loading} aria-label="Refresh list">
+              <RefreshIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+      </Stack>
 
-        </>
-        )}
+      <Tabs value={selectedTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tab label={`Movies (${movies.length})`} />
+        <Tab label={`TV Shows (${tvShows.length})`} />
+        <Tab label="Settings" />
+      </Tabs>
 
+      {selectedTab === 0 && (
+        <Stack spacing={2}>
+          <MovieAdd
+            listId={listId}
+            movies={movies}
+            setMovies={setMovies}
+            disabled={accessType === 0}
+            currentUserID={user ? user.uid : null}
+          />
+          <MovieTable movies={movies} deleteMovie={removeMovie} editMovie={editMovie} loading={loading} accessType={accessType} />
+        </Stack>
+      )}
 
-        {selectedTab === 1 && (
-            <>
-            <TVAdd
-            title={movieList.title}
+      {selectedTab === 1 && (
+        <Stack spacing={2}>
+          <TVAdd
             listId={listId}
             tvshows={tvShows}
             setTvShows={setTvShows}
             disabled={accessType === 0}
-            currentUserID = {user ? user.uid : null}
-            onRefresh={refreshMovieList}
-            />
-            {tvShows.length === 0 && !loading ? (
-
-          <Typography variant="h6" sx={{ mt: 2 }}>
-            No tv shows found, add some!
-          </Typography>
-
-          ):(
-
-          <TVTable
-          tvShows={tvShows}
-          deleteTVShow={removeTVShow}
-          editTVShow={editTVShow}
-          loading={loading}
-          accessType={accessType}
+            currentUserID={user ? user.uid : null}
           />
-          )}
-          
-          </>)
-        }
+          <TVTable tvShows={tvShows} deleteTVShow={removeTVShow} editTVShow={editTVShow} loading={loading} accessType={accessType} />
+        </Stack>
+      )}
 
-        
-        {selectedTab === 2 && (
-          // Content for the third tab
-          <MovieListSettings
-            movieList={movieList}
-            setMovieList={setMovieList}
-          />
-        )}
-
-      </Paper>
+      {selectedTab === 2 && (
+        <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
+          <MovieListSettings movieList={movieList} setMovieList={setMovieList} />
+        </Paper>
+      )}
     </Container>
   );
 };

@@ -1,5 +1,5 @@
-import React, { useEffect, useNav } from 'react';
-import { Container, Typography, TextField, Button, Box, Input, useMediaQuery } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Typography, TextField, Button, Box, Divider } from '@mui/material';
 import { getUserById, updateUser, deleteUser } from '../../../api/userDataStorage';
 import { getMovieListsByUserId, updateMovieList, deleteMovieList } from '../../../api/movieStorage';
 import { onAuthStateChanged, getAuth , } from 'firebase/auth';
@@ -7,7 +7,6 @@ import { auth } from '../../../firebase-config';
 import ConfirmationModal from '../../Modals/confirmationModal';
 import { useNavigate } from 'react-router-dom';
 import { AlertContext } from '../../../contexts/alertContext';
-import { DateRange } from '@mui/icons-material';
 
 
 const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
@@ -19,7 +18,6 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
     const [password, setPassword] = React.useState('');
     const [open, setOpen] = React.useState(false);
     const { addAlert } = React.useContext(AlertContext);
-    const isMobile = useMediaQuery('(max-width:600px)');
     const navigate = useNavigate();
     
     useEffect(() => {
@@ -154,93 +152,31 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
         
             
     return (
-        <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
+        <Box sx={{ width: '100%' }}>
             <ConfirmationModal header='Delete Account?' subHeader = 'Are you sure you want to delete your account? ' body='This will also delete any lists you own and cannot be undone.' open={open} onClose={() => setOpen(false)} onConfirm = {handleDeleteAccount}/>
-            <Box sx={{ mt: 4 }}>
-                <Typography variant="h4" component="h1" gutterBottom>
-                    Manage Account
-                </Typography>
-                <Box component="form" noValidate autoComplete="off">
-                    <Typography variant="body1" component="label" htmlFor="firstName">
-                        First Name
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        margin="normal"
-                        id="firstName"
-                        variant="outlined"
-                        onChange={(e) => setFirstName(e.target.value)}
-                        value={firstName}
-                    />
-                    <Typography variant="body1" component="label" htmlFor="lastName">
-                        Last Name
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        margin="normal"
-                        id="lastName"
-                        variant="outlined"
-                        onChange={(e) => setLastName(e.target.value)}
-                        value={lastName}
-                    />
-                    <Typography variant="body1" component="label" htmlFor="email">
-                        Date of Birth
-                    </Typography>
-                    <Input
-                        fullWidth
-                        margin='normal'
-                        type="date"
-                        value={dob}
-                        onChange={handleDateChange}
-                        sx={{mb: '.5em', mt:'1em'}}
-                        />
-                    <Typography variant="body1" component="label" htmlFor="email">
-                        Email
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        margin="normal"
-                        id="email"
-                        variant="outlined"
-                        type="email"
-                        onChange={(e) => setEmail(e.target.value)}
-                        value={email}
-                    />
-                    <Typography variant="body1" component="label" htmlFor="password">
-                        Current Password
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        margin="normal"
-                        id="password"
-                        variant="outlined"
-                        type="password"
-                        onChange={(e) => setPassword(e.target.value)}
-                        value={password}
-                    />
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        sx={{ mt: 3 }}
-                        onClick={handleUpdateProfile}
-                    >
-                        Update Profile
-                    </Button>
-
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        color="error"
-                        
-                        sx={{ mt: 3 }}
-                        onClick={() => setOpen(true)}
-                    >
-                        Delete Account
-                    </Button>
+            <Typography variant="h5" component="h2">Profile</Typography>
+            <Typography color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>Update your details. Your current password is required to save changes.</Typography>
+            <Box component="form" noValidate autoComplete="off" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+                    <TextField fullWidth id="firstName" label="First name" onChange={(e) => setFirstName(e.target.value)} value={firstName} />
+                    <TextField fullWidth id="lastName" label="Last name" onChange={(e) => setLastName(e.target.value)} value={lastName} />
                 </Box>
+                <TextField id="dob" label="Date of birth" type="date" value={dob} onChange={handleDateChange} InputLabelProps={{ shrink: true }} />
+                <TextField id="email" label="Email" type="email" onChange={(e) => setEmail(e.target.value)} value={email} />
+                <TextField id="password" label="Current password" type="password" autoComplete="current-password" onChange={(e) => setPassword(e.target.value)} value={password} />
+                <Button variant="contained" size="large" onClick={handleUpdateProfile}>
+                    Save changes
+                </Button>
             </Box>
-        </Container>
+            <Divider sx={{ my: 4 }} />
+            <Typography variant="h6" component="h3" color="error">Danger zone</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mt: 1, flexWrap: 'wrap' }}>
+                <Typography color="text.secondary" variant="body2">Permanently delete your account and any lists you own.</Typography>
+                <Button variant="outlined" color="error" onClick={() => setOpen(true)}>
+                    Delete account
+                </Button>
+            </Box>
+        </Box>
     );
 };
 

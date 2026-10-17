@@ -1,44 +1,19 @@
 import React from "react";
-import { Modal, Card, Typography, Button, Grid} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    boxShadow: 24,
-    p: 4,
-  };
-
-const ConfirmationModal = ({ header, subHeader, body, open, onClose, onConfirm }) => {
+const ConfirmationModal = ({ header, subHeader, body, open, onClose, onConfirm, confirmLabel = "Confirm", destructive = true }) => {
   return (
-    <Modal open={open} onClose={onClose} aria-labelledby={header}>
-      <Card sx={style} align="center">
-        <Typography id="modal-modal-title" variant="h6" component="h2">
-          {header}
-        </Typography>
-        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-          {subHeader}
-        </Typography>
-        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-          {body}
-        </Typography>
-        <Grid container spacing={2}>
-            <Grid item xs={6}>
-        <Button variant="contained" size="large" color="primary" sx={{marginTop:"2em"}} onClick={onClose}>
-                Close
-        </Button>
-        </Grid>
-        <Grid item xs={6}>
-        <Button variant="contained" size="large" color="primary" sx={{marginTop:"2em"}} onClick={onConfirm}>
-              Confirm
-        </Button>
-        </Grid>
-        </Grid>
-      </Card>
-    </Modal>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+      <DialogTitle>{header}</DialogTitle>
+      <DialogContent>
+        {subHeader && <DialogContentText sx={{ mb: 1 }}>{subHeader}</DialogContentText>}
+        {body && <DialogContentText>{body}</DialogContentText>}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose} color="inherit">Cancel</Button>
+        <Button onClick={onConfirm} variant="contained" color={destructive ? "error" : "primary"}>{confirmLabel}</Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

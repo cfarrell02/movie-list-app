@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import {
+  Box,
   Container,
   Typography,
   TextField,
@@ -321,7 +322,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
   
 
   return (
-    <Container>
+    <Box>
       <ConfimationModal
         open={warningModalDetails.show}
         onClose={() => setWarningModalDetails({show: false})}
@@ -332,17 +333,17 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
 
 
 
-      <Typography variant="h5" component="h2" gutterBottom>
-        Watch List Settings
+      <Typography variant="h5" component="h2">
+        List settings
       </Typography>
       {creationDate && (
-      <Typography variant="body1" component="p" gutterBottom>
-        This watch list was created on {creationDate}.
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>
+        Created on {creationDate}.
       </Typography>
       )}
-      <Accordion>
+      <Accordion disableGutters variant="outlined" sx={{ "&:not(:last-of-type)": { borderBottom: 0 }, "&:before": { display: "none" } }}>
         <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-          <Typography variant="h6" component="h3" gutterBottom>
+          <Typography variant="h6" component="h3">
             Export/Import Watch List
           </Typography>
         </AccordionSummary>
@@ -365,15 +366,15 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
           </ButtonGroup>
         </AccordionDetails>
       </Accordion>
-      <Accordion>
+      <Accordion disableGutters variant="outlined" sx={{ "&:not(:last-of-type)": { borderBottom: 0 }, "&:before": { display: "none" } }}>
         <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-          <Typography variant="h6" component="h3" gutterBottom>
+          <Typography variant="h6" component="h3">
             Watch List Name
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={2}>
-            <Grid item xs={12} sx={{ margin: "1em", borderRadius: "5px" }}>
+            <Grid item xs={12} >
               <TextField
                 id="outlined-basic"
                 label="New Watch List Title"
@@ -385,7 +386,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={12} sx={{ margin: "1em", borderRadius: "5px" }}>
+            <Grid item xs={12} >
               <Button
                 variant="contained"
                 color="primary"
@@ -399,14 +400,14 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
           </Grid>
         </AccordionDetails>
       </Accordion>
-      <Accordion>
+      <Accordion disableGutters variant="outlined" sx={{ "&:not(:last-of-type)": { borderBottom: 0 }, "&:before": { display: "none" } }}>
         <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
-          <Typography variant="h6" component="h3" gutterBottom>
+          <Typography variant="h6" component="h3">
             Manage Access
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h6" component="h3" gutterBottom>
+          <Typography variant="h6" component="h3">
             Users with Access
           </Typography>
           <Grid container sx={{ display: "flex", flexDirection: "column" }}>
@@ -416,7 +417,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
               sx={{
                 margin: ".5em",
                 borderRadius: "5px",
-                border: "1px solid lightgrey",
+                border: 1, borderColor: "divider",
               }}
             >
               {isMobile ? ( //Mobile view
@@ -579,7 +580,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
               sx={{
                 margin: ".5em",
                 borderRadius: "5px",
-                border: "1px solid lightgrey",
+                border: 1, borderColor: "divider",
                 padding: ".5em",
               }}
             >
@@ -619,7 +620,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
           </Grid>
         </AccordionDetails>
       </Accordion>
-    </Container>
+    </Box>
   );
 };
 

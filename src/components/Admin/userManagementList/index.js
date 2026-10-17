@@ -1,5 +1,9 @@
 import React, { useRef, useState , useEffect} from 'react';
 import {
+  Avatar,
+  Box,
+  Container,
+  FormControlLabel,
   TableContainer,
   List,
   ListItem,
@@ -68,39 +72,39 @@ const UserManagementList = ({ users, handleUpdate }) => {
     }
 
     return (
-        <Card sx={{ p: 2, maxWidth: '50em', margin: 'auto', mt: 2 }}>
-            <Typography variant="h5" sx={{ mb: 2 }}>Manage Users</Typography>
-            <Divider />
-            <List>
-                {users.map((user, index) => (
-                    <>
-                    {index !== 0 && <Divider />}
-
-                    <ListItem key={user.id} sx={{ p: 1, my: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography sx={{ flex: 1 }}>{user.firstName} {user.lastName}</Typography>
-                        <Typography sx={{ flex: 1 }}>{user.email}</Typography>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1 }}>
-                            <Typography sx={{ mr: 1 }}>Admin</Typography>
-                            <Checkbox
-                                checked={user.admin}
-                                onChange={handleAdminChange}
-                                value={user.id}
-                                disabled = {user.id === currentUser.id}
-                            />
-                            <Typography sx={{ mr: 1 }}>Active</Typography>
-                            <Checkbox
-                                checked={user.active}
-                                disabled = {user.id === currentUser.id}
-                                value={user.id}
-                                onChange={handleActiveChange}
-                            />
-                        </div>
-                    </ListItem>
-                    </>
-
-                ))}
-            </List>
-        </Card>
+        <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+            <Typography variant="h3" component="h1">Users</Typography>
+            <Typography color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>Manage admin rights and account access.</Typography>
+            <Card>
+                <List disablePadding>
+                    {users.map((user, index) => (
+                        <React.Fragment key={user.id}>
+                            {index !== 0 && <Divider component="li" />}
+                            <ListItem sx={{ py: 1.5, px: { xs: 2, sm: 3 }, gap: 2, flexWrap: 'wrap' }}>
+                                <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: 14, fontWeight: 700 }}>
+                                    {`${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()}
+                                </Avatar>
+                                <Box sx={{ flex: 1, minWidth: 180 }}>
+                                    <Typography fontWeight={600}>
+                                        {user.firstName} {user.lastName} {user.id === currentUser.id && <Chip size="small" label="You" sx={{ ml: 0.5 }} />}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" noWrap>{user.email}</Typography>
+                                </Box>
+                                <FormControlLabel
+                                    control={<Switch size="small" checked={!!user.admin} onChange={handleAdminChange} value={user.id} disabled={user.id === currentUser.id} />}
+                                    label="Admin"
+                                />
+                                <FormControlLabel
+                                    control={<Switch size="small" checked={!!user.active} onChange={handleActiveChange} value={user.id} disabled={user.id === currentUser.id} />}
+                                    label="Active"
+                                    sx={{ mr: 0 }}
+                                />
+                            </ListItem>
+                        </React.Fragment>
+                    ))}
+                </List>
+            </Card>
+        </Container>
     );
 };
 

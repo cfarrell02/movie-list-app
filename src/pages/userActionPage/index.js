@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Button, TextField, Box, Divider } from '@mui/material';
+import { Alert, Card, Typography, Button, TextField, Box, Divider } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, confirmPasswordReset, verifyPasswordResetCode, applyActionCode } from "firebase/auth";
@@ -65,20 +65,16 @@ const UserActionPage = () => {
     };
 
     return (
-        <Card sx={{
-            padding: '2em 10em',
-            margin: '5em 10%',
-        }}>
-            <Typography variant="h3" component="h1" gutterBottom sx={{ color: 'text.primary' }}>
-                Cian's Movie List App
+        <Card sx={{ maxWidth: 480, mx: 'auto', my: { xs: 4, md: 10 }, p: { xs: 3, sm: 5 } }}>
+            <Typography variant="overline" color="primary" fontWeight={700}>
+                Watchlist
             </Typography>
-            <Divider sx={{ margin: '1em 0' }} />
-            {error && <Typography color="error">{error}</Typography>}
-            {success && <Typography color="primary">{success}</Typography>}
+            {error && <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ my: 2 }}>{success}</Alert>}
 
             {mode === 'resetPassword' && (
                 <>
-                    <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'text.primary' }}>
+                    <Typography variant="h4" component="h1" gutterBottom>
                         Reset Password
                     </Typography>
                     {email && <Typography variant="body1">Resetting password for: {email}</Typography>}
@@ -100,7 +96,7 @@ const UserActionPage = () => {
 
             {mode === 'verifyEmail' && (
                 <>
-                    <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'text.primary' }}>
+                    <Typography variant="h4" component="h1" gutterBottom>
                         Verify Email
                     </Typography>
                     <Button variant="contained" color="primary" fullWidth onClick={handleVerifyEmail}>
@@ -111,7 +107,7 @@ const UserActionPage = () => {
 
             {mode === 'recoverEmail' && (
                 <>
-                    <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'text.primary' }}>
+                    <Typography variant="h4" component="h1" gutterBottom>
                         Recover Email
                     </Typography>
                     <Button variant="contained" color="primary" fullWidth onClick={handleRecoverEmail}>

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Container, useMediaQuery } from '@mui/material';
+import { Box, TextField, Button, Typography } from '@mui/material';
 
 const ForgotPassword = ({sendPasswordResetEmail, addAlert}) => {
   const [email, setEmail] = useState('');
-  const isMobile = useMediaQuery('(max-width:600px)');
 
 
   const handleSubmit = async (event) => {
@@ -18,26 +17,23 @@ const ForgotPassword = ({sendPasswordResetEmail, addAlert}) => {
   };
 
   return (
-    <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
-      <Typography variant={isMobile ? 'h5':"h4"} component="h1" sx={{ mb: 4 }}>
-        Forgot Password
-      </Typography>
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-      >
+    <Box sx={{ width: '100%' }}>
+      <Typography variant="h4" component="h1">Reset password</Typography>
+      <Typography color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>We'll email you a link to choose a new password.</Typography>
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <TextField
+          fullWidth
           label="Email"
-          variant="outlined"
+          type="email"
+          autoComplete="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
-        <Button variant="contained" type="submit" color="primary">
-          Send Reset Link
+        <Button variant="contained" type="submit" size="large">
+          Send reset link
         </Button>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

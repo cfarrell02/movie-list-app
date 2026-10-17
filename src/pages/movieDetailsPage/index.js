@@ -1,150 +1,97 @@
-import React, { useState, useEffect, useMemo} from 'react';
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Paper,
-  Grid,
-  Autocomplete,
-  CircularProgress,
-  Tab,
-  Tabs,
-  Select,
-  MenuItem,
-  Card,
-  FormControl,
-  Divider,
-  ButtonGroup,
-  InputLabel,
-  useMediaQuery,
-  Stack,
-  Box
-} from '@mui/material';
-import { getMovie,getMovieCredits , getMovieImages, getMovieVideos, getMovieRecommendations } from '../../api/TMDBAPI';
-import { getMovieListById, addMovieToList, getMovieListsByUserId, deleteMovieFromList, updateMovieInList} from '../../api/movieStorage';
-import { useParams } from 'react-router-dom';
-import {auth} from '../../firebase-config';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Container, Grid, Typography } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
-import MovieDetailCard from '../../components/MovieDetailComponents/movieDetailCard';
-import MovieDetailSection from '../../components/MovieDetailComponents/movieDetailSection';
-import MovieReviewSection from '../../components/MovieDetailComponents/movieReviewsSection';
+import { getMovie, getMovieCredits, getMovieImages, getMovieVideos, getMovieRecommendations, getMovieReviews } from '../../api/TMDBAPI';
+import { getMovieListById, addMovieToList, getMovieListsByUserId } from '../../api/movieStorage';
+import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
-import { getUserById } from '../../api/userDataStorage';
 import { SiteDataContext } from '../../contexts/siteDataContext';
-import { Navigate } from 'react-router-dom';
-import { useNavigate } from "react-router-dom";
 import MediaDisplay from '../../components/mediaDisplay';
 import MovieCard from '../../components/MovieComponents/movieCard';
-import ShowMoreWrapper from '../../components/showMoreWrapper';
+import {
+  AddToListSelect,
+  DetailHero,
+  DetailHeroSkeleton,
+  ExternalLinks,
+  FactGrid,
+  PeopleGrid,
+  ReviewList,
+  Section,
+  mergeCrew,
+} from '../../components/detail';
 
+const money = (value) => (value ? `$${new Intl.NumberFormat('en-US').format(value)}` : null);
 
-const MovieDetailsPage = (props) => {
-  const {id} = useParams();
-  const [movie, setMovie] = useState({});
-  const [stremioLinkEnding, setStremioLinkEnding] = useState('');
+const formatRuntime = (minutes) => {
+  if (!minutes) return null;
+  const h = Math.floor(minutes / 60);
+  return h ? `${h}h ${minutes % 60}m` : `${minutes}m`;
+};
+
+const MovieDetailsPage = () => {
+  const { id } = useParams();
+  const [movie, setMovie] = useState(null);
   const [movieLists, setMovieLists] = useState([]);
-  const {addAlert} = React.useContext(AlertContext);  
+  const { addAlert } = React.useContext(AlertContext);
+  const { adultContent } = React.useContext(SiteDataContext);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [formattedTitle, setFormattedTitle] = useState('');
-  const {adultContent} = React.useContext(SiteDataContext);
-  const isMobile = useMediaQuery('(max-width:900px)');
+  const [loading, setLoading] = useState(true);
+  const [showAllRecs, setShowAllRecs] = useState(false);
   const navigate = useNavigate();
-  const [wrapperCount, setWrapperCount] = useState(getInitialCount());
-
-  function getInitialCount() {
-      const width = window.innerWidth;
-      if (width < 900) return 4;    
-      if (width < 1200) return 6 
-      return 6;                    
-  }
 
   useEffect(() => {
-      const handleResize = () => setWrapperCount(getInitialCount());
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
+    return onAuthStateChanged(auth, (authUser) => setUser(authUser || null));
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-        
-      } else {
-        setUser(null);
-      }
-    });
-
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-  useEffect(() => {
+    let active = true;
     const fetchData = async () => {
+      setLoading(true);
+      setShowAllRecs(false);
       try {
-        setLoading(true);
-        const fetchedMovie = await getMovie(id);
-        const fetchedCredits = await getMovieCredits(id);
-        const fetchedImages = await getMovieImages(id);
-        const fetchedVideos = await getMovieVideos(id);
-        const recommendations = await getMovieRecommendations(id);
-
-        if(fetchedMovie.imdb_id){
-          setStremioLinkEnding(
-            fetchedMovie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase() +
-              '-' +
-              fetchedMovie.imdb_id.substring(2)
-          );
+        const [details, credits, images, videos, recommendations] = await Promise.all([
+          getMovie(id),
+          getMovieCredits(id),
+          getMovieImages(id),
+          getMovieVideos(id),
+          getMovieRecommendations(id),
+        ]);
+        if (!active) return;
+        if (!adultContent && details.adult) {
+          navigate('/', { replace: true });
+          return;
         }
-
-        const localMovie = { ...fetchedMovie, credits: fetchedCredits , images: fetchedImages, videos: fetchedVideos, recommendations: recommendations};
-
-        if(!adultContent && localMovie.adult){
-          navigate('/')
-        }
-
-        setMovie(localMovie);
+        setMovie({ ...details, credits, images, videos, recommendations });
+        window.scrollTo(0, 0);
       } catch (error) {
         console.error(error);
-        // Handle the error, show an error message, or take appropriate action.
+        if (active) navigate('/404', { replace: true });
+      } finally {
+        if (active) setLoading(false);
       }
-      finally{
-        setLoading(false);
-      }
-
     };
-
-  
     fetchData();
-  }, [id]);
+    return () => {
+      active = false;
+    };
+  }, [id, adultContent, navigate]);
 
   useEffect(() => {
-    const fetchData = async () => {
-    if(user){
-      const fetchedMovieLists = await getMovieListsByUserId(user.uid);
-      setMovieLists(fetchedMovieLists.filter(list => {
-        return list.users.find(userObj => userObj.uid === user.uid).accessType > 0
-      }));
-      }
-    };
-    fetchData();
+    if (!user) return;
+    getMovieListsByUserId(user.uid)
+      .then((lists) => setMovieLists(lists.filter((list) => (list.users?.find((u) => u.uid === user.uid)?.accessType || 0) > 0)))
+      .catch(console.error);
   }, [user]);
 
-  useEffect(() => {
-    if(!movie) return;
-    const title = movie.title ? movie.title.length > 50 ? movie.title.substring(0, 50) + '...' : movie.title : '';
-    const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
-    setFormattedTitle('' + title + (year ? ' (' + year + ')' : ''));
-  }, [movie]);
+  const crew = useMemo(() => mergeCrew(movie?.credits?.crew), [movie]);
 
-  const handleChange = async (event) => {
+  const handleAddToList = async (event) => {
     const listId = event.target.value;
     if (!listId || !user) return;
     try {
       const list = await getMovieListById(listId);
-      if ((list.movies || []).find(m => m.id === movie.id)) throw new Error('Movie is already in "' + list.title + '"');
+      if ((list.movies || []).find((m) => m.id === movie.id)) throw new Error('Movie is already in "' + list.title + '"');
       // Strip bulky detail-page data so list documents stay well under Firestore's 1MB limit
       // eslint-disable-next-line no-unused-vars
       const { credits, images, videos, recommendations, ...summary } = movie;
@@ -155,103 +102,99 @@ const MovieDetailsPage = (props) => {
       addAlert('error', error.message);
     }
   };
-  
+
+  if (loading || !movie) return <DetailHeroSkeleton />;
+
+  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : null;
+  const stremioSlug = movie.imdb_id
+    ? `${movie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase()}-${movie.imdb_id.substring(2)}`
+    : null;
+  const director = crew.find((c) => c.job.split(', ').includes('Director'));
+  const recommendations = movie.recommendations || [];
+  const shownRecs = showAllRecs ? recommendations : recommendations.slice(0, 12);
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', padding: '0 2%', margin: '2% 5% 2% 5%', alignContent: 'center'}}>
-      {loading ? 
-      <Container sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
-        <CircularProgress/>
-      </Container>
-      : <>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={8} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-start', justifyContent: isMobile ? 'center' : 'flex-start'}} >
-      <Typography variant="h3" sx={{marginTop: '1em', marginBottom: '.2em'}}>{formattedTitle}</Typography>
-      </Grid>
-      <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: isMobile ? 'center' : 'flex-end', justifyContent: isMobile ? 'center' : 'flex-end' }}>
-        <Stack> 
-        <FormControl sx={{ m: 1, minWidth: '15em' }} size='small'>
-        <InputLabel> Add to list</InputLabel>
-        <Select
-        autoWidth
-        value=""
-        onChange={handleChange}
-        label="Add to list"
-        title= 'Select a list to add this movie to'
-        >
-          {movieLists.map((list) => (
-          <MenuItem key={list.id} value={list.id}>{list.title}</MenuItem>
-          ))}
-        </Select>
-        </FormControl>
-        <ButtonGroup sx={{marginBottom: '.5em', marginRight:'auto',marginLeft:'auto'}}>
-          {movie.imdb_id && <Button variant="contained" target="_blank" href={`https://www.imdb.com/title/${movie.imdb_id}`} title='IMDB'>IMDB</Button>}
-          {movie.id && <Button variant="contained" target="_blank" href={`https://www.themoviedb.org/movie/${movie.id}`} title='TMDB'>TMDB</Button>}
-          {stremioLinkEnding && <Button variant="contained" target="_blank" href={`https://www.strem.io/s/movie/${stremioLinkEnding}`} title='Stremio'>Stremio</Button>}
-        </ButtonGroup>
-        </Stack>
-      </Grid>
-      </Grid>
-      <Divider/>
-      {movie.tagline && <Typography variant="subtitle1" color='text.secondary' >{movie.tagline}</Typography>}
-      <Grid container spacing={ isMobile ? 0 : 2}>
-        {isMobile ? (<>
-          <Grid item xs={12}>
-            <MovieDetailCard movie={movie}/>
-          </Grid>
-          <Grid item xs={12}>
-          <MovieDetailSection movie={movie}/>
-          </Grid>
-
-        </>) : (<>
-        <Grid item xs={9}>
-          <MovieDetailSection movie={movie}/>
-          </Grid>
-          <Grid item xs={3}>
-            <MovieDetailCard movie={movie}/>
-          </Grid>
-        </>)}
-
-{movie.recommendations && movie.recommendations.length > 0 && (
-  <Grid item xs={12}>
-    <Typography variant="h4" sx={{ marginTop: '1em'}}>
-      Recommendations
-    </Typography>
-    <Divider sx={{ marginBottom: '1em' }} />
-
-            <ShowMoreWrapper initialCount={wrapperCount} parentComponent={Grid} parentComponentProps={{ container: true, spacing: 2 }}>
-        {movie.recommendations.map((movie, index) => (
-          <Grid item xs={6} sm={3} md={2} key={index}>
-            <MovieCard movie={movie} />
-          </Grid>
-        ))}
-            </ShowMoreWrapper>
-  </Grid>
-)}
-
-
-        {movie.images && movie.videos && movie.images.backdrops.length > 0 && movie.videos.results.length > 0 &&
-        <Grid item xs={12}>
-        <Typography variant="h4" sx={{ marginTop: '1em' }}>
-                    Media
-            </Typography>
-        <Divider sx={{ marginBottom: '1em' }} />
-        <MediaDisplay videos={movie.videos.results} images={movie.images.backdrops}/>
-        </Grid>
+    <>
+      <DetailHero
+        backdropPath={movie.backdrop_path}
+        posterPath={movie.poster_path}
+        title={movie.title}
+        subtitle={movie.tagline}
+        rating={movie.vote_average}
+        voteCount={movie.vote_count}
+        meta={[year, formatRuntime(movie.runtime), director && `Directed by ${director.name}`]}
+        chips={(movie.genres || []).map((g) => g.name)}
+        overview={movie.overview}
+        actions={
+          <>
+            <AddToListSelect lists={movieLists} onSelect={handleAddToList} />
+            <ExternalLinks
+              links={[
+                { label: 'IMDb', href: movie.imdb_id && `https://www.imdb.com/title/${movie.imdb_id}` },
+                { label: 'TMDB', href: `https://www.themoviedb.org/movie/${movie.id}` },
+                { label: 'Stremio', href: stremioSlug && `https://www.strem.io/s/movie/${stremioSlug}` },
+              ]}
+            />
+          </>
         }
+      />
 
-        
-          <Grid item xs={12}>
-            
-          <Typography variant="h4" sx={{ marginTop: '1em' }}>
-                    Reviews 
-            </Typography>
-            <Divider sx={{ marginBottom: '1em' }} />
-            <MovieReviewSection movieId={movie.id} />
+      <Container maxWidth="lg" sx={{ pb: 4 }}>
+        <Section title="Details">
+          <FactGrid
+            facts={[
+              { label: 'Released', value: movie.release_date && new Date(movie.release_date).toLocaleDateString() },
+              { label: 'Runtime', value: formatRuntime(movie.runtime) },
+              { label: 'Status', value: movie.status },
+              { label: 'Language', value: movie.spoken_languages?.[0]?.english_name },
+              { label: 'Budget', value: money(movie.budget) },
+              { label: 'Revenue', value: money(movie.revenue) },
+              { label: 'Studio', value: movie.production_companies?.slice(0, 2).map((c) => c.name).join(', ') },
+              { label: 'Country', value: movie.production_countries?.slice(0, 2).map((c) => c.name).join(', ') },
+            ]}
+          />
+        </Section>
+
+        <Section title="Cast">
+          <PeopleGrid people={movie.credits?.cast} getRole={(p) => p.character} />
+        </Section>
+
+        <Section title="Crew">
+          <PeopleGrid people={crew} getRole={(p) => p.job} initialCount={8} />
+        </Section>
+
+        {recommendations.length > 0 && (
+          <Section
+            title="You might also like"
+            action={
+              recommendations.length > 12 && (
+                <Typography component="button" onClick={() => setShowAllRecs(!showAllRecs)} sx={{ all: 'unset', cursor: 'pointer', color: 'primary.main', fontWeight: 600 }}>
+                  {showAllRecs ? 'Show less' : 'Show all'}
+                </Typography>
+              )
+            }
+          >
+            <Grid container spacing={{ xs: 2, md: 3 }}>
+              {shownRecs.map((rec) => (
+                <Grid item xs={6} sm={4} md={3} lg={2} key={rec.id}>
+                  <MovieCard movie={rec} />
+                </Grid>
+              ))}
             </Grid>
-          </Grid>
-        </>}
-    </Card>
+          </Section>
+        )}
+
+        {(movie.videos?.results?.length > 0 || movie.images?.backdrops?.length > 0) && (
+          <Section title="Media">
+            <MediaDisplay videos={movie.videos?.results} images={movie.images?.backdrops} />
+          </Section>
+        )}
+
+        <Section title="Reviews">
+          <ReviewList id={movie.id} fetchReviews={getMovieReviews} />
+        </Section>
+      </Container>
+    </>
   );
 };
 

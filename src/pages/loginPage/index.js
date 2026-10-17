@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Container, Typography, Button, Card, Alert, Switch, useMediaQuery, Divider, Grid } from '@mui/material';
+import { Container, Typography, Button, Card, Alert, Switch, Box, Stack, Link as MuiLink } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { onAuthStateChanged, sendPasswordResetEmail, updateEmail, updatePassword, deleteUser } from 'firebase/auth';
 import { auth } from '../../firebase-config';
 import Register from '../../components/Onboarding/register';
@@ -11,17 +12,16 @@ import { AlertContext } from '../../contexts/alertContext';
 import Login from '../../components/Onboarding/login';
 import { Link } from 'react-router-dom';
 
-const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvider }) => {
+const LoginPage = ({ handleLogin, handleRegister, handleLogout }) => {
   const [user, setUser] = useState(null);
   const [pageState, setPageState] = useState('login');
   const { addAlert } = useContext(AlertContext);
   const { adultContent, setAdultContent, darkMode, setDarkMode } = useContext(SiteDataContext);
   const [showAdultContentSettings, setShowAdultContentSettings] = useState(false);
-  const isMobile = useMediaQuery('(max-width:600px)');
 
   const settings = [
     {
-      label: "Toggle Theme",
+      label: "Dark mode",
       action: () => toggleTheme(),
       type: "switch",
       checked: darkMode,
@@ -30,7 +30,7 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
       shown: true,
     },
     {
-      label: "Admin",
+      label: "User management",
       to: "/admin",
       type: "link",
       requiredLogin: true,
@@ -50,13 +50,17 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
   
 
   useEffect(() => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userData = await getUserById(user.uid);
-        user = { ...user, ...userData };
-        setUser(user);
-      } else {
+    return onAuthStateChanged(auth, async (authUser) => {
+      if (!authUser) {
         setUser(null);
+        return;
+      }
+      try {
+        const userData = await getUserById(authUser.uid);
+        setUser({ ...authUser, ...userData });
+      } catch (error) {
+        console.error(error);
+        setUser({ ...authUser });
       }
     });
   }, []);
@@ -90,91 +94,6 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
     }
   };
 
-  const renderAuthSection = () => {
-    if (user === null) {
-      return (
-        <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 1em 2em 1em' }}>
-          {pageState === 'login' ? (
-            <Login handleLogin={handleLogin} addAlert={addAlert} />
-          ) : pageState === 'forgotPassword' ? (
-            <ForgotPassword sendPasswordResetEmail={sendPasswordEmail} addAlert={addAlert} />
-          ) : (
-            <Register handleRegister={handleRegister} addAlert={addAlert} />
-          )}
-          <Button onClick={handleToggle} sx={{ mt: 2 }}>
-            {pageState === 'login' ? 'Register' : 'Login'}
-          </Button>
-          {pageState !== 'forgotPassword' && (
-            <Button onClick={handleForgotPassword} sx={{ mt: 2 }}>
-              Forgot Password?
-            </Button>
-          )}
-        </Container>
-      );
-    } else {
-      return (
-      <>
-          <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 1em 2em 1em' }}>
-            <UpdateProfile updateEmail={updateEmail} deleteUserAuth={deleteUser} reAuthenticate={handleLogin} />
-          </Container>
-          <Button variant="contained" size="large" color="primary" onClick={handleLogout}>
-            Logout
-          </Button>
-      </>
-      );
-    }
-  };
-
-  const renderSettingsSection = () => {
-    return (
-      <Container
-        sx={{
-          mt: 2,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          p: 3,
-        }}
-      >
-        <Divider sx={{ width: "100%", mb: 2 }} />
-        <Button onClick={() => setShowAdultContentSettings(!showAdultContentSettings)}>
-        </Button>
-        <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
-          Settings
-        </Typography>
-  
-        <Grid container spacing={2} justifyContent="center" width="100%">
-          {settings
-            .filter(
-              (setting) =>
-                (!setting.requiredLogin || user) &&
-                (!setting.admin || (user && user.admin)) &&
-                setting.shown
-            )
-            .sort((a, b) => (a.type === "link" ? 1 : -1))
-            .map((setting) => (
-              <Grid item xs={12} md={6} lg={4} key={setting.label}>
-              <Container
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      p: 2,
-                      borderRadius: 2,
-                      bgcolor: "background.paper",
-                      boxShadow: 1,
-                    }}
-                  >
-                    <Typography variant="h6">{setting.label}</Typography>
-                    {getSetting(setting)}
-                  </Container>
-                    </Grid>
-            ))}
-        </Grid>
-        </Container>
-    );
-  };
-
   const getSetting = (setting) => {
     switch (setting.type) {
       case "switch":
@@ -193,11 +112,9 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
         );
       case "link":
         return (
-          <Link to={setting.to} style={{ textDecoration: "none" }}>
-            <Button variant="contained" fullWidth>
-              {setting.label}
-            </Button>
-          </Link>
+          <Button component={Link} to={setting.to} variant="outlined" size="small">
+            Open
+          </Button>
         );
       default:
         return null;
@@ -205,21 +122,91 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout, updateThemeProvi
   }
   
 
-  return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '1em 0' : '2em', margin: '1em 5%' }}>
-      {user && !user.active && (
-        <Alert severity="warning" sx={{ width: '100%', marginBottom: '1em' }}>
-          Your account is not active. Please contact an admin for assistance.
-        </Alert>
-      )}
-      <Typography variant={isMobile ? 'h5' : 'h2'} component="h1" align="center" sx={{ color: 'text.primary' }}>
-        Welcome {user && user.firstName}!
-      </Typography>
-      <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'auto', width: '100%', padding: isMobile ? '1em 0' : '1em' }}>
-        {renderAuthSection()}
-      </Container>
-      {renderSettingsSection()}
+  const visibleSettings = settings.filter(
+    (setting) =>
+      (!setting.requiredLogin || user) &&
+      (!setting.admin || (user && user.admin)) &&
+      setting.shown
+  ).sort((a, b) => (a.type === 'link') - (b.type === 'link'));
+
+  const settingsCard = (
+    <Card sx={{ p: { xs: 2.5, sm: 4 } }}>
+      <Stack direction="row" alignItems="center" spacing={1}>
+        <Typography variant="h5" component="h2">Preferences</Typography>
+        {/* Hidden toggle that reveals the adult content setting */}
+        <Button
+          aria-hidden
+          tabIndex={-1}
+          onClick={() => setShowAdultContentSettings(!showAdultContentSettings)}
+          sx={{ minWidth: 0, width: 24, height: 24, p: 0, opacity: 0 }}
+        />
+      </Stack>
+      <Stack divider={<Box sx={{ borderTop: 1, borderColor: 'divider' }} />} sx={{ mt: 2 }}>
+        {visibleSettings.map((setting) => (
+          <Stack key={setting.label} direction="row" alignItems="center" justifyContent="space-between" sx={{ py: 1.5 }}>
+            <Typography fontWeight={500}>{setting.label}</Typography>
+            {getSetting(setting)}
+          </Stack>
+        ))}
+      </Stack>
     </Card>
+  );
+
+  if (!user) {
+    return (
+      <Container maxWidth="sm" sx={{ py: { xs: 4, md: 8 } }}>
+        <Stack spacing={3} sx={{ maxWidth: 460, mx: 'auto' }}>
+          <Card sx={{ p: { xs: 3, sm: 5 } }}>
+            {pageState === 'login' ? (
+              <Login handleLogin={handleLogin} addAlert={addAlert} />
+            ) : pageState === 'forgotPassword' ? (
+              <ForgotPassword sendPasswordResetEmail={sendPasswordEmail} addAlert={addAlert} />
+            ) : (
+              <Register handleRegister={handleRegister} addAlert={addAlert} />
+            )}
+            <Stack direction="row" justifyContent="space-between" sx={{ mt: 3 }} flexWrap="wrap" gap={1}>
+              <Typography variant="body2" color="text.secondary">
+                {pageState === 'login' ? "Don't have an account? " : 'Already have an account? '}
+                <MuiLink component="button" variant="body2" fontWeight={600} onClick={handleToggle}>
+                  {pageState === 'login' ? 'Create one' : 'Sign in'}
+                </MuiLink>
+              </Typography>
+              {pageState === 'login' && (
+                <MuiLink component="button" variant="body2" fontWeight={600} onClick={handleForgotPassword}>
+                  Forgot password?
+                </MuiLink>
+              )}
+            </Stack>
+          </Card>
+          {settingsCard}
+        </Stack>
+      </Container>
+    );
+  }
+
+  return (
+    <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Stack spacing={3}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-end" flexWrap="wrap" gap={2}>
+          <Box>
+            <Typography variant="h3" component="h1">Account</Typography>
+            <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+              Signed in as {user.firstName ? `${user.firstName} ${user.lastName || ''}` : user.email}
+            </Typography>
+          </Box>
+          <Button variant="outlined" color="inherit" startIcon={<LogoutIcon />} onClick={handleLogout}>
+            Log out
+          </Button>
+        </Stack>
+        {!user.active && (
+          <Alert severity="warning">Your account is not active. Please contact an admin for assistance.</Alert>
+        )}
+        {settingsCard}
+        <Card sx={{ p: { xs: 2.5, sm: 4 } }}>
+          <UpdateProfile updateEmail={updateEmail} deleteUserAuth={deleteUser} reAuthenticate={handleLogin} />
+        </Card>
+      </Stack>
+    </Container>
   );
 };
 

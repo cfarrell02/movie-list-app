@@ -108,6 +108,9 @@ const App = () => {
         active: true
       };
       await addUser(userObject);
+      // The auth listener can fire before the profile is written, so set it directly
+      setUser(userObject);
+      setLoadedUser(true);
     } catch (error) {
       console.log(error);
       throw new Error('Error signing up: ' + error.code);
@@ -123,6 +126,11 @@ const App = () => {
       throw new Error('Error signing out: '+ error.code);
     }
   };
+
+  // Start each new page at the top instead of keeping the previous page's scroll position
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const isActive = user != null && user.active;
   const guard = (element, allowed = isActive) => (

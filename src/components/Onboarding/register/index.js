@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Input, Container,useMediaQuery, Alert } from '@mui/material';
+import { Box, TextField, Button, Typography } from '@mui/material';
 
 const Register = ({ handleRegister, addAlert }) => {
   const [username, setUsername] = useState('');
@@ -8,14 +8,13 @@ const Register = ({ handleRegister, addAlert }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const isMobile = useMediaQuery('(max-width:600px)');
 
 
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      if (!password || !secondPassword ||  !firstName || !lastName || !dateOfBirth) {
+      if (!username || !password || !secondPassword || !firstName || !lastName || !dateOfBirth) {
         throw new Error('Please fill out all fields');
       }else if(password !== secondPassword){
         throw new Error('Passwords do not match');
@@ -39,65 +38,64 @@ const Register = ({ handleRegister, addAlert }) => {
     }
   };
 
+  const passwordsMismatch = secondPassword.length > 0 && password !== secondPassword;
+
   return (
-    <Container maxWidth={isMobile ? '100%' : 'md'} sx={{ mt: 4 }}>
-      <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
-        Register
-      </Typography>
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-      >
+    <Box sx={{ width: '100%' }}>
+      <Typography variant="h4" component="h1">Create account</Typography>
+      <Typography color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>Start tracking what you watch.</Typography>
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            fullWidth
+            label="First name"
+            autoComplete="given-name"
+            value={firstName}
+            onChange={(event) => setFirstName(event.target.value)}
+          />
+          <TextField
+            fullWidth
+            label="Last name"
+            autoComplete="family-name"
+            value={lastName}
+            onChange={(event) => setLastName(event.target.value)}
+          />
+        </Box>
         <TextField
           label="Email"
-          variant="outlined"
+          type="email"
+          autoComplete="email"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
         />
         <TextField
+          label="Date of birth"
+          type="date"
+          value={dateOfBirth}
+          onChange={handleDateChange}
+          InputLabelProps={{ shrink: true }}
+        />
+        <TextField
           label="Password"
-          variant="outlined"
           type="password"
+          autoComplete="new-password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
         <TextField
-          label="Confirm Password"
-          variant="outlined"
+          label="Confirm password"
           type="password"
+          autoComplete="new-password"
           value={secondPassword}
+          error={passwordsMismatch}
+          helperText={passwordsMismatch ? 'Passwords do not match' : ' '}
           onChange={(event) => setSecondPassword(event.target.value)}
         />
-        {(password !== secondPassword || !password || !secondPassword) && (
-          <Alert severity="info" sx={{ width: '100%' }}>
-            Please ensure password matches the confirm password field
-          </Alert>
-        )}
-        <TextField
-          label="First Name"
-          variant="outlined"
-          type="text"
-          value={firstName}
-          onChange={(event) => setFirstName(event.target.value)}
-        />
-        <TextField
-          label="Last Name"
-          variant="outlined"
-          type="text"
-          value={lastName}
-          onChange={(event) => setLastName(event.target.value)}
-        />
-        <Input
-          type="date"
-          value={dateOfBirth}
-          onChange={handleDateChange}
-        />
-        <Button variant="contained" type="submit" color="primary">
-          Register
+        <Button variant="contained" type="submit" size="large">
+          Create account
         </Button>
       </Box>
-      </Container>
+    </Box>
   );
 };
 

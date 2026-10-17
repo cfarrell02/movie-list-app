@@ -1,167 +1,80 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, Typography, Button, CardMedia, IconButton, Grid, Container} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import {auth } from '../../../firebase-config';
-import { onAuthStateChanged } from 'firebase/auth';
+import React, { useMemo } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { Box, Card, CardActionArea, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import MovieIcon from '@mui/icons-material/MovieOutlined';
+import TvIcon from '@mui/icons-material/TvOutlined';
+import { auth } from '../../../firebase-config';
 import defaultImage from '../../../images/default.jpg';
 
+const ACCESS_LABELS = ['Viewer', 'Contributor', 'Admin', 'Owner'];
+
 const MovieListCard = ({ movieList, onDelete }) => {
-  const navigate = useNavigate();
-  const [imageSrcs, setImageSrcs] = useState([]);
-    const [user, setUser] = useState({});
-    const [accessType, setAccessType] = useState(0)
+  const movies = movieList.movies || [];
+  const tvShows = movieList.tvShows || [];
+  const uid = auth.currentUser?.uid;
+  const accessType = movieList.users?.find((u) => u.uid === uid)?.accessType ?? 0;
 
-    const getUserType = () => {
-      switch (accessType) {
-        case 0:
-          return 'Viewer';
-        case 1:
-          return 'Contributor';
-        case 2:
-          return 'Admin';
-        case 3:
-          return 'Owner';
-        default:
-          return '';
-      }
-    };
+  // Most recently added posters first, so the collage reflects recent activity (and doesn't reshuffle on every render)
+  const posters = useMemo(() => {
+    return [...(movieList.movies || []), ...(movieList.tvShows || [])]
+      .filter((item) => item.poster_path)
+      .sort((a, b) => new Date(b.addedDate || 0) - new Date(a.addedDate || 0))
+      .slice(0, 4)
+      .map((item) => `https://image.tmdb.org/t/p/w342${item.poster_path}`);
+  }, [movieList.movies, movieList.tvShows]);
 
-    useEffect(() => {
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                setUser(user);
-            } else {
-                setUser(null);
-            }
-        });
-        
- 
-    }, []);
-
-
-
-  useEffect(() => {
-
-      const posterPaths = movieList.movies.map((movie) => movie.poster_path);
-      const tvPosterPaths = movieList.tvShows.map((tvShow) => tvShow.poster_path);
-      const imagePaths = posterPaths.map((path) => `https://image.tmdb.org/t/p/w500${path}`);
-      imagePaths.push(...tvPosterPaths.map((path) => `https://image.tmdb.org/t/p/w500${path}`));
-      setImageSrcs(imagePaths);
-    
-    setAccessType(accessType);
-
-  }, [movieList.movies]);
-
-  useEffect(() => {
-    try{
-    if (user.uid && movieList.users) {
-        const userObj = movieList.users.find((userObj) => userObj.uid === user.uid);
-        setAccessType(userObj.accessType);
-    }
-    } catch (error) {
-      console.error('Error getting watch lists:', error);
-    }
-  }, [user]);
+  const collage = posters.length >= 4 ? posters : posters.slice(0, 1);
 
   return (
-    <Card sx={{ padding: '2em', height: '31em' }} align="center">
-      <Typography variant="h5" component="h1" align="center" sx={{ mb: 2 }}>
-        {movieList.title}
-      </Typography>
-      <Typography variant="subtitle1" align="center" sx={{ mb: 2 }}>
-        {getUserType()}
-      </Typography>
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        
-        {
-          imageSrcs.length <= 0 ?
-            <Grid item xs={12}>
-              <CardMedia
-                key={0}
-                component="img"
-                src={defaultImage}
-                alt={`Poster 1`}
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  aspectRatio: '1/1',
-                  objectFit: 'cover',
-                }}
-              />
-            </Grid>
-            :
-        
-        imageSrcs.length >= 3 ? imageSrcs.map(value => ({ value, sort: Math.random() }))
-                        .sort((a, b) => a.sort - b.sort)
-                        .map(({ value }) => value).splice(0,4).map((src, index) => (
-            <Grid item xs={6}>
-          <CardMedia
-            key={index}
-            component="img"
-            src={src}
-            alt={`Poster ${index + 1}`}
-            style={{
-              width: '100%',
-              height: 'auto',
-              aspectRatio: '1/1',
-              objectFit: 'cover',
-            }}
-          />
-            </Grid>
-        )) : 
-            <Grid item xs={12}>
-            <CardMedia
-                key={1}
-                component="img"
-                src={imageSrcs[0]}
-                alt={`Poster 1`}
-                style={{
-                width: '100%',
-                height: 'auto',
-                aspectRatio: '1/1',
-                objectFit: 'cover',
-                }}
-            />
-            </Grid>
-      
-    
-    }
-        </Grid>
-
-      
-      <Button
-        variant="contained"
-        size="large"
-        sx={{ marginTop: '1em', marginRight: '.5em' }}
-        color="primary"
-        onClick={() => navigate('/movielist/' + movieList.id + '?tab=0')}
-        title="Movies"
-      >
-        Movies
-      </Button>
-      <Button
-        variant="contained"
-        size="large"
-        sx={{ marginTop: '1em', marginRight: '1em' }}
-        color="primary"
-        onClick={() => navigate('/movielist/' + movieList.id + '?tab=1')}
-        title="TV Shows"
-      >
-        TV Shows
-      </Button>
-      {accessType < 2 ? null : (
-        <IconButton
-        variant="outlined"
-        size="large"
-        sx={{ marginTop: '.5em' }}
-        color="primary"
-        onClick={() => onDelete(movieList.id)}
-        title = "Delete List"
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'box-shadow .2s', '&:hover': { boxShadow: 6 } }}>
+      <CardActionArea component={RouterLink} to={`/movielist/${movieList.id}?tab=0`} sx={{ flex: 1 }}>
+        <Box
+          sx={{
+            aspectRatio: '16 / 10',
+            display: 'grid',
+            gridTemplateColumns: collage.length === 4 ? '1fr 1fr' : '1fr',
+            gridTemplateRows: collage.length === 4 ? '1fr 1fr' : '1fr',
+            gap: '2px',
+            bgcolor: 'action.hover',
+            overflow: 'hidden',
+          }}
         >
-        <DeleteIcon fontSize="inherit"/>
-        </IconButton>
-        )}
+          {collage.length === 0 ? (
+            <Box component="img" src={defaultImage} alt="" sx={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
+          ) : (
+            collage.map((src, i) => (
+              <Box key={src + i} component="img" src={src} alt="" loading="lazy" sx={{ width: '100%', height: '100%', objectFit: 'cover', minHeight: 0 }} />
+            ))
+          )}
+        </Box>
+        <Box sx={{ p: 2 }}>
+          <Typography variant="h6" noWrap title={movieList.title}>{movieList.title}</Typography>
+          <Stack direction="row" spacing={2} sx={{ mt: 0.5, color: 'text.secondary' }}>
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <MovieIcon sx={{ fontSize: 16 }} />
+              <Typography variant="body2">{movies.length} {movies.length === 1 ? 'movie' : 'movies'}</Typography>
+            </Stack>
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <TvIcon sx={{ fontSize: 16 }} />
+              <Typography variant="body2">{tvShows.length} {tvShows.length === 1 ? 'show' : 'shows'}</Typography>
+            </Stack>
+          </Stack>
+        </Box>
+      </CardActionArea>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 2, pb: 1.5 }}>
+        <Chip size="small" label={ACCESS_LABELS[accessType] || 'Viewer'} color={accessType === 3 ? 'primary' : 'default'} variant="outlined" />
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <Chip size="small" label="TV shows" component={RouterLink} to={`/movielist/${movieList.id}?tab=1`} clickable />
+          {accessType >= 2 && (
+            <Tooltip title="Delete list">
+              <IconButton size="small" onClick={() => onDelete(movieList.id)} aria-label="Delete list">
+                <DeleteOutlineIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
+      </Stack>
     </Card>
   );
 };

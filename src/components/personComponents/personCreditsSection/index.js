@@ -1,178 +1,96 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Container, Typography, TextField, Button, Box, Card, Alert, Grid, Divider, List, ListItem, ListItemText, ListItemButton, ListItemAvatar, Avatar} from '@mui/material';
-import { getMovieReviews } from '../../../api/TMDBAPI';
-import { dateReadableFormatter } from '../../../utils';
+import React, { useMemo, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { Avatar, Box, Button, Card, CardActionArea, Grid, Tab, Tabs, Typography } from '@mui/material';
+import { mergeCrew } from '../../detail';
 
+const INITIAL_COUNT = 24;
+
+const dateValue = (date) => (date ? new Date(date).getTime() : 0);
+
+// Newest to oldest, with undated (unannounced) credits last
+const byNewest = (getDate) => (a, b) => {
+  const da = dateValue(getDate(a));
+  const db = dateValue(getDate(b));
+  if (!da || !db) return !da && !db ? 0 : !da ? 1 : -1;
+  return db - da;
+};
+
+const CreditGrid = ({ credits, getTitle, getDate, getRole, getPath }) => {
+  const [expanded, setExpanded] = useState(false);
+  const shown = expanded ? credits : credits.slice(0, INITIAL_COUNT);
+  return (
+    <>
+      <Grid container spacing={1.5}>
+        {shown.map((credit, index) => {
+          const date = getDate(credit);
+          return (
+            <Grid item xs={12} sm={6} md={4} key={`${credit.id}-${getRole(credit)}-${index}`}>
+              <Card sx={{ height: '100%' }}>
+                <CardActionArea component={RouterLink} to={getPath(credit)} sx={{ p: 1.25, display: 'flex', justifyContent: 'flex-start', gap: 1.5, height: '100%' }}>
+                  <Avatar
+                    variant="rounded"
+                    src={credit.poster_path ? `https://image.tmdb.org/t/p/w92${credit.poster_path}` : undefined}
+                    alt={getTitle(credit)}
+                    sx={{ width: 40, height: 60, bgcolor: 'action.hover' }}
+                  >
+                    {getTitle(credit)?.charAt(0)}
+                  </Avatar>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="body2" fontWeight={600} noWrap>{getTitle(credit)}</Typography>
+                    <Typography variant="caption" color="text.secondary" noWrap component="div">
+                      {[date ? new Date(date).getFullYear() : 'Upcoming', getRole(credit)].filter(Boolean).join(' · ')}
+                    </Typography>
+                  </Box>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          );
+        })}
+      </Grid>
+      {credits.length > INITIAL_COUNT && (
+        <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Button onClick={() => setExpanded(!expanded)}>{expanded ? 'Show less' : `Show all ${credits.length}`}</Button>
+        </Box>
+      )}
+    </>
+  );
+};
 
 const PersonCreditsSection = ({ person }) => {
-  const [credits, setCredits] = useState([]);
-  const [tvCredits, setTVCredits] = useState([]);
-  const [crew ,setCrew] = useState([]);
+  const movieCast = useMemo(() => [...(person.credits?.cast || [])].sort(byNewest((c) => c.release_date)), [person]);
+  const tvCast = useMemo(() => [...(person.tvCredits?.cast || [])].sort(byNewest((c) => c.first_air_date)), [person]);
+  const crew = useMemo(() => mergeCrew(person.credits?.crew).sort(byNewest((c) => c.release_date)), [person]);
 
-  useEffect(() => {
-    if (!person || !person.credits) return;
+  const tabs = [
+    movieCast.length > 0 && {
+      label: `Movies (${movieCast.length})`,
+      content: <CreditGrid credits={movieCast} getTitle={(c) => c.title} getDate={(c) => c.release_date} getRole={(c) => c.character} getPath={(c) => `/movie/${c.id}`} />,
+    },
+    tvCast.length > 0 && {
+      label: `TV (${tvCast.length})`,
+      content: <CreditGrid credits={tvCast} getTitle={(c) => c.name} getDate={(c) => c.first_air_date} getRole={(c) => c.character} getPath={(c) => `/tvshow/${c.id}`} />,
+    },
+    crew.length > 0 && {
+      label: `Crew (${crew.length})`,
+      content: <CreditGrid credits={crew} getTitle={(c) => c.title} getDate={(c) => c.release_date} getRole={(c) => c.job} getPath={(c) => `/movie/${c.id}`} />,
+    },
+  ].filter(Boolean);
 
-    setCredits(person.credits);
-    setTVCredits(person.tvCredits);
+  const [tab, setTab] = useState(0);
 
-    const newCrew = [];
+  if (tabs.length === 0) return <Typography color="text.secondary">No credits available.</Typography>;
+  const current = tabs[Math.min(tab, tabs.length - 1)];
 
-    person.credits.crew.forEach(element => {
-        const correspondingCrew = newCrew.find(crew => crew.id === element.id);
-
-        const clonedElement = JSON.parse(JSON.stringify(element)); // Deep copy
-
-        if (!correspondingCrew) {
-            newCrew.push(clonedElement);
-        } else {
-            newCrew[newCrew.indexOf(correspondingCrew)].job += ", " + clonedElement.job;
-        }
-    });
-
-    setCrew(newCrew);
-}, [person]);
-
-
-
-return (
-    <Container>
-        {credits.cast && credits.cast.length > 0 ? (
-            <>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Movie Credits
-                </Typography>
-                <Divider />
-                <List sx={{ maxHeight: '30em', overflowY: 'scroll' }}>
-                    <Grid container spacing={2} sx={{ marginTop: '.5em', marginBottom: '.5em' }}>
-                        {credits.cast
-                            .sort((a, b) => new Date(b.release_date) - new Date(a.release_date))
-                            .map((credit) => (
-                                <Grid item xs={12} sm={6} md={3} key={credit.id}>
-                                    <ListItemButton to={`/movie/${credit.id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
-                                        <ListItem key={credit.id}>
-                                            <ListItemAvatar>
-                                                <Avatar
-                                                    alt={credit.title}
-                                                    src={`https://image.tmdb.org/t/p/w200/${credit.poster_path}`}
-                                                    variant="rounded"
-                                                />
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={credit.title + (credit.release_date ? (' (' + new Date(credit.release_date).getFullYear() + ')'):'')}
-                                                secondary={credit.character}
-                                            />
-                                        </ListItem>
-                                    </ListItemButton>
-                                </Grid>
-                            ))}
-                    </Grid>
-                </List>
-            </>
-        ) : null}
-
-        {tvCredits.cast && tvCredits.cast.length > 0 ? (
-            <>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    TV Credits
-                </Typography>
-                <Divider />
-                <List sx={{ maxHeight: '30em', overflowY: 'scroll' }}>
-                    <Grid container spacing={2} sx={{ marginTop: '.5em', marginBottom: '.5em' }}>
-                        {tvCredits.cast
-                            .sort((a, b) => new Date(b.first_air_date) - new Date(a.first_air_date))
-                            .map((credit) => (
-                                <Grid item xs={12} sm={6} md={3} key={credit.id}>
-                                    <ListItemButton to={`/tvshow/${credit.id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
-                                        <ListItem key={credit.id}>
-                                            <ListItemAvatar>
-                                                <Avatar
-                                                    alt={credit.name}
-                                                    src={`https://image.tmdb.org/t/p/w200/${credit.poster_path}`}
-                                                    variant="rounded"
-                                                />
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={credit.name + (credit.first_air_date ? (' (' + new Date(credit.first_air_date).getFullYear() + ')'):'')}
-                                                secondary={credit.character}
-                                            />
-                                        </ListItem>
-                                    </ListItemButton>
-                                </Grid>
-                            ))}
-                    </Grid>
-                </List>
-            </>
-        ) : null}
-
-        {crew && crew.length > 0 ? (
-            <>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Film Crew Credits
-                </Typography>
-                <Divider />
-                <List sx={{ maxHeight: '30em', overflowY: 'scroll' }}>
-                    <Grid container spacing={2} sx={{ marginTop: '.5em', marginBottom: '.5em' }}>
-                        {crew
-                            .sort((a, b) => new Date(b.release_date) - new Date(a.release_date))
-                            .map((credit) => (
-                                <Grid item xs={12} sm={6} md={3} key={credit.id}>
-                                    <ListItemButton to={`/movie/${credit.id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
-                                        <ListItem key={credit.id}>
-                                            <ListItemAvatar>
-                                                <Avatar
-                                                    alt={credit.title}
-                                                    src={`https://image.tmdb.org/t/p/w200/${credit.poster_path}`}
-                                                    variant="rounded"
-                                                />
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={credit.title + (credit.release_date?(' (' + new Date(credit.release_date).getFullYear() + ')'):'')}
-                                                secondary={credit.job}
-                                            />
-                                        </ListItem>
-                                    </ListItemButton>
-                                </Grid>
-                            ))}
-                    </Grid>
-                </List>
-            </>
-        ) : null}
-
-        {tvCredits.crew && tvCredits.crew.length > 0 ? (
-            <>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    TV Crew Credits
-                </Typography>
-                <Divider />
-                <List sx={{ maxHeight: '30em', overflowY: 'scroll' }}>
-                    <Grid container spacing={2} sx={{ marginTop: '.5em', marginBottom: '.5em' }}>
-                        {tvCredits.crew
-                            .sort((a, b) => new Date(b.first_air_date) - new Date(a.first_air_date))
-                            .map((credit) => (
-                                <Grid item xs={12} sm={6} md={3} key={credit.id}>
-                                    <ListItemButton to={`/movie/${credit.id}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
-                                        <ListItem key={credit.id}>
-                                            <ListItemAvatar>
-                                                <Avatar
-                                                    alt={credit.name}
-                                                    src={`https://image.tmdb.org/t/p/w200/${credit.poster_path}`}
-                                                    variant="rounded"
-                                                />
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={credit.name + (credit.first_air_date?(' (' + new Date(credit.first_air_date).getFullYear() + ')'):'')}
-                                                secondary={credit.job}
-                                            />
-                                        </ListItem>
-                                    </ListItemButton>
-                                </Grid>
-                            ))}
-                    </Grid>
-                </List>
-            </>
-        ) : null}
-    </Container>
-);};
+  return (
+    <Box>
+      <Tabs value={Math.min(tab, tabs.length - 1)} onChange={(e, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        {tabs.map((t) => (
+          <Tab key={t.label} label={t.label} />
+        ))}
+      </Tabs>
+      {current.content}
+    </Box>
+  );
+};
 
 export default PersonCreditsSection;

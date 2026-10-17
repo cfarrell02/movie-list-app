@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Container, Typography, Button, Card, Grid, CardMedia, CircularProgress } from '@mui/material';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { Box, Container, Typography, Button, Card, CardActionArea, Grid, IconButton, Skeleton, Stack, Tooltip } from '@mui/material';
 import { getMovieListsByUserId, addMovieList, deleteMovieList } from '../../api/movieStorage';
 import AddIcon from '@mui/icons-material/Add';
 import MovieListCard from '../../components/MovieComponents/movieListCard';
@@ -20,8 +19,7 @@ const MovieHomePage = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteModalBody, setDeleteModalBody] = useState('');
   const [selectedMovieList, setSelectedMovieList] = useState(null);
-  const navigate = useNavigate();
-  const {adultContent, setAdultContent} = useContext(SiteDataContext);
+  const { adultContent } = useContext(SiteDataContext);
   const [user, setUser] = useState(null);
   const [hiddenContentMessage, setHiddenContentMessage] = useState('');
 
@@ -44,58 +42,35 @@ const MovieHomePage = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const fetchMovieLists = async () => {
-    
-      try {
-        if (user) {
-          let newMovieLists = await getMovieListsByUserId(user.uid); // Replace with the desired owner ID
-          let movieListCount = newMovieLists.length;
+  const createdTime = (list) => {
+    const created = list.createdOn;
+    if (!created) return 0;
+    return created.seconds ? created.seconds * 1000 : new Date(created).getTime();
+  };
 
-          if(!adultContent){
-            newMovieLists = newMovieLists.filter(list => {
-              return list.movies.every(movie => 
-                movie.adult === false
-              );
-            });
-          }
-
-          newMovieLists = newMovieLists.sort((a, b) => {
-            return new Date(a.createdOn.seconds) - new Date(b.createdOn.seconds);
-          });
-
-          if(newMovieLists.length < movieListCount){
-            setHiddenContentMessage('Some watch lists have been hidden due to adult content settings.');
-          }else{
-            setHiddenContentMessage('');
-          }
-
-          setMovieLists([...newMovieLists]);
-          
-        }
-      } catch (error) {
-        console.error('Error getting watch lists:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMovieLists();
-  }, [user]);
-
-  const refreshPage = async () => {
+  const loadMovieLists = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
-    setMovieLists([]);
     try {
-      if (user) {
-        let newMovieLists = await getMovieListsByUserId(user.uid); // Replace with the desired owner ID
-        setMovieLists([...newMovieLists]);
-      }
+      const allLists = await getMovieListsByUserId(user.uid);
+      const visibleLists = adultContent
+        ? allLists
+        : allLists.filter((list) => (list.movies || []).every((movie) => !movie.adult));
+      visibleLists.sort((a, b) => createdTime(a) - createdTime(b));
+      setHiddenContentMessage(
+        visibleLists.length < allLists.length ? 'Some watch lists are hidden by your adult content setting.' : ''
+      );
+      setMovieLists(visibleLists);
     } catch (error) {
       console.error('Error getting watch lists:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, adultContent]);
+
+  useEffect(() => {
+    loadMovieLists();
+  }, [loadMovieLists]);
 
   const handleNewMovieList = async (name) => {
     try {
@@ -134,62 +109,75 @@ const MovieHomePage = () => {
   };
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '2em', marginBottom: '2em' }}
-    >
-      <NewMovieListModal title="New Watch List" body="Enter a name for your new watch list." open={modalOpen} onClose={handleNewMovieList} onCancel={() => setModalOpen(false)} />
-      <ConfirmationModal header="Delete Watch List" body={deleteModalBody} open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={() => handleDeleteMovieList()} />
-      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, marginBottom: '2em' }}>
-      <Typography variant="h2" align="center" sx={{ color: 'text.primary' }}>
-        {user && user.firstName ? `${user.firstName}'s Watch Lists` : 'Watch Lists'}
-      </Typography>
-      <Button 
-        variant="contained" 
-        onClick={refreshPage} 
-        sx={{ display: 'flex', alignItems: 'center', minHeight: '100%' }}
-      >
-        <RefreshIcon />
-      </Button>
-    </Container>
+    <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
+      <NewMovieListModal header="New watch list" body="Give your list a name. You can invite others from its settings." open={modalOpen} onClose={handleNewMovieList} onCancel={() => setModalOpen(false)} />
+      <ConfirmationModal header="Delete watch list?" body={deleteModalBody} open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={() => handleDeleteMovieList()} confirmLabel="Delete" />
 
-      {hiddenContentMessage && <Typography variant="h6" align="center" sx={{ mb: 4, color: 'text.primary' }}>
-        <em>
-        {hiddenContentMessage}
-        </em>
-      </Typography>}
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'flex-end' }} spacing={2} sx={{ mb: 4 }}>
+        <Box>
+          <Typography variant="h3" component="h1">
+            {user && user.firstName ? `${user.firstName}'s Watch Lists` : 'Watch Lists'}
+          </Typography>
+          <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+            {hiddenContentMessage || 'Track movies and shows with friends.'}
+          </Typography>
+        </Box>
+        <Stack direction="row" spacing={1}>
+          <Tooltip title="Refresh">
+            <span>
+              <IconButton onClick={loadMovieLists} disabled={loading} aria-label="Refresh lists">
+                <RefreshIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setModalOpen(true)}>
+            New list
+          </Button>
+        </Stack>
+      </Stack>
 
       {loading ? (
-        <Container sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh'}}>
-          <CircularProgress/>
-        </Container>
+        <Grid container spacing={3}>
+          {[0, 1, 2].map((i) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
+              <Skeleton variant="rounded" sx={{ aspectRatio: '16 / 10', height: 'auto' }} />
+              <Skeleton width="60%" sx={{ mt: 1.5 }} />
+              <Skeleton width="40%" />
+            </Grid>
+          ))}
+        </Grid>
+      ) : movieLists.length === 0 ? (
+        <Card sx={{ p: 6, textAlign: 'center' }}>
+          <Typography variant="h5">No watch lists yet</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1, mb: 3 }}>Create your first list to start tracking what you want to watch.</Typography>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setModalOpen(true)}>Create a list</Button>
+        </Card>
       ) : (
-        <Grid container spacing={2} alignItems="center">
+        <Grid container spacing={3}>
           {movieLists.map((movieList) => (
-            <Grid item xs={6} sm={4}   key={movieList.id}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={movieList.id}>
               <MovieListCard movieList={movieList} onDelete={handleDeleteMovieListSelected} />
             </Grid>
           ))}
-
-        <Grid item xs={6} sm={4}   alignContent="center" alignItems="center" justifyContent="center">
-          <Link onClick={() => setModalOpen(true)}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <Card
               sx={{
-                aspectRatio: '1/1', // Set the aspect ratio to 1:1
-                backgroundColor: 'primary.light',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'background-color 0.3s', // Add transition for smooth color change
-                '&:hover': {
-                  backgroundColor: 'primary.dark', // Change to the desired hover color
-                },
+                height: '100%',
+                minHeight: 220,
+                borderStyle: 'dashed',
+                borderWidth: 2,
+                bgcolor: 'transparent',
               }}
             >
-              <AddIcon sx={{ fontSize: 100, color: 'white' }} />
+              <CardActionArea
+                onClick={() => setModalOpen(true)}
+                sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 1, color: 'text.secondary' }}
+              >
+                <AddIcon sx={{ fontSize: 40 }} />
+                <Typography fontWeight={600}>New list</Typography>
+              </CardActionArea>
             </Card>
-          </Link>
-        </Grid>
+          </Grid>
         </Grid>
       )}
     </Container>

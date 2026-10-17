@@ -1,30 +1,18 @@
 import React from 'react';
-import { Container, Typography, Button } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import { Button, Container, Typography } from '@mui/material';
 
-const NotFoundPage = () => {
-    const navigate = useNavigate();
-
-    const handleGoBack = () => {
-        navigate('/home');
-    };
-
-    return (
-        <Container style={{ textAlign: 'center', marginTop: '5em' }}>
-            <Typography variant="h1" component="h1" gutterBottom sx={{color:'text.primary'}}>
-                404
-            </Typography>
-            <Typography variant="h5" component="h2" gutterBottom sx={{color:'text.primary'}}>
-                Page Not Found
-            </Typography>
-            <Typography variant="body1" gutterBottom sx={{color:'text.primary', mb: '1em'}}>
-                The page you are looking for does not exist.
-            </Typography>
-            <Button variant="contained" color="primary" onClick={handleGoBack}>
-                Go to Home
-            </Button>
-        </Container>
-    );
-};
+const NotFoundPage = () => (
+    <Container maxWidth="sm" sx={{ textAlign: 'center', py: { xs: 8, md: 12 } }}>
+        <Typography variant="overline" color="primary" fontWeight={700}>404</Typography>
+        <Typography variant="h3" component="h1" sx={{ mt: 1 }}>Page not found</Typography>
+        <Typography color="text.secondary" sx={{ mt: 1.5, mb: 4 }}>
+            The page you're looking for doesn't exist or may have moved.
+        </Typography>
+        <Button component={RouterLink} to="/home" variant="contained" size="large">
+            Back to browsing
+        </Button>
+    </Container>
+);
 
 export default NotFoundPage;
