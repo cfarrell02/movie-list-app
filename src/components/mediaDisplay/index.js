@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Button, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
+import { ShowMoreButton, useItemsPerRow } from '../detail';
 
-const INITIAL_VIDEOS = 3;
-const INITIAL_IMAGES = 8;
+// Match the Grid item sizes below so the collapsed view is exactly one row
+const VIDEO_COLUMNS = { xs: 1, sm: 2, md: 3 };
+const IMAGE_COLUMNS = { xs: 2, sm: 3, md: 4 };
 
 const getVideoSrc = (video) => {
     if (video.site === 'YouTube') return `https://www.youtube-nocookie.com/embed/${video.key}`;
@@ -13,9 +15,11 @@ const getVideoSrc = (video) => {
 const MediaDisplay = ({ videos, images, imageAspect = '16 / 9' }) => {
     const [allVideos, setAllVideos] = useState(false);
     const [allImages, setAllImages] = useState(false);
+    const videosPerRow = useItemsPerRow(VIDEO_COLUMNS);
+    const imagesPerRow = useItemsPerRow(IMAGE_COLUMNS);
     const playable = (videos || []).filter(getVideoSrc);
-    const shownVideos = allVideos ? playable : playable.slice(0, INITIAL_VIDEOS);
-    const shownImages = allImages ? images || [] : (images || []).slice(0, INITIAL_IMAGES);
+    const shownVideos = allVideos ? playable : playable.slice(0, videosPerRow);
+    const shownImages = allImages ? images || [] : (images || []).slice(0, imagesPerRow);
 
     return (
         <Box>
@@ -38,10 +42,8 @@ const MediaDisplay = ({ videos, images, imageAspect = '16 / 9' }) => {
                             </Grid>
                         ))}
                     </Grid>
-                    {playable.length > INITIAL_VIDEOS && (
-                        <Box sx={{ textAlign: 'center', mt: 1 }}>
-                            <Button onClick={() => setAllVideos(!allVideos)}>{allVideos ? 'Show less' : `Show all ${playable.length} videos`}</Button>
-                        </Box>
+                    {playable.length > videosPerRow && (
+                        <ShowMoreButton expanded={allVideos} total={playable.length} noun="videos" onClick={() => setAllVideos(!allVideos)} />
                     )}
                 </Box>
             )}
@@ -69,10 +71,8 @@ const MediaDisplay = ({ videos, images, imageAspect = '16 / 9' }) => {
                             </Grid>
                         ))}
                     </Grid>
-                    {images.length > INITIAL_IMAGES && (
-                        <Box sx={{ textAlign: 'center', mt: 1 }}>
-                            <Button onClick={() => setAllImages(!allImages)}>{allImages ? 'Show less' : `Show all ${images.length} images`}</Button>
-                        </Box>
+                    {images.length > imagesPerRow && (
+                        <ShowMoreButton expanded={allImages} total={images.length} noun="images" onClick={() => setAllImages(!allImages)} />
                     )}
                 </Box>
             )}

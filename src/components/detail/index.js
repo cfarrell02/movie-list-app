@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 import {
   Avatar,
   Box,
@@ -18,6 +19,7 @@ import {
   Skeleton,
   Stack,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
 import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
@@ -364,20 +366,37 @@ export const FactSection = ({ title, facts }) =>
     </Section>
   ) : null;
 
-/** Grid of poster cards with a Show all toggle; hidden when empty */
-export const TitleGridSection = ({ title, items, renderItem, initialCount = 12 }) => {
-  const [showAll, setShowAll] = useState(false);
+/**
+ * How many grid items fit on one row at the current breakpoint.
+ * `columns` mirrors the Grid item sizes, e.g. { xs: 2, sm: 3, md: 4, lg: 6 } for xs=6 sm=4 md=3 lg=2.
+ */
+export const useItemsPerRow = (columns) => {
+  const theme = useTheme();
+  const lg = useMediaQuery(theme.breakpoints.up('lg'));
+  const md = useMediaQuery(theme.breakpoints.up('md'));
+  const sm = useMediaQuery(theme.breakpoints.up('sm'));
+  if (lg && columns.lg) return columns.lg;
+  if (md && columns.md) return columns.md;
+  if (sm && columns.sm) return columns.sm;
+  return columns.xs;
+};
+
+export const ShowMoreButton = ({ expanded, total, noun = '', onClick }) => (
+  <Box sx={{ textAlign: 'center', mt: 1.5 }}>
+    <Button onClick={onClick}>{expanded ? 'Show less' : `Show more${total ? ` (${total}${noun ? ` ${noun}` : ''})` : ''}`}</Button>
+  </Box>
+);
+
+const POSTER_COLUMNS = { xs: 2, sm: 3, md: 4, lg: 6 };
+
+/** Grid of poster cards: one row by default with a Show more toggle; hidden when empty */
+export const TitleGridSection = ({ title, items, renderItem }) => {
+  const [expanded, setExpanded] = useState(false);
+  const perRow = useItemsPerRow(POSTER_COLUMNS);
   if (!items || items.length === 0) return null;
-  const shown = showAll ? items : items.slice(0, initialCount);
+  const shown = expanded ? items : items.slice(0, perRow);
   return (
-    <Section
-      title={title}
-      action={
-        items.length > initialCount && (
-          <Button onClick={() => setShowAll(!showAll)}>{showAll ? 'Show less' : `Show all ${items.length}`}</Button>
-        )
-      }
-    >
+    <Section title={title}>
       <Grid container spacing={{ xs: 2, md: 3 }}>
         {shown.map((item) => (
           <Grid item xs={6} sm={4} md={3} lg={2} key={item.id}>
@@ -385,43 +404,42 @@ export const TitleGridSection = ({ title, items, renderItem, initialCount = 12 }
           </Grid>
         ))}
       </Grid>
+      {items.length > perRow && (
+        <ShowMoreButton expanded={expanded} total={items.length} onClick={() => setExpanded(!expanded)} />
+      )}
     </Section>
   );
 };
 
 /**
- * "More from <studio/network>": of the first few listed companies, uses the one with the most titles.
- * Listing order isn't reliable (a founder's own company can come before the studio), but catalogue size is.
- * fetchTitles(companyId) -> { results, total }; hidden when nothing turns up.
+ * One "More from <studio/network>" row for every listed company that has other titles.
+ * fetchTitles(companyId) -> { results }; companies with nothing to show are skipped.
  */
 export const MoreFromCompany = ({ companies, currentId, fetchTitles, renderItem, filterItems = (x) => x }) => {
-  const [result, setResult] = useState(null);
+  const [rows, setRows] = useState([]);
   const key = (companies || []).map((c) => c.id).join(',');
 
   useEffect(() => {
     let active = true;
-    setResult(null);
-    const candidates = (companies || []).slice(0, 3);
-    (async () => {
-      const responses = await Promise.all(
-        candidates.map((company) =>
-          fetchTitles(company.id)
-            .then(({ results, total }) => ({ company, total, titles: filterItems(results).filter((t) => t.id !== currentId) }))
-            .catch(() => null)
-        )
-      );
-      const best = responses
-        .filter((r) => r && r.titles.length > 0)
-        .sort((a, b) => b.total - a.total)[0];
-      if (active && best) setResult({ name: best.company.name, titles: best.titles });
-    })();
+    setRows([]);
+    Promise.all(
+      (companies || []).map((company) =>
+        fetchTitles(company.id)
+          .then(({ results }) => ({ company, titles: filterItems(results).filter((t) => t.id !== currentId) }))
+          .catch(() => null)
+      )
+    ).then((responses) => {
+      // Keep the order the studios are listed in
+      if (active) setRows(responses.filter((r) => r && r.titles.length > 0));
+    });
     return () => {
       active = false;
     };
   }, [key, currentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!result) return null;
-  return <TitleGridSection title={`More from ${result.name}`} items={result.titles} renderItem={renderItem} />;
+  return rows.map(({ company, titles }) => (
+    <TitleGridSection key={company.id} title={`More from ${company.name}`} items={titles} renderItem={renderItem} />
+  ));
 };
 
 /** True when MediaDisplay would have something to show (embeddable video or at least one image) */
