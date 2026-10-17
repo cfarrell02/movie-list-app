@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Container, Typography, TextField, Button, Grid, Autocomplete, Accordion, AccordionSummary, AccordionDetails, List, ListItem, CircularProgress, ListItemText, useMediaQuery, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Divider } from "@mui/material";
+import { Box, Container, Typography, TextField, Button, Grid, Accordion, AccordionSummary, AccordionDetails, List, ListItem, CircularProgress, ListItemText, useMediaQuery, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Divider } from "@mui/material";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { getUserById, getAllUsers } from "../../../api/userDataStorage";
+import { findUserByEmail, normaliseEmail } from "../../../api/userDirectory";
 import { memberFields, membersWithRoles, roleOf, updateMovieList } from "../../../api/movieStorage";
 import { getUserRoles } from "../../../utils";
 import { auth } from "../../../firebase-config";
@@ -17,10 +17,9 @@ import ConfimationModal from "../../Modals/confirmationModal";
 
 const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
   const [users, setUsers] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
   const [user, setUser] = useState({});
-  const [searchedUser, setSearchedUser] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [memberEmail, setMemberEmail] = useState("");
+  const [isAddingMember, setIsAddingMember] = useState(false);
   const [movieListTitle, setMovieListTitle] = useState(movieList.title);
   const [accessType, setAccessType] = useState(0);
   const { addAlert } = React.useContext(AlertContext);
@@ -70,47 +69,27 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
     }
   };
 
-  const handleSearchUsers = async (searchedName) => {
+  // Members are added by exact email: the directory deliberately can't be browsed or searched
+  const handleAddUserToMovieList = async () => {
     try {
-      setIsLoading(true);
-      const users = await getAllUsers();
-      const results = users.filter(
-        (user) =>
-          user.email.includes(searchedName) ||
-          user.firstName.includes(searchedName) ||
-          user.lastName.includes(searchedName)
-      );
-      setSearchResults(results);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Error searching users:", error);
-    }
-  };
+      const email = normaliseEmail(memberEmail);
+      if (!email || !email.includes("@")) throw new Error("Enter the person's email address.");
+      setIsAddingMember(true);
+      const found = await findUserByEmail(email);
+      if (!found) throw new Error(`No Watchlist account uses ${email}. Check the address, or ask them to sign in once.`);
+      if (movieList.userIds.includes(found.uid)) throw new Error(`${email} is already on this list.`);
 
-  const handleAddUserToMovieList = async (userID) => {
-    try {
-      if (!userID) {
-        throw new Error("Invalid user ID.");
-      }
-
-      if (movieList.userIds.includes(userID)) {
-        throw new Error("User already added to watch list.");
-      }
-
-      const user = await getUserById(userID);
-
-      const updatedUsers = [
-        ...movieList.users,
-        { uid: userID, accessType: 0, email: user.email },
-      ];
+      const updatedUsers = [...users, { uid: found.uid, accessType: 0, email }];
       const updatedMovieList = { ...movieList, ...memberFields(updatedUsers) };
-
+      await updateMovieList(movieList.id, memberFields(updatedUsers));
       setUsers(updatedUsers);
-      await updateMovieList(movieList.id, memberFields(updatedMovieList.users));
       setMovieList(updatedMovieList);
-      addAlert("success", `User ${user.email} added to watch list.`);
+      setMemberEmail("");
+      addAlert("success", `${found.firstName ? `${found.firstName} (${email})` : email} added as a Viewer.`);
     } catch (error) {
       addAlert("error", error.message);
+    } finally {
+      setIsAddingMember(false);
     }
   };
 
@@ -136,7 +115,7 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
       await updateMovieList(movieList.id, memberFields(updatedMovieList.users));
       addAlert(
         "success",
-        `User ${user.email} access type updated to ${getUserRoles(accessType)}.`
+        `${user.email} is now ${getUserRoles(accessType) === 'Admin' ? 'an' : 'a'} ${getUserRoles(accessType)}.`
       );
     } catch (error) {
       addAlert("error", error.message);
@@ -464,33 +443,26 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
             >
               <Grid container>
                 <Grid item xs={12}>
-                  <Autocomplete
-                    id="search-results"
-                    options={searchResults}
-                    getOptionLabel={(user) => user.email}
-                    loading={isLoading}
-                    onChange={(event, value) => setSearchedUser(value)}
-                    disabled={accessType < 2}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        onChange={(event) =>
-                          handleSearchUsers(event.target.value)
-                        }
-                        label="Search Users"
-                        variant="outlined"
-                      />
-                    )}
+                  <TextField
+                    fullWidth
+                    type="email"
+                    label="Add by email"
+                    placeholder="friend@example.com"
+                    helperText="They need a Watchlist account. They'll join as a Viewer."
+                    value={memberEmail}
+                    onChange={(event) => setMemberEmail(event.target.value)}
+                    onKeyDown={(event) => event.key === "Enter" && handleAddUserToMovieList()}
+                    disabled={accessType < 2 || isAddingMember}
                   />
                 </Grid>
                 <Grid item xs={12}>
                   <Button
                     variant="contained"
-                    onClick={() => handleAddUserToMovieList(searchedUser.id)}
+                    onClick={handleAddUserToMovieList}
                     sx={{ marginTop: "1em" }}
-                    disabled={accessType < 2}
+                    disabled={accessType < 2 || isAddingMember || !memberEmail.trim()}
                   >
-                    Add User
+                    Add member
                   </Button>
                 </Grid>
               </Grid>

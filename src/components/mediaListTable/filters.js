@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import TuneIcon from '@mui/icons-material/Tune';
-import { getUserById } from '../../api/userDataStorage';
+import { getPublicName } from '../../api/userDirectory';
 
 // Cache "added by" lookups so each user is fetched once, not once per row
 const userCache = new Map();
@@ -32,9 +32,7 @@ export const fetchUserName = (uid) => {
   if (!userCache.has(uid)) {
     userCache.set(
       uid,
-      getUserById(uid)
-        .then((u) => u.firstName || u.email || '')
-        .catch(() => '')
+      getPublicName(uid).catch(() => '')
     );
   }
   return userCache.get(uid);

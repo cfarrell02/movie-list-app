@@ -19,7 +19,7 @@ import thunderIcon from './images/045-thunder.svg';
 //utils.js
 
 export const getUserRoles = (index) => {
-    const userRoles = ['Viewer', 'User', 'Admin','Owner']
+    const userRoles = ['Viewer', 'Contributor', 'Admin', 'Owner']
     return userRoles[index];
 }
 export const dayOfTheWeek = (index) => {

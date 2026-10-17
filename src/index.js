@@ -29,6 +29,7 @@ import { darkTheme, lightTheme } from './themes';
 import { canViewAdultContent } from './utils';
 import { addUser, getUserById, updateUser } from './api/userDataStorage';
 import { getMovieListsByUserId, updateMovieList } from './api/movieStorage';
+import { removeEmailLookup, syncDirectoryEntry, syncDirectoryEntryOnce } from './api/userDirectory';
 import './index.css';
 
 const FullPageSpinner = () => (
@@ -63,6 +64,8 @@ const App = () => {
         // The account is the source of truth for adult content, so it follows the user across devices
         setAdultContent(canViewAdultContent(userData));
         setUser(userData);
+        // Keep this user's public name and email lookup present (fire and forget)
+        syncDirectoryEntryOnce(userData);
       } catch (error) {
         // A missing/unreadable profile shouldn't leave the app spinning forever
         console.error(error);
@@ -82,8 +85,11 @@ const App = () => {
       const userData = await getUserById(user.uid);
       //Ensure db matches auth email
       if(userData && userData.email !== user.email){
+        const previousEmail = userData.email;
         userData.email = user.email;
         await updateUser(user.uid, { email: user.email });
+        await removeEmailLookup(previousEmail);
+        await syncDirectoryEntry(userData);
         const movieLists = await getMovieListsByUserId(user.uid);
         for (const movieList of movieLists) {
             for (const userObj of movieList.users) {
@@ -116,6 +122,7 @@ const App = () => {
         active: true
       };
       await addUser(userObject);
+      await syncDirectoryEntry(userObject);
       // The auth listener can fire before the profile is written, so set it directly
       setUser(userObject);
       setLoadedUser(true);

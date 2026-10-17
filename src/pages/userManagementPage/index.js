@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 
 import { getUserById, updateUser, getAllUsers } from '../../api/userDataStorage';
+import { syncDirectoryEntry } from '../../api/userDirectory';
 
 import UserManagementList from '../../components/Admin/userManagementList';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -45,9 +46,19 @@ const UserManagementPage = () => {
 
 
             setUsers(userData);
+            // Site admins can (re)build everyone's public directory entries
+            if (currentUser.admin) {
+                let synced = false;
+                try { synced = sessionStorage.getItem('directorySyncedAll') === '1'; } catch { /* ignore */ }
+                if (!synced) {
+                    Promise.all(userData.map(syncDirectoryEntry)).then(() => {
+                        try { sessionStorage.setItem('directorySyncedAll', '1'); } catch { /* ignore */ }
+                    });
+                }
+            }
         });
     }
-    , [currentUser.id]);
+    , [currentUser.id, currentUser.admin]);
 
     const getFullName = (user) => {
         return `${user.firstName} ${user.lastName}`;

@@ -47,8 +47,10 @@ service cloud.firestore {
     // ---------- users ----------
 
     match /users/{userId} {
-      // Signed-in users can look each other up (member search, "added by" names)
-      allow get, list: if signedIn();
+      // Full profiles (email, date of birth…) are private: yourself and site admins only.
+      // Other users see names via publicProfiles and find people by exact email via userLookup.
+      allow get: if signedIn() && (me() == userId || isSiteAdmin());
+      allow list: if isSiteAdmin();
 
       // New accounts create their own profile: active, never admin
       allow create: if signedIn()
@@ -62,6 +64,31 @@ service cloud.firestore {
         || isSiteAdmin();
 
       allow delete: if (signedIn() && me() == userId) || isSiteAdmin();
+    }
+
+    // ---------- public directory ----------
+
+    // Names only, for "added by" labels
+    match /publicProfiles/{userId} {
+      allow get: if signedIn();
+      allow create, update: if ((signedIn() && me() == userId) || isSiteAdmin())
+        && request.resource.data.keys().hasOnly(['firstName', 'lastName'])
+        && request.resource.data.firstName is string
+        && request.resource.data.lastName is string;
+      allow delete: if (signedIn() && me() == userId) || isSiteAdmin();
+    }
+
+    // Exact-email lookup for adding list members. `get` only, so nobody can list or browse it.
+    match /userLookup/{email} {
+      allow get: if signedIn();
+      // You can only claim the lookup for your own sign-in email; site admins can write any
+      allow create, update: if request.resource.data.keys().hasOnly(['uid', 'firstName', 'lastName'])
+        && ((signedIn()
+              && request.resource.data.uid == me()
+              && request.auth.token.email != null
+              && email == request.auth.token.email.lower())
+            || isSiteAdmin());
+      allow delete: if (signedIn() && resource.data.uid == me()) || isSiteAdmin();
     }
 
     // ---------- watch lists ----------

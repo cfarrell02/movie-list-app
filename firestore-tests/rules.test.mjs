@@ -89,9 +89,12 @@ describe('users', () => {
     await assertFails(getDoc(doc(db(null), 'users', 'owner')));
   });
 
-  test('signed-in users can read profiles (member search, added-by names)', async () => {
-    await assertSucceeds(getDoc(doc(db('viewer'), 'users', 'owner')));
-    await assertSucceeds(getDocs(collection(db('viewer'), 'users')));
+  test('full profiles are private: yourself and site admins only', async () => {
+    await assertSucceeds(getDoc(doc(db('viewer'), 'users', 'viewer')));
+    await assertFails(getDoc(doc(db('viewer'), 'users', 'owner')));
+    await assertFails(getDocs(collection(db('viewer'), 'users')));
+    await assertSucceeds(getDoc(doc(db('siteadmin'), 'users', 'owner')));
+    await assertSucceeds(getDocs(collection(db('siteadmin'), 'users')));
   });
 
   test('registration creates an active, non-admin profile for yourself only', async () => {
@@ -115,6 +118,52 @@ describe('users', () => {
   test('users can delete only their own profile', async () => {
     await assertFails(deleteDoc(doc(db('viewer'), 'users', 'owner')));
     await assertSucceeds(deleteDoc(doc(db('viewer'), 'users', 'viewer')));
+  });
+});
+
+describe('public directory', () => {
+  // Signed in with an email on the token, as Firebase Auth does
+  const dbWithEmail = (uid, email) => env.authenticatedContext(uid, { email }).firestore();
+
+  test('names are readable by signed-in users, not by visitors, and not listable', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'publicProfiles', 'owner'), { firstName: 'Owner', lastName: 'Test' });
+    });
+    await assertSucceeds(getDoc(doc(db('viewer'), 'publicProfiles', 'owner')));
+    await assertFails(getDoc(doc(db(null), 'publicProfiles', 'owner')));
+    await assertFails(getDocs(collection(db('viewer'), 'publicProfiles')));
+  });
+
+  test('you can only write your own public name, and only name fields', async () => {
+    await assertSucceeds(setDoc(doc(db('viewer'), 'publicProfiles', 'viewer'), { firstName: 'V', lastName: 'T' }));
+    await assertFails(setDoc(doc(db('viewer'), 'publicProfiles', 'owner'), { firstName: 'Hacked', lastName: 'T' }));
+    await assertFails(setDoc(doc(db('viewer'), 'publicProfiles', 'viewer'), { firstName: 'V', lastName: 'T', dateOfBirth: 'x' }));
+    await assertSucceeds(setDoc(doc(db('siteadmin'), 'publicProfiles', 'owner'), { firstName: 'Owner', lastName: 'Test' }));
+  });
+
+  test('email lookup works for an exact email but cannot be listed', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'userLookup', 'owner@test.dev'), { uid: 'owner', firstName: 'Owner', lastName: 'Test' });
+    });
+    await assertSucceeds(getDoc(doc(db('viewer'), 'userLookup', 'owner@test.dev')));
+    await assertFails(getDocs(collection(db('viewer'), 'userLookup')));
+    await assertFails(getDoc(doc(db(null), 'userLookup', 'owner@test.dev')));
+  });
+
+  test('you can only claim the lookup for your own sign-in email', async () => {
+    const mine = { uid: 'viewer', firstName: 'V', lastName: 'T' };
+    await assertSucceeds(setDoc(doc(dbWithEmail('viewer', 'Viewer@Test.dev'), 'userLookup', 'viewer@test.dev'), mine));
+    await assertFails(setDoc(doc(dbWithEmail('viewer', 'viewer@test.dev'), 'userLookup', 'owner@test.dev'), mine));
+    await assertFails(setDoc(doc(dbWithEmail('viewer', 'viewer@test.dev'), 'userLookup', 'viewer@test.dev'), { ...mine, uid: 'owner' }));
+    await assertSucceeds(setDoc(doc(db('siteadmin'), 'userLookup', 'owner@test.dev'), { uid: 'owner', firstName: 'O', lastName: 'T' }));
+  });
+
+  test('only the owner of a lookup (or a site admin) can delete it', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'userLookup', 'owner@test.dev'), { uid: 'owner', firstName: 'O', lastName: 'T' });
+    });
+    await assertFails(deleteDoc(doc(db('viewer'), 'userLookup', 'owner@test.dev')));
+    await assertSucceeds(deleteDoc(doc(db('owner'), 'userLookup', 'owner@test.dev')));
   });
 });
 

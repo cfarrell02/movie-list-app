@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Typography, TextField, Button, Box, Divider } from '@mui/material';
 import { getUserById, updateUser, deleteUser } from '../../../api/userDataStorage';
+import { normaliseEmail, removeDirectoryEntry, removeEmailLookup, syncDirectoryEntry } from '../../../api/userDirectory';
 import { getMovieListsByUserId, updateMovieList, deleteMovieList, memberFields, roleOf } from '../../../api/movieStorage';
 import { onAuthStateChanged, getAuth , } from 'firebase/auth';
 import { auth } from '../../../firebase-config';
@@ -94,6 +95,12 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
                 id: user.id
             };
             await updateUser(user.id, newUser);
+            // Refresh the public name and email lookup (the lookup is keyed by email, so move it if that changed)
+            if (normaliseEmail(email) !== normaliseEmail(user.email)) {
+                await removeEmailLookup(user.email);
+                await authUser.getIdToken(true);
+            }
+            await syncDirectoryEntry({ ...newUser, email });
 
             addAlert('success', 'Profile updated successfully');
         }catch(error){
@@ -130,6 +137,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
                 }));
 
                 //Delete the user object in db, then the firebase sign-in
+                await removeDirectoryEntry({ uid: user.id, email: user.email });
                 await deleteUser(user.id);
                 await deleteUserAuth(authUser);
                 addAlert('info', 'Your account has been deleted');
