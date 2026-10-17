@@ -127,7 +127,7 @@ const PersonPage = () => {
                     )}
                     {person.images.profiles.length > 0 && (
                         <Section title="Photos">
-                            <MediaDisplay images={person.images.profiles} imageAspect="2 / 3" />
+                            <MediaDisplay images={person.images.profiles} imageAspect="2 / 3" title={person.name} />
                         </Section>
                     )}
                 </Stack>

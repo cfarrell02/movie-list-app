@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, ButtonBase, Grid, Typography } from '@mui/material';
+import ImageViewer, { tmdbThumbSrc, tmdbViewerSrc } from '../imageViewer';
 import { ShowMoreButton, useItemsPerRow } from '../detail';
 
 // Match the Grid item sizes below so the collapsed view is exactly one row
@@ -12,7 +13,8 @@ const getVideoSrc = (video) => {
     return '';
 };
 
-const MediaDisplay = ({ videos, images, imageAspect = '16 / 9' }) => {
+const MediaDisplay = ({ videos, images, imageAspect = '16 / 9', title }) => {
+    const [viewerIndex, setViewerIndex] = useState(null);
     const [allVideos, setAllVideos] = useState(false);
     const [allImages, setAllImages] = useState(false);
     const videosPerRow = useItemsPerRow(VIDEO_COLUMNS);
@@ -51,14 +53,12 @@ const MediaDisplay = ({ videos, images, imageAspect = '16 / 9' }) => {
                 <Box>
                     <Typography variant="h6" sx={{ mb: 1.5 }}>Images</Typography>
                     <Grid container spacing={2}>
-                        {shownImages.map((image) => (
+                        {shownImages.map((image, index) => (
                             <Grid item xs={6} sm={4} md={3} key={image.file_path}>
-                                <Box
-                                    component="a"
-                                    href={`https://image.tmdb.org/t/p/original${image.file_path}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{ display: 'block', borderRadius: '12px', overflow: 'hidden', '&:hover img': { transform: 'scale(1.04)' } }}
+                                <ButtonBase
+                                    onClick={() => setViewerIndex(index)}
+                                    aria-label={`View image ${index + 1} of ${images.length}`}
+                                    sx={{ display: 'block', width: '100%', borderRadius: '12px', overflow: 'hidden', '&:hover img': { transform: 'scale(1.04)' } }}
                                 >
                                     <Box
                                         component="img"
@@ -67,7 +67,7 @@ const MediaDisplay = ({ videos, images, imageAspect = '16 / 9' }) => {
                                         loading="lazy"
                                         sx={{ width: '100%', aspectRatio: imageAspect, objectFit: 'cover', display: 'block', transition: 'transform .3s', bgcolor: 'action.hover' }}
                                     />
-                                </Box>
+                                </ButtonBase>
                             </Grid>
                         ))}
                     </Grid>
@@ -76,6 +76,13 @@ const MediaDisplay = ({ videos, images, imageAspect = '16 / 9' }) => {
                     )}
                 </Box>
             )}
+            <ImageViewer
+                images={(images || []).map((image) => ({ src: tmdbViewerSrc(image), thumb: tmdbThumbSrc(image) }))}
+                index={viewerIndex}
+                onIndexChange={setViewerIndex}
+                onClose={() => setViewerIndex(null)}
+                title={title}
+            />
         </Box>
     );
 };

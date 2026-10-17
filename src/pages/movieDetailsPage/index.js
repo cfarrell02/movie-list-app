@@ -189,7 +189,7 @@ const MovieDetailsPage = () => {
 
         {hasPlayableMedia(movie.videos?.results, movie.images?.backdrops) && (
           <Section title="Media">
-            <MediaDisplay videos={movie.videos?.results} images={movie.images?.backdrops} />
+            <MediaDisplay videos={movie.videos?.results} images={movie.images?.backdrops} title={movie.title} />
           </Section>
         )}
 

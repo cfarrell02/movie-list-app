@@ -186,7 +186,7 @@ const TVDetailsPage = () => {
 
         {hasPlayableMedia(tvShow.videos?.results, tvShow.images?.backdrops) && (
           <Section title="Media">
-            <MediaDisplay videos={tvShow.videos?.results} images={tvShow.images?.backdrops} />
+            <MediaDisplay videos={tvShow.videos?.results} images={tvShow.images?.backdrops} title={tvShow.name} />
           </Section>
         )}
 
