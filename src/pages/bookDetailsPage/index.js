@@ -12,7 +12,7 @@ import {
   textValue,
   workId,
 } from '../../api/bookAPI';
-import { addBookToList, getMovieListById, getMovieListsByUserId } from '../../api/movieStorage';
+import { addBookToList, getMovieListById, getMovieListsByUserId, roleOf } from '../../api/movieStorage';
 import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
 import { toListEntry } from '../../listTransfer';
@@ -121,7 +121,7 @@ const BookDetailsPage = () => {
   useEffect(() => {
     if (!user) return;
     getMovieListsByUserId(user.uid)
-      .then((all) => setLists(all.filter((list) => (list.users?.find((u) => u.uid === user.uid)?.accessType || 0) > 0)))
+      .then((all) => setLists(all.filter((list) => roleOf(list, user.uid) > 0)))
       .catch(console.error);
   }, [user]);
 

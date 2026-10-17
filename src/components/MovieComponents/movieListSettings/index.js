@@ -7,7 +7,7 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getUserById, getAllUsers } from "../../../api/userDataStorage";
-import { updateMovieList } from "../../../api/movieStorage";
+import { memberFields, membersWithRoles, roleOf, updateMovieList } from "../../../api/movieStorage";
 import { getUserRoles } from "../../../utils";
 import { auth } from "../../../firebase-config";
 import { onAuthStateChanged } from "firebase/auth";
@@ -29,28 +29,21 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
   const [creationDate, setCreationDate] = useState('' );
   const [warningModalDetails, setWarningModalDetails] = useState({show: false});
 
+  // Depend on the member fields themselves: the parent passes a fresh movieList object on every render
   useEffect(() => {
-    try {
-      setUsers(movieList.users);
-      const date = new Date(movieList.createdOn.seconds*1000);
-      setCreationDate(date.toDateString());
-    } catch (error) {
-      console.log("Error setting users:", error);
-    }
-  }, [movieList]);
+    setUsers(membersWithRoles(movieList));
+  }, [movieList.users, movieList.userIds, movieList.ownerIds, movieList.adminIds, movieList.editorIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    try {
-      if (user && movieList.users) {
-        const userAccess = movieList.users.find((u) => u.uid === user.uid);
-        if (userAccess) {
-          setAccessType(userAccess.accessType);
-        }
-      }
-    } catch (error) {
-      console.error("Error getting watch lists:", error);
-    }
-  }, [user, movieList.users]);
+    const created = movieList.createdOn;
+    if (!created) return;
+    const date = created.seconds ? new Date(created.seconds * 1000) : new Date(created);
+    if (!isNaN(date.getTime())) setCreationDate(date.toDateString());
+  }, [movieList.createdOn]);
+
+  useEffect(() => {
+    if (user?.uid) setAccessType(Math.max(roleOf(movieList, user.uid), 0));
+  }, [user, movieList.users, movieList.userIds, movieList.ownerIds, movieList.adminIds, movieList.editorIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -110,15 +103,10 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
         ...movieList.users,
         { uid: userID, accessType: 0, email: user.email },
       ];
-      const updatedUserIds = [...movieList.userIds, userID];
-      const updatedMovieList = {
-        ...movieList,
-        users: updatedUsers,
-        userIds: updatedUserIds,
-      };
+      const updatedMovieList = { ...movieList, ...memberFields(updatedUsers) };
 
       setUsers(updatedUsers);
-      await updateMovieList(movieList.id, { users: updatedMovieList.users, userIds: updatedMovieList.userIds });
+      await updateMovieList(movieList.id, memberFields(updatedMovieList.users));
       setMovieList(updatedMovieList);
       addAlert("success", `User ${user.email} added to watch list.`);
     } catch (error) {
@@ -132,7 +120,6 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
         throw new Error("Invalid access type.");
       }
       const user = users.find((u) => u.uid === userID);
-      const userIndex = movieList.userIds.indexOf(userID);
 
       if (accessType === 3){
         setWarningModalDetails({show: true, title: 'Change Ownership', body: `Are you sure you want to change the ownership of this watch list to ${user.email}? You will be demoted to an admin.`,
@@ -141,21 +128,12 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
       }
 
 
-      const updatedUsers = users.map((user, index) => {
-        if (index === userIndex) {
-          return { ...user, accessType: accessType };
-        }
-        return user;
-      });
+      const updatedUsers = users.map((member) => (member.uid === userID ? { ...member, accessType } : member));
       setUsers(updatedUsers);
-      const updatedMovieList = {
-        ...movieList,
-        users: updatedUsers,
-        userIds: movieList.userIds,
-      };
+      const updatedMovieList = { ...movieList, ...memberFields(updatedUsers) };
       setMovieList(updatedMovieList);
 
-      await updateMovieList(movieList.id, { users: updatedMovieList.users, userIds: updatedMovieList.userIds });
+      await updateMovieList(movieList.id, memberFields(updatedMovieList.users));
       addAlert(
         "success",
         `User ${user.email} access type updated to ${getUserRoles(accessType)}.`
@@ -168,28 +146,19 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
   const changeOwnership = async (userID) => {
     try {
       const user = users.find((u) => u.uid === userID);
-      const userIndex = movieList.userIds.indexOf(userID);
-      const updatedUsers = users.map((user, index) => {
-        if (index === userIndex) {
-          return { ...user, accessType: 3 };
-        }else {
-          if (user.accessType === 3){
-            return { ...user, accessType: 2 };
-          }
-        }
-        return user;
+      // New owner takes over; the previous owner becomes an admin
+      const updatedUsers = users.map((member) => {
+        if (member.uid === userID) return { ...member, accessType: 3 };
+        if (member.accessType === 3) return { ...member, accessType: 2 };
+        return member;
       });
       setUsers(updatedUsers);
-      const updatedMovieList = {
-        ...movieList,
-        users: updatedUsers,
-        userIds: movieList.userIds,
-      };
+      const updatedMovieList = { ...movieList, ...memberFields(updatedUsers) };
       setMovieList(updatedMovieList);
       setWarningModalDetails({show: false, title: '', body
         : ''});
 
-      await updateMovieList(movieList.id, { users: updatedMovieList.users, userIds: updatedMovieList.userIds });
+      await updateMovieList(movieList.id, memberFields(updatedMovieList.users));
       addAlert(
         "success",
         `User ${user.email} is now the owner of the watch list. You have been demoted to an admin.`
@@ -201,20 +170,13 @@ const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
 
   const handleRemoveUserFromMovieList = async (userID) => {
     try {
-      // const user = users.find((u) => u.uid === userID);
-      const userIndex = movieList.userIds.indexOf(userID);
-      const updatedUsers = [...users];
-      updatedUsers.splice(userIndex, 1);
-      const updatedUserIds = movieList.userIds.filter((id) => id !== userID);
-      const updatedMovieList = {
-        ...movieList,
-        users: updatedUsers,
-        userIds: updatedUserIds,
-      };
+      const removed = users.find((u) => u.uid === userID);
+      const updatedUsers = users.filter((member) => member.uid !== userID);
+      const updatedMovieList = { ...movieList, ...memberFields(updatedUsers) };
       setUsers(updatedUsers);
-      await updateMovieList(movieList.id, { users: updatedMovieList.users, userIds: updatedMovieList.userIds });
+      await updateMovieList(movieList.id, memberFields(updatedMovieList.users));
       setMovieList(updatedMovieList);
-      addAlert("info", `User ${user.email} removed from watch list.`);
+      addAlert("info", user.uid === userID ? "You left the watch list." : `${removed?.email || "User"} removed from watch list.`);
       if (user.uid === userID) {
         navigate("/movielist");
       }

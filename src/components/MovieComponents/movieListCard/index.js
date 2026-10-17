@@ -8,6 +8,7 @@ import { auth } from '../../../firebase-config';
 import defaultImage from '../../../images/default.jpg';
 import MenuBookIcon from '@mui/icons-material/MenuBookOutlined';
 import { coverUrl } from '../../../api/bookAPI';
+import { roleOf } from '../../../api/movieStorage';
 
 const ACCESS_LABELS = ['Viewer', 'Contributor', 'Admin', 'Owner'];
 
@@ -16,7 +17,7 @@ const MovieListCard = ({ movieList, onDelete }) => {
   const tvShows = movieList.tvShows || [];
   const books = movieList.books || [];
   const uid = auth.currentUser?.uid;
-  const accessType = movieList.users?.find((u) => u.uid === uid)?.accessType ?? 0;
+  const accessType = Math.max(roleOf(movieList, uid), 0);
 
   // Most recently added posters first, so the collage reflects recent activity (and doesn't reshuffle on every render)
   const posters = useMemo(() => {

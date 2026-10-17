@@ -83,7 +83,7 @@ const App = () => {
       //Ensure db matches auth email
       if(userData && userData.email !== user.email){
         userData.email = user.email;
-        await updateUser(user.uid, userData);
+        await updateUser(user.uid, { email: user.email });
         const movieLists = await getMovieListsByUserId(user.uid);
         for (const movieList of movieLists) {
             for (const userObj of movieList.users) {
@@ -91,7 +91,8 @@ const App = () => {
                     userObj.email = user.email;
                 }
             }
-            await updateMovieList(movieList.id, movieList);
+            // Only the users array changes; security rules let members update their own details there
+            await updateMovieList(movieList.id, { users: movieList.users });
         }
       }
       return res;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Box, Container, Typography, Button, Card, CardActionArea, Grid, IconButton, Skeleton, Stack, Tooltip } from '@mui/material';
-import { getMovieListsByUserId, addMovieList, deleteMovieList } from '../../api/movieStorage';
+import { getMovieListsByUserId, addMovieList, deleteMovieList, memberFields } from '../../api/movieStorage';
 import AddIcon from '@mui/icons-material/Add';
 import MovieListCard from '../../components/MovieComponents/movieListCard';
 import NewMovieListModal from '../../components/Modals/newMovieListModal';
@@ -74,8 +74,15 @@ const MovieHomePage = () => {
 
   const handleNewMovieList = async (name) => {
     try {
-      const movieList = { title: name, userIds: [user.uid], users: [{accessType: 3, email:user.email, uid:user.uid}]
-        , id: uid(), movies: [], tvShows: [], books: [], createdOn: new Date()};
+      const movieList = {
+        title: name,
+        ...memberFields([{ accessType: 3, email: user.email, uid: user.uid }]),
+        id: uid(),
+        movies: [],
+        tvShows: [],
+        books: [],
+        createdOn: new Date(),
+      };
       await addMovieList(movieList);
       setMovieLists((prevMovieLists) => [...prevMovieLists, movieList]);
       setModalOpen(false);

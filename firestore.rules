@@ -1,8 +1,152 @@
 rules_version = '2';
+
+// Security rules for Watchlist.
+//
+// users/{uid}        – one profile per account. `admin` and `active` can only be changed by site admins.
+// movieLists/{id}    – watch lists. Roles are enforced through plain ID arrays kept in sync by the app
+//                      (see memberFields in src/api/movieStorage.js):
+//                        userIds   – every member (viewer and up)
+//                        editorIds – contributors (accessType 1)
+//                        adminIds  – list admins (accessType 2)
+//                        ownerIds  – the single owner (accessType 3)
+//                      `users` ([{ uid, email, accessType }]) is display data only.
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return request.auth.uid;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(me())).data;
+    }
+
+    function hasProfile() {
+      return exists(/databases/$(database)/documents/users/$(me()));
+    }
+
+    function isActive() {
+      return signedIn() && hasProfile() && profile().active == true;
+    }
+
+    function isSiteAdmin() {
+      return isActive() && profile().admin == true;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // ---------- users ----------
+
+    match /users/{userId} {
+      // Signed-in users can look each other up (member search, "added by" names)
+      allow get, list: if signedIn();
+
+      // New accounts create their own profile: active, never admin
+      allow create: if signedIn()
+        && me() == userId
+        && request.resource.data.id == userId
+        && request.resource.data.admin == false
+        && request.resource.data.active == true;
+
+      // Users edit their own details but not their permissions; site admins can edit anyone
+      allow update: if (signedIn() && me() == userId && !changedKeys().hasAny(['admin', 'active', 'id']))
+        || isSiteAdmin();
+
+      allow delete: if (signedIn() && me() == userId) || isSiteAdmin();
+    }
+
+    // ---------- watch lists ----------
+
+    match /movieLists/{listId} {
+
+      function ids(data, field) {
+        return field in data && data[field] is list ? data[field] : [];
+      }
+
+      function isMember(data) { return me() in ids(data, 'userIds'); }
+      function isOwner(data) { return me() in ids(data, 'ownerIds'); }
+      function isListAdmin(data) { return isOwner(data) || me() in ids(data, 'adminIds'); }
+      function isEditor(data) { return isListAdmin(data) || me() in ids(data, 'editorIds'); }
+
+      // Role arrays on the new document are well formed: one owner, everyone with a role is a member
+      function rolesValid(data) {
+        return data.userIds is list && data.ownerIds is list && data.adminIds is list && data.editorIds is list
+          && data.ownerIds.size() == 1
+          && data.userIds.toSet().hasAll(data.ownerIds.concat(data.adminIds).concat(data.editorIds));
+      }
+
+      function memberKeysOnly() {
+        return changedKeys().hasOnly(['users', 'userIds', 'ownerIds', 'adminIds', 'editorIds']);
+      }
+
+      function removed(field) {
+        return ids(resource.data, field).toSet().difference(ids(request.resource.data, field).toSet());
+      }
+
+      function added(field) {
+        return ids(request.resource.data, field).toSet().difference(ids(resource.data, field).toSet());
+      }
+
+      // Owner: any consistent membership change; a new owner must already be a member
+      function ownerChange() {
+        return isOwner(resource.data)
+          && resource.data.userIds.toSet().hasAll(request.resource.data.ownerIds);
+      }
+
+      // List admin: add members and promote up to admin; can't touch the owner or other admins
+      function adminChange() {
+        return isListAdmin(resource.data)
+          && request.resource.data.ownerIds == resource.data.ownerIds
+          && removed('adminIds').hasOnly([me()])
+          && removed('userIds').intersection(resource.data.ownerIds.toSet()).size() == 0
+          && removed('userIds').difference([me()].toSet()).intersection(ids(resource.data, 'adminIds').toSet()).size() == 0;
+      }
+
+      // Any non-owner member can leave
+      function selfLeave() {
+        return !isOwner(resource.data)
+          && removed('userIds') == [me()].toSet()
+          && added('userIds').size() == 0
+          && request.resource.data.ownerIds == resource.data.ownerIds
+          && removed('adminIds').hasOnly([me()]) && added('adminIds').size() == 0
+          && removed('editorIds').hasOnly([me()]) && added('editorIds').size() == 0;
+      }
+
+      allow get: if isActive() && isMember(resource.data);
+      // Queries must filter on userIds array-contains the caller (getMovieListsByUserId)
+      allow list: if isActive() && me() in resource.data.userIds;
+
+      allow create: if isActive()
+        && request.resource.data.id == listId
+        && request.resource.data.userIds == [me()]
+        && request.resource.data.ownerIds == [me()]
+        && request.resource.data.adminIds == []
+        && request.resource.data.editorIds == [];
+
+      allow update: if isActive() && isMember(resource.data) && (
+        // Contributors and up edit the titles in the list and its name
+        (isEditor(resource.data) && changedKeys().hasOnly(['movies', 'tvShows', 'books', 'title']))
+        // Members keep their own display details (name, email) up to date
+        || (changedKeys().hasOnly(['users']) && 'ownerIds' in resource.data)
+        // Membership and roles
+        || (memberKeysOnly() && rolesValid(request.resource.data) && (ownerChange() || adminChange() || selfLeave()))
+      );
+
+      allow delete: if isActive() && isListAdmin(resource.data);
+    }
+
+    // Everything else is closed
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

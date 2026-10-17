@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Container } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getTVShow, getTVCredits, getTVImages, getTVVideos, getTVRecommendations, getTVReviews, getTVWatchProviders, getTVExternalIDs, getTitlesFromCompany } from '../../api/TMDBAPI';
-import { getMovieListById, addTVShowToList, getMovieListsByUserId } from '../../api/movieStorage';
+import { getMovieListById, addTVShowToList, getMovieListsByUserId, roleOf } from '../../api/movieStorage';
 import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
 import { SiteDataContext } from '../../contexts/siteDataContext';
@@ -85,7 +85,7 @@ const TVDetailsPage = () => {
   useEffect(() => {
     if (!user) return;
     getMovieListsByUserId(user.uid)
-      .then((lists) => setMovieLists(lists.filter((list) => (list.users?.find((u) => u.uid === user.uid)?.accessType || 0) > 0)))
+      .then((lists) => setMovieLists(lists.filter((list) => roleOf(list, user.uid) > 0)))
       .catch(console.error);
   }, [user]);
 

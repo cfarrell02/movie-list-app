@@ -4,7 +4,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import MovieListSettings from '../../components/MovieComponents/movieListSettings';
 import { AlertContext } from '../../contexts/alertContext';
 import MovieTable from '../../components/MovieComponents/movieTable';
-import { getMovieListById, deleteMovieFromList, updateMovieInList, deleteTVShowFromList, updateTVShowInList, deleteBookFromList, updateBookInList } from '../../api/movieStorage';
+import { getMovieListById, deleteMovieFromList, updateMovieInList, deleteTVShowFromList, updateTVShowInList, deleteBookFromList, updateBookInList, roleOf } from '../../api/movieStorage';
 import MovieAdd from '../../components/MovieComponents/movieAdd';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../../firebase-config';
@@ -69,18 +69,11 @@ const MovieTrackingPage = () => {
   }, [refreshMovieList]);
 
   useEffect(() => {
-    try{
-    if( user && movieList.users){
-      const userObj = movieList.users.find((userObj) => userObj.uid === user.uid);
-      if(userObj){ setAccessType(userObj.accessType);
-      }else{
-        navigate('/home');
-      }
-    }
-    }catch(error){
-      console.error(error);
-    }
-  }, [user, movieList.users, navigate]);
+    if (!user || !movieList.userIds) return;
+    const role = roleOf(movieList, user.uid);
+    if (role < 0) navigate('/home');
+    else setAccessType(role);
+  }, [user, movieList, navigate]);
 
   const removeMovie = async (movie) => {
     try{

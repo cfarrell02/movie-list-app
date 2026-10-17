@@ -252,3 +252,40 @@ export const deleteBookFromList = async (listID, bookID) => {
     throw new Error('Error deleting book from list in Firestore: ' + error.message);
   }
 };
+
+/**
+ * Member fields for a list, derived from its users array ([{ uid, email, accessType }]).
+ * Firestore security rules check these plain ID arrays (they can't search the users array),
+ * so every write that changes membership must include all of them.
+ * accessType: 0 viewer, 1 contributor (editorIds), 2 admin (adminIds), 3 owner (ownerIds).
+ */
+export const memberFields = (users) => {
+  const idsWith = (level) => users.filter((u) => Number(u.accessType) === level).map((u) => u.uid);
+  return {
+    users,
+    userIds: users.map((u) => u.uid),
+    ownerIds: idsWith(3),
+    adminIds: idsWith(2),
+    editorIds: idsWith(1),
+  };
+};
+
+/**
+ * A user's role in a list (0 viewer … 3 owner, -1 not a member).
+ * Reads the ID arrays the security rules enforce; falls back to users[].accessType for lists saved before they existed.
+ */
+export const roleOf = (list, uid) => {
+  if (!list || !uid) return -1;
+  if (Array.isArray(list.ownerIds)) {
+    if (list.ownerIds.includes(uid)) return 3;
+    if ((list.adminIds || []).includes(uid)) return 2;
+    if ((list.editorIds || []).includes(uid)) return 1;
+    return (list.userIds || []).includes(uid) ? 0 : -1;
+  }
+  const member = (list.users || []).find((u) => u.uid === uid);
+  return member ? Number(member.accessType) || 0 : -1;
+};
+
+/** The users array with each accessType taken from the enforced ID arrays */
+export const membersWithRoles = (list) =>
+  (list?.users || []).map((member) => ({ ...member, accessType: Math.max(roleOf(list, member.uid), 0) }));

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Typography, TextField, Button, Box, Divider } from '@mui/material';
 import { getUserById, updateUser, deleteUser } from '../../../api/userDataStorage';
-import { getMovieListsByUserId, updateMovieList, deleteMovieList } from '../../../api/movieStorage';
+import { getMovieListsByUserId, updateMovieList, deleteMovieList, memberFields, roleOf } from '../../../api/movieStorage';
 import { onAuthStateChanged, getAuth , } from 'firebase/auth';
 import { auth } from '../../../firebase-config';
 import ConfirmationModal from '../../Modals/confirmationModal';
@@ -70,7 +70,7 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
 
             //Update the user object in movie lists
             const movieLists = await getMovieListsByUserId(user.id);
-            movieLists.forEach(async (list) => {
+            await Promise.all(movieLists.map(async (list) => {
                 list.users = list.users.map(user1 => {
                     if(user1.uid === user.id){
                         return {
@@ -82,8 +82,8 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
                     }
                     return user1;
                 });
-                await updateMovieList(list.id, list);
-            });
+                await updateMovieList(list.id, { users: list.users });
+            }));
 
             //Update the user object in db
             const newUser = {
@@ -103,39 +103,41 @@ const UpdateProfile = ({updateEmail, deleteUserAuth, reAuthenticate}) => {
 
 
         const handleDeleteAccount = async () => {
-
+            setOpen(false);
             const auth = getAuth();
             const authUser = auth.currentUser;
 
             if (!password) {
-                addAlert('error', 'Please enter your password to delete your account');
+                addAlert('error', 'Please enter your current password to delete your account');
                 return;
             }
 
-            //Reauthenticate the user
-            await reAuthenticate(authUser.email, password);
+            try {
+                //Reauthenticate the user
+                await reAuthenticate(authUser.email, password);
 
+                // Delete lists this user owns (or would leave empty) and leave the rest.
+                // This must all finish before the sign-in is deleted, as security rules need an authenticated user.
+                const movieLists = await getMovieListsByUserId(user.id);
+                await Promise.all(movieLists.map(async (list) => {
+                    const isOwnedByUser = roleOf(list, user.id) === 3;
+                    const remaining = (list.users || []).filter(us => us.uid !== user.id);
+                    if (isOwnedByUser || remaining.length === 0) {
+                        await deleteMovieList(list.id);
+                    } else {
+                        await updateMovieList(list.id, memberFields(remaining));
+                    }
+                }));
 
-            //Clean up any movie lists that may be orphaned by the deletion of this user
-            const movieLists = await getMovieListsByUserId(user.id);
-            movieLists.forEach(async (list) => {
-                list.userIds = list.userIds.filter(id => id !== user.id);
-                list.users = list.users.filter(us => us.id !== user.id);
-                const isOwnedByUser = list.users.find(us => us.uid === user.id && us.accessType === 3);
-                if(isOwnedByUser || list.userIds.length === 0){
-                    await deleteMovieList(list.id);
-                }else{
-                    await updateMovieList(list.id, list);
-                }
-            });
-
-            //Delete the firebase user
-            await deleteUserAuth(authUser);
-            //Delete the user object in db
-            await deleteUser(user.id);
-            //Redirect to login page
-            navigate('/login');
-
+                //Delete the user object in db, then the firebase sign-in
+                await deleteUser(user.id);
+                await deleteUserAuth(authUser);
+                addAlert('info', 'Your account has been deleted');
+                navigate('/usermgmt');
+            } catch (error) {
+                console.error(error);
+                addAlert('error', 'Could not delete your account: ' + error.message);
+            }
         }
 
         const handleDateChange = (event) => {
