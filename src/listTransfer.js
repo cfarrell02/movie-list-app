@@ -5,13 +5,14 @@ export const EXPORT_VERSION = 1;
 
 const MOVIE_STATUS = ['Not watched', 'Watched'];
 const TV_STATUS = ['Not watched', 'Watching', 'Watched'];
+const BOOK_STATUS = ['Not read', 'Reading', 'Read'];
 
 // Older TV entries stored watched as a boolean; newer ones use 0 / 1 / 2
 const tvStatus = (watched) => (watched === true ? 2 : !watched ? 0 : Number(watched));
 
 /** Fields the app actually reads from list entries – keeps list documents well under Firestore's 1MB limit */
 export const toListEntry = (details, type) => {
-  const common = {
+  const common = type === 'book' ? null : {
     id: details.id,
     adult: !!details.adult,
     poster_path: details.poster_path || null,
@@ -30,6 +31,20 @@ export const toListEntry = (details, type) => {
       imdb_id: details.imdb_id || null,
     };
   }
+  if (type === 'book') {
+    // Books come from Open Library rather than TMDB, so they get their own shape
+    return {
+      id: details.id,
+      title: details.title,
+      authors: details.authors || [],
+      author_keys: details.author_keys || [],
+      cover_i: details.cover_i || null,
+      first_publish_year: details.first_publish_year || null,
+      number_of_pages_median: details.number_of_pages_median || null,
+      ratings_average: details.ratings_average || null,
+      subjects: (details.subjects || []).slice(0, 8),
+    };
+  }
   return {
     ...common,
     name: details.name,
@@ -42,7 +57,7 @@ export const toListEntry = (details, type) => {
 
 const yearOf = (date) => (date ? String(new Date(date).getFullYear()) : '');
 
-/** Flatten a list into export rows (movies first, then TV) */
+/** Flatten a list into export rows (movies, then TV, then books) */
 export const buildExportRows = (movieList) => {
   const emailFor = (uid) => (movieList.users || []).find((u) => u.uid === uid)?.email || '';
   const movies = (movieList.movies || []).map((m) => ({
@@ -56,7 +71,7 @@ export const buildExportRows = (movieList) => {
     rating: m.vote_average ? Math.round(m.vote_average * 10) / 10 : '',
     runtime_minutes: m.runtime || '',
     seasons: '',
-    tmdb_url: `https://www.themoviedb.org/movie/${m.id}`,
+    url: `https://www.themoviedb.org/movie/${m.id}`,
   }));
   const shows = (movieList.tvShows || []).map((t) => ({
     type: 'tv',
@@ -69,12 +84,26 @@ export const buildExportRows = (movieList) => {
     rating: t.vote_average ? Math.round(t.vote_average * 10) / 10 : '',
     runtime_minutes: '',
     seasons: (t.seasons || []).filter((s) => s.name !== 'Specials').length || '',
-    tmdb_url: `https://www.themoviedb.org/tv/${t.id}`,
+    url: `https://www.themoviedb.org/tv/${t.id}`,
   }));
-  return [...movies, ...shows];
+  const books = (movieList.books || []).map((b) => ({
+    type: 'book',
+    openlibrary_id: b.id,
+    title: b.title || '',
+    author: (b.authors || []).join('; '),
+    year: b.first_publish_year || '',
+    status: BOOK_STATUS[Number(b.watched) || 0] || BOOK_STATUS[0],
+    added_date: b.addedDate || '',
+    added_by: emailFor(b.addedBy),
+    rating: b.ratings_average ? Math.round(b.ratings_average * 10) / 10 : '',
+    pages: b.number_of_pages_median || '',
+    url: `https://openlibrary.org/works/${b.id}`,
+  }));
+  return [...movies, ...shows, ...books];
 };
 
-const CSV_COLUMNS = ['type', 'tmdb_id', 'title', 'year', 'status', 'added_date', 'added_by', 'rating', 'runtime_minutes', 'seasons', 'tmdb_url'];
+// Movies/TV are identified by tmdb_id, books by openlibrary_id (e.g. OL893414W)
+const CSV_COLUMNS = ['type', 'tmdb_id', 'openlibrary_id', 'title', 'author', 'year', 'status', 'added_date', 'added_by', 'rating', 'runtime_minutes', 'seasons', 'pages', 'url'];
 
 // RFC 4180: quote fields containing commas, quotes or line breaks, doubling inner quotes
 const csvField = (value) => {
@@ -144,14 +173,14 @@ export const parseCSV = (text) => {
 const parseStatus = (type, status) => {
   const value = String(status || '').trim().toLowerCase();
   if (type === 'movie') return value === 'watched' || value === 'yes' || value === 'true';
-  if (value === 'watched' || value === 'true' || value === '2') return 2;
-  if (value === 'watching' || value === '1') return 1;
+  if (value === 'watched' || value === 'read' || value === 'true' || value === '2') return 2;
+  if (value === 'watching' || value === 'reading' || value === '1') return 1;
   return 0;
 };
 
 /**
  * Turn an uploaded file's text into import items: [{ type, id, watched, addedDate, addedByEmail, title }].
- * Accepts this app's JSON or CSV exports (or any CSV with type + tmdb_id columns).
+ * Accepts this app's JSON or CSV exports (or any CSV with type plus tmdb_id or openlibrary_id columns).
  */
 export const parseImportFile = (fileName, text) => {
   let rows;
@@ -166,8 +195,8 @@ export const parseImportFile = (fileName, text) => {
     rows = data.items;
   } else {
     rows = parseCSV(text);
-    if (rows.length && !('tmdb_id' in rows[0])) {
-      throw new Error('The CSV needs a "tmdb_id" column. Export a list first to see the expected format.');
+    if (rows.length && !('tmdb_id' in rows[0]) && !('openlibrary_id' in rows[0])) {
+      throw new Error('The CSV needs a "tmdb_id" or "openlibrary_id" column. Export a list first to see the expected format.');
     }
   }
 
@@ -175,8 +204,9 @@ export const parseImportFile = (fileName, text) => {
   const items = [];
   let invalid = 0;
   rows.forEach((row) => {
-    const type = String(row.type || '').trim().toLowerCase() === 'tv' ? 'tv' : 'movie';
-    const id = parseInt(row.tmdb_id, 10);
+    const rawType = String(row.type || '').trim().toLowerCase();
+    const type = rawType === 'tv' || rawType === 'book' ? rawType : 'movie';
+    const id = type === 'book' ? (String(row.openlibrary_id || '').trim().match(/OL\d+W/i) || [])[0]?.toUpperCase() : parseInt(row.tmdb_id, 10);
     if (!id) {
       invalid += 1;
       return;

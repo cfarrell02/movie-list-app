@@ -85,6 +85,7 @@ const MediaListTable = ({
   noun,
   filterConfig,
   storageKey,
+  getThumb = (item) => (item.poster_path ? `https://image.tmdb.org/t/p/w92${item.poster_path}` : null),
 }) => {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -239,7 +240,7 @@ const MediaListTable = ({
                   <TableCell sx={{ py: 1, pr: { xs: 0, sm: 2 } }}>
                     <Box
                       component="img"
-                      src={item.poster_path ? `https://image.tmdb.org/t/p/w92${item.poster_path}` : defaultImage}
+                      src={getThumb(item) || defaultImage}
                       alt=""
                       loading="lazy"
                       sx={{ width: 46, height: 69, objectFit: 'cover', borderRadius: '6px', display: 'block', bgcolor: 'action.hover' }}

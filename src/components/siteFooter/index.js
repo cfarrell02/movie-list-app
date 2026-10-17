@@ -16,6 +16,10 @@ function SiteFooter() {
                     <Link color="inherit" href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">
                         The Movie Database (TMDB)
                     </Link>
+                    {' and '}
+                    <Link color="inherit" href="https://openlibrary.org/" target="_blank" rel="noopener noreferrer">
+                        Open Library
+                    </Link>
                 </Typography>
             </Container>
         </Box>

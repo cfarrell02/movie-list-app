@@ -41,7 +41,7 @@ export const Section = ({ title, action, children }) => (
 );
 
 /** Full-bleed banner with backdrop, poster and headline info used on every detail page */
-export const DetailHero = ({ backdropPath, posterPath, posterAlt, round, title, subtitle, meta = [], chips = [], rating, voteCount, overview, actions }) => {
+export const DetailHero = ({ backdropPath, posterPath, posterSrc, posterAlt, round, title, subtitle, meta = [], chips = [], rating, ratingScale = 10, voteCount, overview, actions }) => {
   const metaItems = meta.filter(Boolean);
   return (
   <Box sx={{ position: 'relative', overflow: 'hidden', borderBottom: 1, borderColor: 'divider' }}>
@@ -74,7 +74,7 @@ export const DetailHero = ({ backdropPath, posterPath, posterAlt, round, title, 
         <Grid item xs={12} sm={4} md={3} sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
           <Box
             component="img"
-            src={tmdbImage(posterPath) || defaultImage}
+            src={posterSrc || tmdbImage(posterPath) || defaultImage}
             alt={posterAlt || title}
             sx={{
               width: { xs: round ? 180 : 200, sm: '100%' },
@@ -103,7 +103,7 @@ export const DetailHero = ({ backdropPath, posterPath, posterAlt, round, title, 
                 {rating ? (
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     <StarRoundedIcon sx={{ color: 'secondary.main' }} />
-                    <Typography fontWeight={700}>{(Math.round(rating * 10) / 10).toFixed(1)}</Typography>
+                    <Typography fontWeight={700}>{(Math.round(rating * 10) / 10).toFixed(1)}{ratingScale !== 10 ? <Typography component="span" color="text.secondary" fontWeight={400}> / {ratingScale}</Typography> : null}</Typography>
                     {voteCount ? <Typography color="text.secondary" variant="body2">({voteCount.toLocaleString()})</Typography> : null}
                   </Stack>
                 ) : null}
@@ -118,9 +118,12 @@ export const DetailHero = ({ backdropPath, posterPath, posterAlt, round, title, 
                 ))}
               </Stack>
             )}
-            {overview && (
-              <Typography sx={{ maxWidth: 820, lineHeight: 1.7 }}>{overview}</Typography>
-            )}
+            {overview &&
+              (typeof overview === 'string' ? (
+                <Typography sx={{ maxWidth: 820, lineHeight: 1.7 }}>{overview}</Typography>
+              ) : (
+                overview
+              ))}
             {actions && (
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }} flexWrap="wrap" useFlexGap>
                 {actions}
@@ -321,3 +324,29 @@ export const AdultContentNotice = ({ kind = 'title' }) => (
     <Button component={RouterLink} to="/home" variant="contained">Back to browsing</Button>
   </Container>
 );
+
+/** Long text clamped to a few lines with a Read more toggle */
+export const ExpandableText = ({ text, lines = 6, threshold = 700 }) => {
+  const [expanded, setExpanded] = useState(false);
+  if (!text) return null;
+  const long = text.length > threshold;
+  return (
+    <Box>
+      <Typography
+        sx={{
+          whiteSpace: 'pre-line',
+          lineHeight: 1.7,
+          maxWidth: 820,
+          ...(!expanded && long ? { display: '-webkit-box', WebkitLineClamp: lines, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : {}),
+        }}
+      >
+        {text}
+      </Typography>
+      {long && (
+        <Button size="small" onClick={() => setExpanded(!expanded)} sx={{ px: 0, mt: 0.5 }}>
+          {expanded ? 'Show less' : 'Read more'}
+        </Button>
+      )}
+    </Box>
+  );
+};

@@ -136,7 +136,7 @@ const Homepage = () => {
             {query ? `Results for “${query}”` : `Trending ${label}`}
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-            {query ? `Searching ${label.toLowerCase()}` : `What everyone is watching today`}
+            {query ? `Searching ${label.toLowerCase()}` : tab === 2 ? 'What people are reading this week' : 'What everyone is watching today'}
           </Typography>
         </Box>
 
@@ -161,7 +161,7 @@ const Homepage = () => {
               fullWidth
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={`Search ${label.toLowerCase()}`}
+              placeholder={tab === 2 ? 'Search books by title, author or subject' : `Search ${label.toLowerCase()}`}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

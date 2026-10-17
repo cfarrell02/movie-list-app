@@ -10,9 +10,12 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 /**
  * Search TMDB and add the chosen title to a list.
- * search(query) -> results, fetchDetails(id) -> full item, persist(item) -> saves it.
+ * search(query) -> results, fetchDetails(option) -> full item, persist(item) -> saves it.
+ * getThumb(option) -> image URL (defaults to the TMDB poster).
  */
-const MediaAddBar = ({ type, items, setItems, disabled, currentUserID, search, fetchDetails, persist, getTitle, getDate, initialWatched, noun }) => {
+const tmdbThumb = (option) => (option.poster_path ? `https://image.tmdb.org/t/p/w92${option.poster_path}` : undefined);
+
+const MediaAddBar = ({ type, items, setItems, disabled, currentUserID, search, fetchDetails, persist, getTitle, getDate, initialWatched, noun, getThumb = tmdbThumb, getSubtitle }) => {
   const { addAlert } = useContext(AlertContext);
   const { adultContent } = useContext(SiteDataContext);
   const [input, setInput] = useState('');
@@ -33,7 +36,7 @@ const MediaAddBar = ({ type, items, setItems, disabled, currentUserID, search, f
     const timer = setTimeout(async () => {
       try {
         const results = await search(query);
-        if (id === requestId.current) setOptions(filterAdult(results, adultContent).sort((a, b) => b.popularity - a.popularity));
+        if (id === requestId.current) setOptions(filterAdult(results, adultContent).sort((a, b) => (b.popularity || 0) - (a.popularity || 0)));
       } catch (error) {
         if (id === requestId.current) addAlert('error', error.message);
       } finally {
@@ -51,7 +54,7 @@ const MediaAddBar = ({ type, items, setItems, disabled, currentUserID, search, f
     }
     setAdding(true);
     try {
-      const details = await fetchDetails(selected.id);
+      const details = await fetchDetails(selected);
       const entry = { ...toListEntry(details, type), watched: initialWatched, addedDate: new Date().toISOString(), addedBy: currentUserID };
       await persist(entry);
       setItems([...items, entry]);
@@ -93,14 +96,14 @@ const MediaAddBar = ({ type, items, setItems, disabled, currentUserID, search, f
           <Box component="li" {...props} key={option.id} sx={{ gap: 1.5 }}>
             <Avatar
               variant="rounded"
-              src={option.poster_path ? `https://image.tmdb.org/t/p/w92${option.poster_path}` : undefined}
+              src={getThumb(option)}
               sx={{ width: 32, height: 48, bgcolor: 'action.hover' }}
             >
               {getTitle(option).charAt(0)}
             </Avatar>
             <Box>
               <Typography variant="body2" fontWeight={600}>{getTitle(option)}</Typography>
-              <Typography variant="caption" color="text.secondary">{yearOf(option) || 'Unreleased'}</Typography>
+              <Typography variant="caption" color="text.secondary">{getSubtitle ? getSubtitle(option) : yearOf(option) || 'Unreleased'}</Typography>
             </Box>
           </Box>
         )}

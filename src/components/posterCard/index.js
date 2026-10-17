@@ -10,9 +10,11 @@ const posterUrl = (item) => {
 };
 
 // Shared poster tile used for movies and TV shows so every grid looks the same
-const PosterCard = ({ item, title, date, to }) => {
+// image/rating/subtitle can be overridden for non-TMDB items such as books
+const PosterCard = ({ item, title, date, to, image, rating: ratingOverride, subtitle }) => {
   const year = date ? new Date(date).getFullYear() : null;
-  const rating = item.vote_average ? (Math.round(item.vote_average * 10) / 10).toFixed(1) : null;
+  const ratingValue = ratingOverride !== undefined ? ratingOverride : item.vote_average;
+  const rating = ratingValue ? (Math.round(ratingValue * 10) / 10).toFixed(1) : null;
 
   return (
     <Card
@@ -39,7 +41,7 @@ const PosterCard = ({ item, title, date, to }) => {
         >
           <Box
             component="img"
-            src={posterUrl(item)}
+            src={image !== undefined ? image || defaultImage : posterUrl(item)}
             alt={title}
             loading="lazy"
             sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
@@ -73,7 +75,7 @@ const PosterCard = ({ item, title, date, to }) => {
             {title}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {year || "TBA"}
+            {subtitle !== undefined ? subtitle : year || "TBA"}
           </Typography>
         </Box>
       </CardActionArea>

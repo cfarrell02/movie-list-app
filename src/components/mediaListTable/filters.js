@@ -74,6 +74,10 @@ export const useListFilters = (storageKey) => {
   return [filters, setFilters];
 };
 
+// TMDB ratings are /10 on vote_average; other sources (books) supply their own getter and scale
+const ratingOf = (cfg, item) => (cfg.rating ? cfg.rating.getValue(item) : item.vote_average);
+const ratingMax = (cfg) => (cfg.rating ? cfg.rating.max : 9);
+
 const inRange = (value, range) => range === null || (value !== null && value !== undefined && value >= range[0] && value <= range[1]);
 
 export const applyFilters = (items, filters, cfg) => {
@@ -86,7 +90,7 @@ export const applyFilters = (items, filters, cfg) => {
       if (!filters.genres.some((g) => names.includes(g))) return false;
     }
     if (!inRange(cfg.getYearNumber(item), filters.years)) return false;
-    if (filters.minRating > 0 && !((item.vote_average || 0) >= filters.minRating)) return false;
+    if (filters.minRating > 0 && !((ratingOf(cfg, item) || 0) >= filters.minRating)) return false;
     if (cfg.length && !inRange(cfg.length.getValue(item), filters.length)) return false;
     if (filters.addedBy.length && !filters.addedBy.includes(item.addedBy)) return false;
     return true;
@@ -193,9 +197,9 @@ const PanelContent = ({ filters, setFilters, options, cfg }) => {
           size="small"
           value={filters.minRating}
           min={0}
-          max={9}
-          step={0.5}
-          marks={[{ value: 0 }, { value: 5 }, { value: 7 }, { value: 8 }, { value: 9 }]}
+          max={ratingMax(cfg)}
+          step={ratingMax(cfg) > 5 ? 0.5 : 0.25}
+          marks={ratingMax(cfg) > 5 ? [{ value: 0 }, { value: 5 }, { value: 7 }, { value: 8 }, { value: 9 }] : [{ value: 0 }, { value: 3 }, { value: 4 }, { value: 4.5 }]}
           onChange={(e, v) => update({ minRating: v })}
           valueLabelDisplay="auto"
           sx={{ mx: 1, width: 'calc(100% - 16px)' }}

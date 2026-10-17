@@ -16,6 +16,7 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
 import { AlertContext } from '../../../contexts/alertContext';
 import { getMovie, getTVShow } from '../../../api/TMDBAPI';
+import { bookFromDoc, getBookSummary } from '../../../api/bookAPI';
 import { getMovieListById, updateMovieList } from '../../../api/movieStorage';
 import {
   buildExportRows,
@@ -67,10 +68,11 @@ const ListTransfer = ({ movieList, accessType, currentUserID, onImported }) => {
     try {
       if (file.size > MAX_FILE_BYTES) throw new Error('That file is too large (max 2 MB).');
       const { items, invalid } = parseImportFile(file.name, await file.text());
-      if (items.length === 0) throw new Error('No titles with a TMDB id were found in that file.');
+      if (items.length === 0) throw new Error('No titles with a TMDB or Open Library id were found in that file.');
       const existingKeys = new Set([
         ...(movieList.movies || []).map((m) => `movie-${m.id}`),
         ...(movieList.tvShows || []).map((t) => `tv-${t.id}`),
+        ...(movieList.books || []).map((b) => `book-${b.id}`),
       ]);
       const fresh = items.filter((item) => !existingKeys.has(`${item.type}-${item.id}`));
       setPending({
@@ -94,7 +96,14 @@ const ListTransfer = ({ movieList, accessType, currentUserID, onImported }) => {
         toAdd,
         6,
         async (item) => {
-          const details = item.type === 'movie' ? await getMovie(item.id) : await getTVShow(item.id);
+          let details;
+          if (item.type === 'book') {
+            const doc = await getBookSummary(item.id);
+            if (!doc) throw new Error('Book not found');
+            details = bookFromDoc(doc);
+          } else {
+            details = item.type === 'movie' ? await getMovie(item.id) : await getTVShow(item.id);
+          }
           return {
             type: item.type,
             entry: {
@@ -116,18 +125,25 @@ const ListTransfer = ({ movieList, accessType, currentUserID, onImported }) => {
       const latest = await getMovieListById(movieList.id);
       const movieIds = new Set((latest.movies || []).map((m) => m.id));
       const tvIds = new Set((latest.tvShows || []).map((t) => t.id));
+      const bookIds = new Set((latest.books || []).map((b) => b.id));
       const newMovies = ok.filter((r) => r.type === 'movie' && !movieIds.has(r.entry.id)).map((r) => r.entry);
       const newShows = ok.filter((r) => r.type === 'tv' && !tvIds.has(r.entry.id)).map((r) => r.entry);
+      const newBooks = ok.filter((r) => r.type === 'book' && !bookIds.has(r.entry.id)).map((r) => r.entry);
 
-      if (newMovies.length || newShows.length) {
+      if (newMovies.length || newShows.length || newBooks.length) {
         await updateMovieList(movieList.id, {
           movies: [...(latest.movies || []), ...newMovies],
           tvShows: [...(latest.tvShows || []), ...newShows],
+          books: [...(latest.books || []), ...newBooks],
         });
       }
 
-      const parts = [countLabel(newMovies.length, 'movie'), countLabel(newShows.length, 'show')];
-      addAlert(failed ? 'warning' : 'success', `Imported ${parts.join(' and ')}${failed ? ` – ${failed} couldn't be found on TMDB` : ''}.`);
+      const parts = [
+        newMovies.length && countLabel(newMovies.length, 'movie'),
+        newShows.length && countLabel(newShows.length, 'show'),
+        newBooks.length && countLabel(newBooks.length, 'book'),
+      ].filter(Boolean);
+      addAlert(failed ? 'warning' : 'success', `Imported ${parts.length ? parts.join(', ') : 'nothing new'}${failed ? ` – ${failed} couldn't be found` : ''}.`);
       setPending(null);
       if (onImported) onImported();
     } catch (err) {
@@ -184,14 +200,22 @@ const ListTransfer = ({ movieList, accessType, currentUserID, onImported }) => {
               <DialogContentText>
                 {pending.toAdd.length === 0
                   ? 'Everything in this file is already in the list.'
-                  : `${countLabel(pending.toAdd.filter((i) => i.type === 'movie').length, 'movie')} and ${countLabel(pending.toAdd.filter((i) => i.type === 'tv').length, 'show')} will be added from ${pending.fileName}.`}
+                  : `${[
+                      ['movie', 'movie'],
+                      ['tv', 'show'],
+                      ['book', 'book'],
+                    ]
+                      .map(([type, noun]) => [pending.toAdd.filter((i) => i.type === type).length, noun])
+                      .filter(([n]) => n > 0)
+                      .map(([n, noun]) => countLabel(n, noun))
+                      .join(', ')} will be added from ${pending.fileName}.`}
               </DialogContentText>
               <Stack spacing={0.5} sx={{ mt: 1.5 }}>
                 {pending.existing > 0 && (
                   <Typography variant="body2" color="text.secondary">{pending.existing} already in this list will be skipped.</Typography>
                 )}
                 {pending.invalid > 0 && (
-                  <Typography variant="body2" color="text.secondary">{pending.invalid} {pending.invalid === 1 ? 'row' : 'rows'} without a TMDB id will be ignored.</Typography>
+                  <Typography variant="body2" color="text.secondary">{pending.invalid} {pending.invalid === 1 ? 'row' : 'rows'} without a valid id will be ignored.</Typography>
                 )}
                 {pending.truncated > 0 && (
                   <Typography variant="body2" color="warning.main">Only the first {MAX_IMPORT} new titles will be imported.</Typography>

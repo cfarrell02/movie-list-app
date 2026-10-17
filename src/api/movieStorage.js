@@ -217,3 +217,38 @@ export const deleteMovieList = async (listID) => {
     throw new Error('Error deleting watch list from Firestore: ' + error.message);
   }
 };
+
+// Books live in a separate "books" array on the list document
+export const addBookToList = async (listID, book) => {
+  try {
+    const movieListRef = doc(db, 'movieLists', listID);
+    const snapshot = await getDoc(movieListRef);
+    if (!snapshot.exists()) throw new Error('Watch List not found.');
+    await updateDoc(movieListRef, { books: [...(snapshot.data().books || []), book] });
+  } catch (error) {
+    throw new Error('Error adding book to list in Firestore: ' + error.message);
+  }
+};
+
+export const updateBookInList = async (listID, bookID, updatedBook) => {
+  try {
+    const movieListRef = doc(db, 'movieLists', listID);
+    const snapshot = await getDoc(movieListRef);
+    if (!snapshot.exists()) throw new Error('Watch List not found.');
+    const books = (snapshot.data().books || []).map((b) => (b.id === bookID ? { ...b, ...updatedBook } : b));
+    await updateDoc(movieListRef, { books });
+  } catch (error) {
+    throw new Error('Error updating book in list in Firestore: ' + error.message);
+  }
+};
+
+export const deleteBookFromList = async (listID, bookID) => {
+  try {
+    const movieListRef = doc(db, 'movieLists', listID);
+    const snapshot = await getDoc(movieListRef);
+    if (!snapshot.exists()) throw new Error('Watch List not found.');
+    await updateDoc(movieListRef, { books: (snapshot.data().books || []).filter((b) => b.id !== bookID) });
+  } catch (error) {
+    throw new Error('Error deleting book from list in Firestore: ' + error.message);
+  }
+};

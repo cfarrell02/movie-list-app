@@ -4,7 +4,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import MovieListSettings from '../../components/MovieComponents/movieListSettings';
 import { AlertContext } from '../../contexts/alertContext';
 import MovieTable from '../../components/MovieComponents/movieTable';
-import { getMovieListById, deleteMovieFromList, updateMovieInList, deleteTVShowFromList, updateTVShowInList } from '../../api/movieStorage';
+import { getMovieListById, deleteMovieFromList, updateMovieInList, deleteTVShowFromList, updateTVShowInList, deleteBookFromList, updateBookInList } from '../../api/movieStorage';
 import MovieAdd from '../../components/MovieComponents/movieAdd';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../../firebase-config';
@@ -13,17 +13,31 @@ import TVTable from '../../components/TVComponents/TVTable';
 import TVAdd from '../../components/TVComponents/TVAdd';
 import { AdultContentNotice } from '../../components/detail';
 import { SiteDataContext } from '../../contexts/siteDataContext';
+import { FeatureFlagContext } from '../../contexts/featureFlagContext';
+import BookAdd from '../../components/bookComponents/bookAdd';
+import BookTable from '../../components/bookComponents/bookTable';
 
 const ACCESS_LABELS = ['Viewer', 'Contributor', 'Admin', 'Owner'];
+
+// Older links used numeric tabs (0 movies, 1 TV, 2 settings)
+const LEGACY_TABS = { 0: 'movies', 1: 'tv', 2: 'settings' };
+
+const countLabel = (n, noun) => `${n} ${noun}${n === 1 ? '' : 's'}`;
 
 const MovieTrackingPage = () => {
   const [movies, setMovies] = useState([]);
   const [tvShows, setTvShows] = useState([]);
+  const [books, setBooks] = useState([]);
   const [movieList, setMovieList] = useState({});
   const [loading, setLoading] = useState(true);
   const { listId } = useParams();
   const location = useLocation();
-  const selectedTab = Math.min(Math.max(parseInt(new URLSearchParams(location.search).get('tab'), 10) || 0, 0), 2);
+  const { getFeatureFlag } = React.useContext(FeatureFlagContext);
+  const booksEnabled = !!getFeatureFlag('Books')?.enabled;
+  const tabParam = new URLSearchParams(location.search).get('tab') || 'movies';
+  const requestedTab = LEGACY_TABS[tabParam] || tabParam;
+  const validTabs = ['movies', 'tv', ...(booksEnabled ? ['books'] : []), 'settings'];
+  const selectedTab = validTabs.includes(requestedTab) ? requestedTab : 'movies';
   const [user, setUser] = useState(null);
   const [accessType, setAccessType] = useState(0);
   const { addAlert } = React.useContext(AlertContext);
@@ -36,6 +50,7 @@ const MovieTrackingPage = () => {
       const list = await getMovieListById(listId);
       setMovies(list.movies || []);
       setTvShows(list.tvShows || []);
+      setBooks(list.books || []);
       setMovieList(list);
     } catch (error) {
       console.error('Error getting list:', error);
@@ -117,6 +132,29 @@ const MovieTrackingPage = () => {
     }
   };
 
+  const removeBook = async (book) => {
+    try {
+      await deleteBookFromList(listId, book.id);
+      setBooks((current) => current.filter((b) => b.id !== book.id));
+      addAlert('info', `${book.title} removed successfully`);
+    } catch (error) {
+      console.error(error);
+      addAlert('error', 'Error removing book');
+    }
+  };
+
+  const editBook = async (book) => {
+    const previous = books;
+    setBooks(previous.map((b) => (b.id === book.id ? book : b)));
+    try {
+      await updateBookInList(listId, book.id, book);
+    } catch (error) {
+      console.error(error);
+      setBooks(previous);
+      addAlert('error', 'Error editing book');
+    }
+  };
+
   // Lists with adult titles are hidden from the overview, so don't reveal them via a direct link either
   const hasAdultItems = [...movies, ...tvShows].some((item) => item.adult);
 
@@ -138,7 +176,7 @@ const MovieTrackingPage = () => {
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }} flexWrap="wrap" useFlexGap>
             <Chip size="small" variant="outlined" label={ACCESS_LABELS[accessType] || 'Viewer'} />
             <Typography variant="body2" color="text.secondary">
-              {movies.length} {movies.length === 1 ? 'movie' : 'movies'} · {tvShows.length} {tvShows.length === 1 ? 'show' : 'shows'}
+              {[countLabel(movies.length, 'movie'), countLabel(tvShows.length, 'show'), ...(booksEnabled || books.length ? [countLabel(books.length, 'book')] : [])].join(' · ')}
               {movieList.users ? ` · ${movieList.users.length} ${movieList.users.length === 1 ? 'member' : 'members'}` : ''}
             </Typography>
           </Stack>
@@ -152,13 +190,14 @@ const MovieTrackingPage = () => {
         </Tooltip>
       </Stack>
 
-      <Tabs value={selectedTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tab label={`Movies (${movies.length})`} />
-        <Tab label={`TV Shows (${tvShows.length})`} />
-        <Tab label="Settings" />
+      <Tabs value={selectedTab} onChange={handleTabChange} variant="scrollable" scrollButtons={false} sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tab value="movies" label={`Movies (${movies.length})`} />
+        <Tab value="tv" label={`TV Shows (${tvShows.length})`} />
+        {booksEnabled && <Tab value="books" label={`Books (${books.length})`} />}
+        <Tab value="settings" label="Settings" />
       </Tabs>
 
-      {selectedTab === 0 && (
+      {selectedTab === 'movies' && (
         <Stack spacing={2}>
           <MovieAdd
             listId={listId}
@@ -171,7 +210,7 @@ const MovieTrackingPage = () => {
         </Stack>
       )}
 
-      {selectedTab === 1 && (
+      {selectedTab === 'tv' && (
         <Stack spacing={2}>
           <TVAdd
             listId={listId}
@@ -184,9 +223,22 @@ const MovieTrackingPage = () => {
         </Stack>
       )}
 
-      {selectedTab === 2 && (
+      {selectedTab === 'books' && (
+        <Stack spacing={2}>
+          <BookAdd
+            listId={listId}
+            books={books}
+            setBooks={setBooks}
+            disabled={accessType === 0}
+            currentUserID={user ? user.uid : null}
+          />
+          <BookTable listId={listId} books={books} deleteBook={removeBook} editBook={editBook} loading={loading} accessType={accessType} />
+        </Stack>
+      )}
+
+      {selectedTab === 'settings' && (
         <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
-          <MovieListSettings movieList={{ ...movieList, movies, tvShows }} setMovieList={setMovieList} onListChanged={refreshMovieList} />
+          <MovieListSettings movieList={{ ...movieList, movies, tvShows, books }} setMovieList={setMovieList} onListChanged={refreshMovieList} />
         </Paper>
       )}
     </Container>

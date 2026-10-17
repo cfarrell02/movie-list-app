@@ -11,7 +11,7 @@ const TVAdd = ({ tvshows, listId, setTvShows, disabled, currentUserID }) => (
     disabled={disabled}
     currentUserID={currentUserID}
     search={(query) => getTVShowSearchResults(1, query)}
-    fetchDetails={getTVShow}
+    fetchDetails={(option) => getTVShow(option.id)}
     persist={(show) => addTVShowToList(listId, show)}
     getTitle={(t) => t.name || ''}
     getDate={(t) => t.first_air_date}

@@ -11,7 +11,7 @@ const MovieAdd = ({ movies, listId, setMovies, disabled, currentUserID }) => (
     disabled={disabled}
     currentUserID={currentUserID}
     search={(query) => getMovieSearchResults(1, query)}
-    fetchDetails={getMovie}
+    fetchDetails={(option) => getMovie(option.id)}
     persist={(movie) => addMovieToList(listId, movie)}
     getTitle={(m) => m.title || ''}
     getDate={(m) => m.release_date}

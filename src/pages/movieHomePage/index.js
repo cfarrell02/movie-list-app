@@ -75,7 +75,7 @@ const MovieHomePage = () => {
   const handleNewMovieList = async (name) => {
     try {
       const movieList = { title: name, userIds: [user.uid], users: [{accessType: 3, email:user.email, uid:user.uid}]
-        , id: uid(), movies: [] , tvShows : [], createdOn : new Date()};
+        , id: uid(), movies: [], tvShows: [], books: [], createdOn: new Date()};
       await addMovieList(movieList);
       setMovieLists((prevMovieLists) => [...prevMovieLists, movieList]);
       setModalOpen(false);
@@ -119,7 +119,7 @@ const MovieHomePage = () => {
             {user && user.firstName ? `${user.firstName}'s Watch Lists` : 'Watch Lists'}
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-            {hiddenContentMessage || 'Track movies and shows with friends.'}
+            {hiddenContentMessage || 'Track movies, shows and books with friends.'}
           </Typography>
         </Box>
         <Stack direction="row" spacing={1}>

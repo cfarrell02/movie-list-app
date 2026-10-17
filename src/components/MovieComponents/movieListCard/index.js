@@ -6,29 +6,37 @@ import MovieIcon from '@mui/icons-material/MovieOutlined';
 import TvIcon from '@mui/icons-material/TvOutlined';
 import { auth } from '../../../firebase-config';
 import defaultImage from '../../../images/default.jpg';
+import MenuBookIcon from '@mui/icons-material/MenuBookOutlined';
+import { coverUrl } from '../../../api/bookAPI';
 
 const ACCESS_LABELS = ['Viewer', 'Contributor', 'Admin', 'Owner'];
 
 const MovieListCard = ({ movieList, onDelete }) => {
   const movies = movieList.movies || [];
   const tvShows = movieList.tvShows || [];
+  const books = movieList.books || [];
   const uid = auth.currentUser?.uid;
   const accessType = movieList.users?.find((u) => u.uid === uid)?.accessType ?? 0;
 
   // Most recently added posters first, so the collage reflects recent activity (and doesn't reshuffle on every render)
   const posters = useMemo(() => {
-    return [...(movieList.movies || []), ...(movieList.tvShows || [])]
-      .filter((item) => item.poster_path)
+    const withImage = [
+      ...[...(movieList.movies || []), ...(movieList.tvShows || [])]
+        .filter((item) => item.poster_path)
+        .map((item) => ({ addedDate: item.addedDate, src: `https://image.tmdb.org/t/p/w342${item.poster_path}` })),
+      ...(movieList.books || []).filter((b) => b.cover_i).map((b) => ({ addedDate: b.addedDate, src: coverUrl(b.cover_i, 'M') })),
+    ];
+    return withImage
       .sort((a, b) => new Date(b.addedDate || 0) - new Date(a.addedDate || 0))
       .slice(0, 4)
-      .map((item) => `https://image.tmdb.org/t/p/w342${item.poster_path}`);
-  }, [movieList.movies, movieList.tvShows]);
+      .map((item) => item.src);
+  }, [movieList.movies, movieList.tvShows, movieList.books]);
 
   const collage = posters.length >= 4 ? posters : posters.slice(0, 1);
 
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'box-shadow .2s', '&:hover': { boxShadow: 6 } }}>
-      <CardActionArea component={RouterLink} to={`/movielist/${movieList.id}?tab=0`} sx={{ flex: 1 }}>
+      <CardActionArea component={RouterLink} to={`/movielist/${movieList.id}?tab=movies`} sx={{ flex: 1 }}>
         <Box
           sx={{
             aspectRatio: '16 / 10',
@@ -59,13 +67,19 @@ const MovieListCard = ({ movieList, onDelete }) => {
               <TvIcon sx={{ fontSize: 16 }} />
               <Typography variant="body2">{tvShows.length} {tvShows.length === 1 ? 'show' : 'shows'}</Typography>
             </Stack>
+            {books.length > 0 && (
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <MenuBookIcon sx={{ fontSize: 16 }} />
+                <Typography variant="body2">{books.length} {books.length === 1 ? 'book' : 'books'}</Typography>
+              </Stack>
+            )}
           </Stack>
         </Box>
       </CardActionArea>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 2, pb: 1.5 }}>
         <Chip size="small" label={ACCESS_LABELS[accessType] || 'Viewer'} color={accessType === 3 ? 'primary' : 'default'} variant="outlined" />
         <Stack direction="row" spacing={0.5} alignItems="center">
-          <Chip size="small" label="TV shows" component={RouterLink} to={`/movielist/${movieList.id}?tab=1`} clickable />
+          <Chip size="small" label="TV shows" component={RouterLink} to={`/movielist/${movieList.id}?tab=tv`} clickable />
           {accessType >= 2 && (
             <Tooltip title="Delete list">
               <IconButton size="small" onClick={() => onDelete(movieList.id)} aria-label="Delete list">

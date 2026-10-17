@@ -2,6 +2,6 @@
     {
         "name": "Books",
         "description": "When enabled books will be shown on the site",
-        "enabled": false
+        "enabled": true
     }
 ]
