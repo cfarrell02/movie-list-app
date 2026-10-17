@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Autocomplete, Avatar, Box, Button, CircularProgress, Stack, TextField, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { AlertContext } from '../../contexts/alertContext';
+import { SiteDataContext } from '../../contexts/siteDataContext';
+import { filterAdult } from '../../utils';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -11,6 +13,7 @@ const SEARCH_DEBOUNCE_MS = 300;
  */
 const MediaAddBar = ({ items, setItems, disabled, currentUserID, search, fetchDetails, persist, getTitle, getDate, initialWatched, noun }) => {
   const { addAlert } = useContext(AlertContext);
+  const { adultContent } = useContext(SiteDataContext);
   const [input, setInput] = useState('');
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -29,7 +32,7 @@ const MediaAddBar = ({ items, setItems, disabled, currentUserID, search, fetchDe
     const timer = setTimeout(async () => {
       try {
         const results = await search(query);
-        if (id === requestId.current) setOptions([...results].sort((a, b) => b.popularity - a.popularity));
+        if (id === requestId.current) setOptions(filterAdult(results, adultContent).sort((a, b) => b.popularity - a.popularity));
       } catch (error) {
         if (id === requestId.current) addAlert('error', error.message);
       } finally {

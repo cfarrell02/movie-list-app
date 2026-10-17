@@ -30,6 +30,7 @@ import DarkModeIcon from "@mui/icons-material/DarkModeOutlined";
 import LightModeIcon from "@mui/icons-material/LightModeOutlined";
 import { SiteDataContext } from "../../contexts/siteDataContext";
 import { getSearchResults } from "../../api/TMDBAPI";
+import { filterAdult } from "../../utils";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -44,6 +45,7 @@ const getOptionYear = (option) => {
 
 const SearchBar = ({ fullWidth }) => {
   const navigate = useNavigate();
+  const { adultContent } = useContext(SiteDataContext);
   const [inputValue, setInputValue] = useState("");
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -63,7 +65,7 @@ const SearchBar = ({ fullWidth }) => {
       try {
         const results = await getSearchResults(1, query);
         if (id !== requestId.current) return;
-        setOptions(results.sort((a, b) => b.popularity - a.popularity).slice(0, 12));
+        setOptions(filterAdult(results, adultContent).sort((a, b) => b.popularity - a.popularity).slice(0, 12));
       } catch (error) {
         console.error(error);
         if (id === requestId.current) setOptions([]);
@@ -72,7 +74,7 @@ const SearchBar = ({ fullWidth }) => {
       }
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [inputValue]);
+  }, [inputValue, adultContent]);
 
   const handleSelect = (event, value) => {
     if (!value || typeof value === "string") return;

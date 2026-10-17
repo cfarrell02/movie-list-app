@@ -9,7 +9,9 @@ import { AlertContext } from '../../contexts/alertContext';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import MediaDisplay from '../../components/mediaDisplay';
 import MovieCard from '../../components/MovieComponents/movieCard';
+import { filterAdult } from '../../utils';
 import {
+  AdultContentNotice,
   AddToListSelect,
   DetailHero,
   DetailHeroSkeleton,
@@ -38,6 +40,7 @@ const MovieDetailsPage = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAllRecs, setShowAllRecs] = useState(false);
+  const [blocked, setBlocked] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,6 +52,7 @@ const MovieDetailsPage = () => {
     const fetchData = async () => {
       setLoading(true);
       setShowAllRecs(false);
+      setBlocked(false);
       try {
         const [details, credits, images, videos, recommendations] = await Promise.all([
           getMovie(id),
@@ -59,7 +63,7 @@ const MovieDetailsPage = () => {
         ]);
         if (!active) return;
         if (!adultContent && details.adult) {
-          navigate('/', { replace: true });
+          setBlocked(true);
           return;
         }
         setMovie({ ...details, credits, images, videos, recommendations });
@@ -84,7 +88,7 @@ const MovieDetailsPage = () => {
       .catch(console.error);
   }, [user]);
 
-  const crew = useMemo(() => mergeCrew(movie?.credits?.crew), [movie]);
+  const crew = useMemo(() => filterAdult(mergeCrew(movie?.credits?.crew), adultContent), [movie, adultContent]);
 
   const handleAddToList = async (event) => {
     const listId = event.target.value;
@@ -103,6 +107,7 @@ const MovieDetailsPage = () => {
     }
   };
 
+  if (blocked) return <AdultContentNotice kind="movie" />;
   if (loading || !movie) return <DetailHeroSkeleton />;
 
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : null;
@@ -110,7 +115,7 @@ const MovieDetailsPage = () => {
     ? `${movie.title.replace(/[^\w\s]/gi, '').replace(/\s/g, '-').toLowerCase()}-${movie.imdb_id.substring(2)}`
     : null;
   const director = crew.find((c) => c.job.split(', ').includes('Director'));
-  const recommendations = movie.recommendations || [];
+  const recommendations = filterAdult(movie.recommendations, adultContent);
   const shownRecs = showAllRecs ? recommendations : recommendations.slice(0, 12);
 
   return (
@@ -156,7 +161,7 @@ const MovieDetailsPage = () => {
         </Section>
 
         <Section title="Cast">
-          <PeopleGrid people={movie.credits?.cast} getRole={(p) => p.character} />
+          <PeopleGrid people={filterAdult(movie.credits?.cast, adultContent)} getRole={(p) => p.character} />
         </Section>
 
         <Section title="Crew">

@@ -26,6 +26,7 @@ import UserManagementPage from './pages/userManagementPage';
 import PersonPage from './pages/personPage';
 import NotFoundPage from './pages/notFoundPage';
 import { darkTheme, lightTheme } from './themes';
+import { canViewAdultContent } from './utils';
 import { addUser, getUserById, updateUser } from './api/userDataStorage';
 import { getMovieListsByUserId, updateMovieList } from './api/movieStorage';
 import './index.css';
@@ -45,28 +46,34 @@ const PrivateRoute = ({ children, isAuthenticated, loadedUser }) => {
 const App = () => {
   const [user, setUser] = useState(null);
   const [loadedUser, setLoadedUser] = useState(false);
-  const { darkMode } = useContext(SiteDataContext);
+  const { darkMode, setAdultContent } = useContext(SiteDataContext);
   const location = useLocation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       if (!authUser) {
+        // Don't let the next person on this browser inherit the previous user's setting
+        setAdultContent(false);
         setUser(null);
         setLoadedUser(true);
         return;
       }
       try {
-        setUser(await getUserById(authUser.uid));
+        const userData = await getUserById(authUser.uid);
+        // The account is the source of truth for adult content, so it follows the user across devices
+        setAdultContent(canViewAdultContent(userData));
+        setUser(userData);
       } catch (error) {
         // A missing/unreadable profile shouldn't leave the app spinning forever
         console.error(error);
+        setAdultContent(false);
         setUser(null);
       } finally {
         setLoadedUser(true);
       }
     });
     return unsubscribe;
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogin = async (username, password) => {
     try {

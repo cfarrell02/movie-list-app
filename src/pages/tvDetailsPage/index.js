@@ -6,10 +6,13 @@ import { getTVShow, getTVCredits, getTVImages, getTVVideos, getTVRecommendations
 import { getMovieListById, addTVShowToList, getMovieListsByUserId } from '../../api/movieStorage';
 import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
+import { SiteDataContext } from '../../contexts/siteDataContext';
+import { filterAdult } from '../../utils';
 import MediaDisplay from '../../components/mediaDisplay';
 import TVCard from '../../components/TVComponents/TVCard';
 import TVEpisodesSummary from '../../components/TVDetailComponents/tvEpisodesSummary';
 import {
+  AdultContentNotice,
   AddToListSelect,
   DetailHero,
   DetailHeroSkeleton,
@@ -30,6 +33,8 @@ const TVDetailsPage = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAllRecs, setShowAllRecs] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const { adultContent } = React.useContext(SiteDataContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,6 +46,7 @@ const TVDetailsPage = () => {
     const fetchData = async () => {
       setLoading(true);
       setShowAllRecs(false);
+      setBlocked(false);
       try {
         const [details, cast, images, videos, recommendations] = await Promise.all([
           getTVShow(id),
@@ -50,6 +56,10 @@ const TVDetailsPage = () => {
           getTVRecommendations(id),
         ]);
         if (!active) return;
+        if (!adultContent && details.adult) {
+          setBlocked(true);
+          return;
+        }
         setTvShow({ ...details, credits: cast, images, videos, recommendations });
         window.scrollTo(0, 0);
       } catch (error) {
@@ -63,7 +73,7 @@ const TVDetailsPage = () => {
     return () => {
       active = false;
     };
-  }, [id, navigate]);
+  }, [id, adultContent, navigate]);
 
   useEffect(() => {
     if (!user) return;
@@ -89,13 +99,14 @@ const TVDetailsPage = () => {
     }
   };
 
+  if (blocked) return <AdultContentNotice kind="show" />;
   if (loading || !tvShow) return <DetailHeroSkeleton />;
 
   const start = yearOf(tvShow.first_air_date);
   const end = tvShow.in_production ? 'Present' : yearOf(tvShow.last_air_date);
   const years = start ? (end && end !== start ? `${start} – ${end}` : `${start}`) : null;
   const seasons = (tvShow.seasons || []).filter((s) => s.name !== 'Specials');
-  const recommendations = tvShow.recommendations || [];
+  const recommendations = filterAdult(tvShow.recommendations, adultContent);
   const shownRecs = showAllRecs ? recommendations : recommendations.slice(0, 12);
 
   return (
@@ -145,7 +156,7 @@ const TVDetailsPage = () => {
         )}
 
         <Section title="Cast">
-          <PeopleGrid people={tvShow.credits} getRole={(p) => p.character} />
+          <PeopleGrid people={filterAdult(tvShow.credits, adultContent)} getRole={(p) => p.character} />
         </Section>
 
         {recommendations.length > 0 && (

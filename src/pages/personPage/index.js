@@ -5,7 +5,7 @@ import { getPerson, getPersonMovies, getPersonTV, getPersonImages, getPersonTagg
 import PersonCreditsSection from '../../components/personComponents/personCreditsSection';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import MediaDisplay from '../../components/mediaDisplay';
-import { DetailHero, DetailHeroSkeleton, ExternalLinks, FactGrid, Section } from '../../components/detail';
+import { AdultContentNotice, DetailHero, DetailHeroSkeleton, ExternalLinks, FactGrid, Section } from '../../components/detail';
 import { ageFormatter } from '../../utils';
 
 const Biography = ({ text }) => {
@@ -37,6 +37,7 @@ const PersonPage = () => {
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
     const [person, setPerson] = useState(null);
+    const [blocked, setBlocked] = useState(false);
     const { adultContent } = React.useContext(SiteDataContext);
     const navigate = useNavigate();
 
@@ -44,6 +45,7 @@ const PersonPage = () => {
         let active = true;
         const fetchData = async () => {
             setLoading(true);
+            setBlocked(false);
             try {
                 const [details, movieCredits, tvCredits, images, taggedImages] = await Promise.all([
                     getPerson(id),
@@ -55,7 +57,7 @@ const PersonPage = () => {
                 if (!active) return;
                 // If the person is adult only and the user has adult content disabled, redirect to home
                 if (!adultContent && details.adult) {
-                    navigate('/', { replace: true });
+                    setBlocked(true);
                     return;
                 }
                 setPerson({
@@ -78,6 +80,7 @@ const PersonPage = () => {
         };
     }, [id, adultContent, navigate]);
 
+    if (blocked) return <AdultContentNotice kind="person" />;
     if (loading || !person) return <DetailHeroSkeleton />;
 
     const age = person.birthday ? ageFormatter(person.birthday) : null;

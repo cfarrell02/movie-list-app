@@ -220,3 +220,25 @@ export const weatherCodeTranslator = (code) => {
         return newName ? newName : 'Error fetching name';
         
         }
+// Firestore returns dates as Timestamps ({ seconds }); older records may hold strings or Dates
+export const toDate = (value) => {
+  if (!value) return null;
+  if (value.seconds !== undefined) return new Date(value.seconds * 1000);
+  const date = new Date(value);
+  return isNaN(date.getTime()) ? null : date;
+};
+
+export const ADULT_AGE = 18;
+
+export const isOfAdultAge = (dateOfBirth) => {
+  const date = toDate(dateOfBirth);
+  return date ? ageFormatter(date) >= ADULT_AGE : false;
+};
+
+// Adult content is only shown when the account has opted in and is old enough
+export const canViewAdultContent = (userData) =>
+  !!userData && !!userData.adultAllowed && isOfAdultAge(userData.dateOfBirth);
+
+// Remove items TMDB flags as adult unless the viewer has adult content enabled
+export const filterAdult = (items, adultContent) =>
+  adultContent ? items || [] : (items || []).filter((item) => !item.adult);

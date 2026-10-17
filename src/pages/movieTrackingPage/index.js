@@ -11,6 +11,8 @@ import { auth } from '../../firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 import TVTable from '../../components/TVComponents/TVTable';
 import TVAdd from '../../components/TVComponents/TVAdd';
+import { AdultContentNotice } from '../../components/detail';
+import { SiteDataContext } from '../../contexts/siteDataContext';
 
 const ACCESS_LABELS = ['Viewer', 'Contributor', 'Admin', 'Owner'];
 
@@ -25,6 +27,7 @@ const MovieTrackingPage = () => {
   const [user, setUser] = useState(null);
   const [accessType, setAccessType] = useState(0);
   const { addAlert } = React.useContext(AlertContext);
+  const { adultContent } = React.useContext(SiteDataContext);
   const navigate = useNavigate();
 
   const refreshMovieList = useCallback(async () => {
@@ -114,9 +117,14 @@ const MovieTrackingPage = () => {
     }
   };
 
+  // Lists with adult titles are hidden from the overview, so don't reveal them via a direct link either
+  const hasAdultItems = [...movies, ...tvShows].some((item) => item.adult);
+
   const handleTabChange = (event, newValue) => {
     navigate(`?tab=${newValue}`, { replace: true });
   };
+
+  if (!adultContent && hasAdultItems) return <AdultContentNotice kind="list" />;
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>

@@ -55,7 +55,7 @@ const MovieHomePage = () => {
       const allLists = await getMovieListsByUserId(user.uid);
       const visibleLists = adultContent
         ? allLists
-        : allLists.filter((list) => (list.movies || []).every((movie) => !movie.adult));
+        : allLists.filter((list) => [...(list.movies || []), ...(list.tvShows || [])].every((item) => !item.adult));
       visibleLists.sort((a, b) => createdTime(a) - createdTime(b));
       setHiddenContentMessage(
         visibleLists.length < allLists.length ? 'Some watch lists are hidden by your adult content setting.' : ''

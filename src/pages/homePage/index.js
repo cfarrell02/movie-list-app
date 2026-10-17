@@ -27,6 +27,8 @@ import MovieCard from '../../components/MovieComponents/movieCard';
 import BookCard from '../../components/bookComponents/bookCard';
 import TVCard from '../../components/TVComponents/TVCard';
 import { FeatureFlagContext } from '../../contexts/featureFlagContext';
+import { SiteDataContext } from '../../contexts/siteDataContext';
+import { filterAdult } from '../../utils';
 
 const PAGE_SIZE = 18;
 const MAX_PAGES = 500; // TMDB caps paging at 500
@@ -63,6 +65,7 @@ const fetchResults = async (tab, page, query) => {
 const Homepage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { getFeatureFlag } = useContext(FeatureFlagContext);
+  const { adultContent } = useContext(SiteDataContext);
   const booksEnabled = getFeatureFlag('Books')?.enabled;
   const maxTab = booksEnabled ? 2 : 1;
 
@@ -78,7 +81,8 @@ const Homepage = () => {
   useEffect(() => setSearchInput(query), [query]);
 
   const load = useCallback(async () => {
-    const cacheKey = `browse-${tab}-${page}-${query}`;
+    // Include the adult setting so toggling it never serves results fetched under the old setting
+    const cacheKey = `browse-${adultContent ? 'adult' : 'safe'}-${tab}-${page}-${query}`;
     const cached = cacheGet(cacheKey);
     if (cached) {
       setItems(cached);
@@ -89,7 +93,8 @@ const Homepage = () => {
     setLoading(true);
     setError('');
     try {
-      const results = (await fetchResults(tab, page, query)).slice(0, PAGE_SIZE);
+      // Trending ignores include_adult, so filter client-side as well
+      const results = filterAdult(await fetchResults(tab, page, query), adultContent).slice(0, PAGE_SIZE);
       setItems(results);
       cacheSet(cacheKey, results);
     } catch (err) {
@@ -99,7 +104,7 @@ const Homepage = () => {
     } finally {
       setLoading(false);
     }
-  }, [tab, page, query]);
+  }, [tab, page, query, adultContent]);
 
   useEffect(() => {
     load();

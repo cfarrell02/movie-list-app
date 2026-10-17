@@ -20,6 +20,7 @@ import {
   Typography,
 } from '@mui/material';
 import StarRoundedIcon from '@mui/icons-material/StarRounded';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { dateReadableFormatter } from '../../utils';
 import defaultImage from '../../images/default.jpg';
 
@@ -307,4 +308,16 @@ export const ExternalLinks = ({ links }) => (
       </Button>
     ))}
   </Stack>
+);
+
+/** Shown instead of a detail page whose subject is flagged adult while adult content is off */
+export const AdultContentNotice = ({ kind = 'title' }) => (
+  <Container maxWidth="sm" sx={{ textAlign: 'center', py: { xs: 8, md: 12 } }}>
+    <VisibilityOffOutlinedIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
+    <Typography variant="h4" component="h1" sx={{ mt: 2 }}>This {kind} is hidden</Typography>
+    <Typography color="text.secondary" sx={{ mt: 1.5, mb: 4 }}>
+      {kind === 'list' ? 'It contains adult titles' : "It's marked as adult content"}, which is turned off for your account.
+    </Typography>
+    <Button component={RouterLink} to="/home" variant="contained">Back to browsing</Button>
+  </Container>
 );

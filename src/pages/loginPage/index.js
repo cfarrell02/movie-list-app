@@ -11,6 +11,7 @@ import UpdateProfile from '../../components/Onboarding/updateProfile';
 import { AlertContext } from '../../contexts/alertContext';
 import Login from '../../components/Onboarding/login';
 import { Link } from 'react-router-dom';
+import { ADULT_AGE, isOfAdultAge } from '../../utils';
 
 const LoginPage = ({ handleLogin, handleRegister, handleLogout }) => {
   const [user, setUser] = useState(null);
@@ -44,7 +45,8 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout }) => {
       checked: adultContent,
       requiredLogin: true,
       admin: false,
-      shown: showAdultContentSettings,
+      // Only offered to signed-in users old enough to use it
+      shown: showAdultContentSettings && !!user && isOfAdultAge(user.dateOfBirth),
     },
   ];
   
@@ -70,11 +72,20 @@ const LoginPage = ({ handleLogin, handleRegister, handleLogout }) => {
   };
 
   const toggleAdultContent = async (event) => {
-    setAdultContent(event.target.checked);
-
-    const userData = await getUserById(user.uid);
-    userData.adultAllowed = event.target.checked;
-    await updateUser(user.uid, userData);
+    const enabled = event.target.checked;
+    if (enabled && !isOfAdultAge(user.dateOfBirth)) {
+      addAlert('error', `You must be ${ADULT_AGE} or older to enable adult content.`);
+      return;
+    }
+    setAdultContent(enabled);
+    try {
+      await updateUser(user.uid, { adultAllowed: enabled });
+      setUser((current) => ({ ...current, adultAllowed: enabled }));
+    } catch (error) {
+      console.error(error);
+      setAdultContent(!enabled);
+      addAlert('error', 'Could not save your adult content setting. Please try again.');
+    }
   };
 
   const toggleTheme = () => {

@@ -1,7 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Avatar, Box, Button, Card, CardActionArea, Grid, Tab, Tabs, Typography } from '@mui/material';
 import { mergeCrew } from '../../detail';
+import { SiteDataContext } from '../../../contexts/siteDataContext';
+import { filterAdult } from '../../../utils';
 
 const INITIAL_COUNT = 24;
 
@@ -57,9 +59,10 @@ const CreditGrid = ({ credits, getTitle, getDate, getRole, getPath }) => {
 };
 
 const PersonCreditsSection = ({ person }) => {
-  const movieCast = useMemo(() => [...(person.credits?.cast || [])].sort(byNewest((c) => c.release_date)), [person]);
-  const tvCast = useMemo(() => [...(person.tvCredits?.cast || [])].sort(byNewest((c) => c.first_air_date)), [person]);
-  const crew = useMemo(() => mergeCrew(person.credits?.crew).sort(byNewest((c) => c.release_date)), [person]);
+  const { adultContent } = useContext(SiteDataContext);
+  const movieCast = useMemo(() => filterAdult(person.credits?.cast, adultContent).slice().sort(byNewest((c) => c.release_date)), [person, adultContent]);
+  const tvCast = useMemo(() => filterAdult(person.tvCredits?.cast, adultContent).slice().sort(byNewest((c) => c.first_air_date)), [person, adultContent]);
+  const crew = useMemo(() => filterAdult(mergeCrew(person.credits?.crew), adultContent).sort(byNewest((c) => c.release_date)), [person, adultContent]);
 
   const tabs = [
     movieCast.length > 0 && {
