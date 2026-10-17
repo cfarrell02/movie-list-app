@@ -2,14 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
-  FormControlLabel,
   IconButton,
   InputAdornment,
   Link,
   Paper,
   Skeleton,
   Stack,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -19,6 +17,8 @@ import {
   TableRow,
   TableSortLabel,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
   useMediaQuery,
@@ -27,25 +27,10 @@ import { useTheme } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { getUserById } from '../../api/userDataStorage';
+import { ActiveFilterChips, FilterButton, applyFilters, fetchUserName, useFilterOptions, useListFilters } from './filters';
 import { dateReadableFormatter } from '../../utils';
 import defaultImage from '../../images/default.jpg';
 import ConfirmationModal from '../Modals/confirmationModal';
-
-// Cache "added by" lookups so each user is fetched once, not once per row
-const userCache = new Map();
-const fetchUserName = (uid) => {
-  if (!uid) return Promise.resolve('');
-  if (!userCache.has(uid)) {
-    userCache.set(
-      uid,
-      getUserById(uid)
-        .then((u) => u.firstName || '')
-        .catch(() => '')
-    );
-  }
-  return userCache.get(uid);
-};
 
 const AddedBy = ({ item }) => {
   const [name, setName] = useState('');
@@ -98,12 +83,13 @@ const MediaListTable = ({
   renderStatus,
   onDelete,
   noun,
+  filterConfig,
+  storageKey,
 }) => {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const isMedium = useMediaQuery(theme.breakpoints.down('md'));
-  const [search, setSearch] = useState('');
-  const [showWatched, setShowWatched] = useState(true);
+  const [filters, setFilters] = useListFilters(storageKey);
   const [sort, setSort] = useState({ key: 'addedDate', direction: 'asc' });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(50);
@@ -122,21 +108,21 @@ const MediaListTable = ({
     (c) => !(c.hideBelow === 'sm' && isSmall) && !(c.hideBelow === 'md' && isMedium)
   );
 
+  const cfg = useMemo(() => ({ ...filterConfig, getTitle }), [filterConfig, getTitle]);
+  const filterOptions = useFilterOptions(items, cfg);
+
   const rows = useMemo(() => {
-    const term = search.trim().toLowerCase();
     const column = allColumns.find((c) => c.id === sort.key);
-    const filtered = items.filter(
-      (item) => (!term || getTitle(item).toLowerCase().includes(term)) && (showWatched || !isWatched(item))
-    );
+    const filtered = applyFilters(items, filters, cfg);
     if (!column) return filtered;
     const sorted = [...filtered].sort((a, b) => compare(column.sortValue(a), column.sortValue(b)));
     return sort.direction === 'desc' ? sorted.reverse() : sorted;
-  }, [items, search, showWatched, sort, allColumns, getTitle, isWatched]);
+  }, [items, filters, cfg, sort, allColumns]);
 
   // Keep the current page valid when filtering shrinks the result set
   useEffect(() => {
     setPage(0);
-  }, [search, showWatched]);
+  }, [filters]);
 
   const pageRows = rowsPerPage === -1 ? rows : rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const canEdit = accessType > 0;
@@ -162,19 +148,23 @@ const MediaListTable = ({
           setPendingDelete(null);
         }}
       />
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        alignItems={{ sm: 'center' }}
-        justifyContent="space-between"
-        sx={{ p: 2 }}
+      <Box
+        sx={{
+          p: 2,
+          display: 'grid',
+          gap: 1.5,
+          alignItems: 'center',
+          // Phone: search + filters on one row, status buttons full width below. Desktop: one row.
+          gridTemplateColumns: { xs: '1fr auto', md: 'minmax(200px, 280px) auto auto 1fr' },
+          gridTemplateAreas: { xs: '"search filters" "status status"', md: '"search status filters count"' },
+        }}
       >
         <TextField
           size="small"
-          placeholder={`Filter ${noun.plural}`}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: { sm: 320 } }}
+          placeholder={`Search ${noun.plural}`}
+          value={filters.search}
+          onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+          sx={{ gridArea: 'search', minWidth: 0 }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -183,17 +173,31 @@ const MediaListTable = ({
             ),
           }}
         />
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="body2" color="text.secondary">
-            {rows.length} of {items.length}
-          </Typography>
-          <FormControlLabel
-            control={<Switch size="small" checked={showWatched} onChange={(e) => setShowWatched(e.target.checked)} />}
-            label={<Typography variant="body2">Show watched</Typography>}
-            sx={{ mr: 0 }}
-          />
-        </Stack>
-      </Stack>
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={filters.status}
+          onChange={(e, value) => value !== null && setFilters((f) => ({ ...f, status: value }))}
+          aria-label="Watch status"
+          sx={{
+            gridArea: 'status',
+            width: { xs: '100%', md: 'auto' },
+            '& .MuiToggleButton-root': { textTransform: 'none', px: { xs: 1, sm: 1.5 }, whiteSpace: 'nowrap', flex: { xs: 1, md: 'none' }, fontSize: { xs: 13, sm: 14 } },
+          }}
+        >
+          <ToggleButton value="all">All</ToggleButton>
+          {filterConfig.statuses.map((s) => (
+            <ToggleButton key={s.value} value={s.value}>{s.label}</ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+        <Box sx={{ gridArea: 'filters' }}>
+          <FilterButton filters={filters} setFilters={setFilters} options={filterOptions} cfg={cfg} resultCount={rows.length} noun={noun} />
+        </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ gridArea: 'count', justifySelf: 'end', whiteSpace: 'nowrap', display: { xs: 'none', md: 'block' } }}>
+          {rows.length} of {items.length}
+        </Typography>
+      </Box>
+      <ActiveFilterChips filters={filters} setFilters={setFilters} options={filterOptions} cfg={cfg} />
       <TableContainer>
         <Table size="small">
           <TableHead>

@@ -3,6 +3,7 @@ import { Checkbox, Tooltip } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import MediaListTable, { RatingCell } from '../../mediaListTable';
+import { genreNames, yearNumber } from '../../mediaListTable/filters';
 
 const yearOf = (date) => (date ? new Date(date).getFullYear() : null);
 
@@ -20,7 +21,18 @@ const columns = [
   { id: 'watched', label: 'Watched', sortValue: (m) => (m.watched ? 1 : 0), render: (m) => (m.watched ? 'Yes' : 'No'), hideBelow: 'md' },
 ];
 
-const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType }) => {
+const filterConfig = {
+  statuses: [
+    { value: 'unwatched', label: 'Not watched' },
+    { value: 'watched', label: 'Watched' },
+  ],
+  getStatus: (m) => (m.watched ? 'watched' : 'unwatched'),
+  getGenres: genreNames,
+  getYearNumber: (m) => yearNumber(m.release_date),
+  length: { label: 'Runtime', getValue: (m) => m.runtime || null, format: formatRuntime, step: 5 },
+};
+
+const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType, listId }) => {
   const getTitle = useCallback((m) => m.title || '', []);
   const isWatched = useCallback((m) => !!m.watched, []);
 
@@ -36,6 +48,8 @@ const MovieTable = ({ movies, deleteMovie, editMovie, loading, accessType }) => 
       isWatched={isWatched}
       onDelete={deleteMovie}
       noun={{ singular: 'movie', plural: 'movies' }}
+      filterConfig={filterConfig}
+      storageKey={listId && `${listId}-movies`}
       renderStatus={(movie) => (
         <Tooltip title={movie.watched ? 'Mark as not watched' : 'Mark as watched'}>
           <Checkbox

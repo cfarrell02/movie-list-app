@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { MenuItem, Select } from '@mui/material';
 import MediaListTable, { RatingCell } from '../../mediaListTable';
+import { genreNames, yearNumber } from '../../mediaListTable/filters';
 
 const yearOf = (date) => (date ? new Date(date).getFullYear() : null);
 
@@ -26,7 +27,17 @@ const columns = [
   { id: 'seasons', label: 'Seasons', align: 'center', sortValue: (t) => t.seasons?.length, render: (t) => t.seasons?.length || '—', hideBelow: 'md' },
 ];
 
-const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType }) => {
+const seasonCount = (t) => (t.seasons || []).filter((s) => s.name !== 'Specials').length || null;
+
+const filterConfig = {
+  statuses: STATUSES.map((s) => ({ value: s.value, label: s.label })),
+  getStatus: statusOf,
+  getGenres: genreNames,
+  getYearNumber: (t) => yearNumber(t.first_air_date),
+  length: { label: 'Seasons', getValue: seasonCount, format: (v) => v },
+};
+
+const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType, listId }) => {
   const getTitle = useCallback((t) => t.name || '', []);
   const isWatched = useCallback((t) => statusOf(t) === 2, []);
 
@@ -42,6 +53,8 @@ const TVTable = ({ tvShows, deleteTVShow, editTVShow, loading, accessType }) => 
       isWatched={isWatched}
       onDelete={deleteTVShow}
       noun={{ singular: 'show', plural: 'shows' }}
+      filterConfig={filterConfig}
+      storageKey={listId && `${listId}-tv`}
       renderStatus={(tv) => {
         const status = statusOf(tv);
         return (

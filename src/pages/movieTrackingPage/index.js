@@ -167,7 +167,7 @@ const MovieTrackingPage = () => {
             disabled={accessType === 0}
             currentUserID={user ? user.uid : null}
           />
-          <MovieTable movies={movies} deleteMovie={removeMovie} editMovie={editMovie} loading={loading} accessType={accessType} />
+          <MovieTable listId={listId} movies={movies} deleteMovie={removeMovie} editMovie={editMovie} loading={loading} accessType={accessType} />
         </Stack>
       )}
 
@@ -180,7 +180,7 @@ const MovieTrackingPage = () => {
             disabled={accessType === 0}
             currentUserID={user ? user.uid : null}
           />
-          <TVTable tvShows={tvShows} deleteTVShow={removeTVShow} editTVShow={editTVShow} loading={loading} accessType={accessType} />
+          <TVTable listId={listId} tvShows={tvShows} deleteTVShow={removeTVShow} editTVShow={editTVShow} loading={loading} accessType={accessType} />
         </Stack>
       )}
 
