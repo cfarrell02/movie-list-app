@@ -30,6 +30,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { getUserById } from '../../api/userDataStorage';
 import { dateReadableFormatter } from '../../utils';
 import defaultImage from '../../images/default.jpg';
+import ConfirmationModal from '../Modals/confirmationModal';
 
 // Cache "added by" lookups so each user is fetched once, not once per row
 const userCache = new Map();
@@ -106,6 +107,7 @@ const MediaListTable = ({
   const [sort, setSort] = useState({ key: 'addedDate', direction: 'asc' });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const allColumns = useMemo(
     () => [
@@ -149,6 +151,17 @@ const MediaListTable = ({
 
   return (
     <Paper variant="outlined" sx={{ borderRadius: '16px', overflow: 'hidden' }}>
+      <ConfirmationModal
+        open={!!pendingDelete}
+        header={`Remove ${noun.singular}?`}
+        body={pendingDelete ? `“${getTitle(pendingDelete)}” will be removed from this list.` : ''}
+        confirmLabel="Remove"
+        onClose={() => setPendingDelete(null)}
+        onConfirm={() => {
+          onDelete(pendingDelete);
+          setPendingDelete(null);
+        }}
+      />
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
@@ -249,7 +262,7 @@ const MediaListTable = ({
                       <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
                         {renderStatus(item)}
                         <Tooltip title="Remove from list">
-                          <IconButton size="small" onClick={() => onDelete(item)} aria-label={`Remove ${getTitle(item)}`}>
+                          <IconButton size="small" onClick={() => setPendingDelete(item)} aria-label={`Remove ${getTitle(item)}`}>
                             <DeleteOutlineIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
