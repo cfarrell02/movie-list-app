@@ -11,6 +11,7 @@ import MediaDisplay from '../../components/mediaDisplay';
 import MovieCard from '../../components/MovieComponents/movieCard';
 import WhereToWatch from '../../components/whereToWatch';
 import { filterAdult } from '../../utils';
+import { toListEntry } from '../../listTransfer';
 import {
   AdultContentNotice,
   AddToListSelect,
@@ -97,10 +98,7 @@ const MovieDetailsPage = () => {
     try {
       const list = await getMovieListById(listId);
       if ((list.movies || []).find((m) => m.id === movie.id)) throw new Error('Movie is already in "' + list.title + '"');
-      // Strip bulky detail-page data so list documents stay well under Firestore's 1MB limit
-      // eslint-disable-next-line no-unused-vars
-      const { credits, images, videos, recommendations, ...summary } = movie;
-      const entry = { ...summary, addedDate: new Date().toISOString(), addedBy: user.uid, watched: false };
+      const entry = { ...toListEntry(movie, 'movie'), addedDate: new Date().toISOString(), addedBy: user.uid, watched: false };
       await addMovieToList(listId, entry);
       addAlert('success', `${movie.title} added to ${list.title}`);
     } catch (error) {

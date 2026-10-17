@@ -8,6 +8,7 @@ import { auth } from '../../firebase-config';
 import { AlertContext } from '../../contexts/alertContext';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import { filterAdult } from '../../utils';
+import { toListEntry } from '../../listTransfer';
 import MediaDisplay from '../../components/mediaDisplay';
 import TVCard from '../../components/TVComponents/TVCard';
 import TVEpisodesSummary from '../../components/TVDetailComponents/tvEpisodesSummary';
@@ -91,10 +92,7 @@ const TVDetailsPage = () => {
     try {
       const list = await getMovieListById(listId);
       if ((list.tvShows || []).find((m) => m.id === tvShow.id)) throw new Error('TV show is already in "' + list.title + '"');
-      // Strip bulky detail-page data so list documents stay well under Firestore's 1MB limit
-      // eslint-disable-next-line no-unused-vars
-      const { credits, images, videos, recommendations, ...summary } = tvShow;
-      const entry = { ...summary, addedDate: new Date().toISOString(), addedBy: user.uid, watched: 0 };
+      const entry = { ...toListEntry(tvShow, 'tv'), addedDate: new Date().toISOString(), addedBy: user.uid, watched: 0 };
       await addTVShowToList(listId, entry);
       addAlert('success', `${tvShow.name} added to ${list.title}`);
     } catch (error) {

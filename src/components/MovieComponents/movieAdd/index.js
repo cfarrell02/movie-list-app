@@ -5,6 +5,7 @@ import MediaAddBar from '../../mediaAddBar';
 
 const MovieAdd = ({ movies, listId, setMovies, disabled, currentUserID }) => (
   <MediaAddBar
+    type="movie"
     items={movies}
     setItems={setMovies}
     disabled={disabled}

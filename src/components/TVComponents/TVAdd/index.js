@@ -5,6 +5,7 @@ import MediaAddBar from '../../mediaAddBar';
 
 const TVAdd = ({ tvshows, listId, setTvShows, disabled, currentUserID }) => (
   <MediaAddBar
+    type="tv"
     items={tvshows}
     setItems={setTvShows}
     disabled={disabled}

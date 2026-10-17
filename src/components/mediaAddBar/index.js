@@ -4,6 +4,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { AlertContext } from '../../contexts/alertContext';
 import { SiteDataContext } from '../../contexts/siteDataContext';
 import { filterAdult } from '../../utils';
+import { toListEntry } from '../../listTransfer';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -11,7 +12,7 @@ const SEARCH_DEBOUNCE_MS = 300;
  * Search TMDB and add the chosen title to a list.
  * search(query) -> results, fetchDetails(id) -> full item, persist(item) -> saves it.
  */
-const MediaAddBar = ({ items, setItems, disabled, currentUserID, search, fetchDetails, persist, getTitle, getDate, initialWatched, noun }) => {
+const MediaAddBar = ({ type, items, setItems, disabled, currentUserID, search, fetchDetails, persist, getTitle, getDate, initialWatched, noun }) => {
   const { addAlert } = useContext(AlertContext);
   const { adultContent } = useContext(SiteDataContext);
   const [input, setInput] = useState('');
@@ -51,7 +52,7 @@ const MediaAddBar = ({ items, setItems, disabled, currentUserID, search, fetchDe
     setAdding(true);
     try {
       const details = await fetchDetails(selected.id);
-      const entry = { ...details, watched: initialWatched, addedDate: new Date().toISOString(), addedBy: currentUserID };
+      const entry = { ...toListEntry(details, type), watched: initialWatched, addedDate: new Date().toISOString(), addedBy: currentUserID };
       await persist(entry);
       setItems([...items, entry]);
       addAlert('success', `${getTitle(entry)} added to list.`);

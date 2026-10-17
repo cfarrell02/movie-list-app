@@ -186,7 +186,7 @@ const MovieTrackingPage = () => {
 
       {selectedTab === 2 && (
         <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, borderRadius: '16px' }}>
-          <MovieListSettings movieList={movieList} setMovieList={setMovieList} />
+          <MovieListSettings movieList={{ ...movieList, movies, tvShows }} setMovieList={setMovieList} onListChanged={refreshMovieList} />
         </Paper>
       )}
     </Container>

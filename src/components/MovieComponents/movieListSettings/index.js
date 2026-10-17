@@ -37,12 +37,12 @@ import { updateMovieList } from "../../../api/movieStorage";
 import { getUserRoles } from "../../../utils";
 import { auth } from "../../../firebase-config";
 import { onAuthStateChanged } from "firebase/auth";
-import { convertArrayOfObjectsToCSV } from "../../../utils";
+import ListTransfer from "../listTransfer";
 import { AlertContext } from "../../../contexts/alertContext";
 import { BorderBottom } from "@mui/icons-material";
 import ConfimationModal from "../../Modals/confirmationModal";
 
-const MovieListSettings = ({ movieList, setMovieList }) => {
+const MovieListSettings = ({ movieList, setMovieList, onListChanged }) => {
   const [users, setUsers] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [user, setUser] = useState({});
@@ -94,7 +94,8 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
         throw new Error("Invalid title.");
       }
       const updatedMovieList = { ...movieList, title };
-      await updateMovieList(updatedMovieList.id, updatedMovieList);
+      // Only write the changed field: movieList holds the movies/shows as they were when the page loaded
+      await updateMovieList(movieList.id, { title });
       setMovieList(updatedMovieList);
       addAlert("success", "Watch List title updated.");
     } catch (error) {
@@ -144,7 +145,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       };
 
       setUsers(updatedUsers);
-      await updateMovieList(updatedMovieList.id, updatedMovieList);
+      await updateMovieList(movieList.id, { users: updatedMovieList.users, userIds: updatedMovieList.userIds });
       setMovieList(updatedMovieList);
       addAlert("success", `User ${user.email} added to watch list.`);
     } catch (error) {
@@ -181,7 +182,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       };
       setMovieList(updatedMovieList);
 
-      await updateMovieList(movieList.id, updatedMovieList);
+      await updateMovieList(movieList.id, { users: updatedMovieList.users, userIds: updatedMovieList.userIds });
       addAlert(
         "success",
         `User ${user.email} access type updated to ${getUserRoles(accessType)}.`
@@ -215,7 +216,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       setWarningModalDetails({show: false, title: '', body
         : ''});
 
-      await updateMovieList(movieList.id, updatedMovieList);
+      await updateMovieList(movieList.id, { users: updatedMovieList.users, userIds: updatedMovieList.userIds });
       addAlert(
         "success",
         `User ${user.email} is now the owner of the watch list. You have been demoted to an admin.`
@@ -238,7 +239,7 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
         userIds: updatedUserIds,
       };
       setUsers(updatedUsers);
-      await updateMovieList(updatedMovieList.id, updatedMovieList);
+      await updateMovieList(movieList.id, { users: updatedMovieList.users, userIds: updatedMovieList.userIds });
       setMovieList(updatedMovieList);
       addAlert("info", `User ${user.email} removed from watch list.`);
       if (user.uid === userID) {
@@ -250,54 +251,6 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
     }
   };
 
-  const handleExportMovieList = async () => {
-    try {
-      const keys = [
-        "poster_path",
-        "title",
-        "tagline",
-        "release_date",
-        "vote_average",
-        "runtime",
-        "watched",
-        "addedDate",
-        "addedBy",
-        "id",
-      ];
-      const movieListCSV = convertArrayOfObjectsToCSV(movieList.movies, keys);
-      const tvKeys = [
-        "poster_path",
-        "name",
-        "tagline",
-        "first_air_date",
-        "last_air_date",
-        "vote_average",
-        "watched",
-        "addedDate",
-        "addedBy",
-        "id",
-      ];
-      const tvListCSV = convertArrayOfObjectsToCSV(movieList.tvShows, tvKeys);
-
-      const iterationList = [movieListCSV, tvListCSV].join("\n");
-
-      
-
-      const blob = new Blob([iterationList], {
-        type: "text/csv;charset=utf-8;",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `${movieList.title}.csv`);
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Error exporting watch list:", error);
-    }
-  };
 
   const shouldShowPromote = (user) => {
     if (accessType === 3) return user.accessType !== 3; // Owner can promote anyone except other owners, and not beyond 3
@@ -344,26 +297,16 @@ const MovieListSettings = ({ movieList, setMovieList }) => {
       <Accordion disableGutters variant="outlined" sx={{ "&:not(:last-of-type)": { borderBottom: 0 }, "&:before": { display: "none" } }}>
         <AccordionSummary expandIcon={<ArrowDropDownIcon />}>
           <Typography variant="h6" component="h3">
-            Export/Import Watch List
+            Export / import
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <ButtonGroup
-            variant="contained"
-            color="primary"
-            aria-label="contained primary button group"
-          >
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleExportMovieList(movieList)}
-            >
-              Export Watch List
-            </Button>
-            <Button variant="contained" color="primary" disabled>
-              Import Watch List
-            </Button>
-          </ButtonGroup>
+          <ListTransfer
+            movieList={movieList}
+            accessType={accessType}
+            currentUserID={user?.uid}
+            onImported={onListChanged}
+          />
         </AccordionDetails>
       </Accordion>
       <Accordion disableGutters variant="outlined" sx={{ "&:not(:last-of-type)": { borderBottom: 0 }, "&:before": { display: "none" } }}>
